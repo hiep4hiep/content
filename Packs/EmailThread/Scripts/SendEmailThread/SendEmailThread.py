@@ -33,8 +33,8 @@ def store_topics(email_subject, email_to, email_content, email_cc=None, email_te
 
     inc = demisto.incidents()[0]['CustomFields']
     email_topics = []
-    if "emailtopicslist" in inc:
-        email_topics = inc.get('emailtopicslist')
+    if "emailthreadtopicslist" in inc:
+        email_topics = inc.get('emailthreadtopicslist')
 
     if email_subject not in email_topics:
         email_topics.append(email_subject)
@@ -49,7 +49,7 @@ def store_topics(email_subject, email_to, email_content, email_cc=None, email_te
         "message_id": message_id
     }
 
-    demisto.executeCommand("setIncident", {"emailtopicslist": email_topics})
+    demisto.executeCommand("setIncident", {"emailthreadtopicslist": email_topics})
     demisto.executeCommand("Set", {"key": "EmailCommunication." + generate_email_topic(email_subject),"value": topic})
     return email_topics
     
@@ -127,10 +127,16 @@ def execute_reply_mail(incident_id, email_subject, email_to, reply_body, email_c
             "using": integration_name
         }
         demisto.executeCommand("setEntriesTags", {"entryIDs":",".join(entry_id_list),"entryTags": generate_email_topic(email_subject)})
-    if not email_latest_message or email_brand in ["EWSO365", "Mail Sender (New)"]:
+    
+    # Check email integration brand to send or reply email
+    # If replying to existing thread, use reply-mail command
+    if email_brand in ["EWSO365","EWSO365DeviceCodeFlow","Mail Sender (New)"]:
         return demisto.executeCommand("send-mail", mail_content)
     else:
-        return demisto.executeCommand("reply-mail", mail_content)
+        if email_latest_message == '':
+            return demisto.executeCommand("send-mail", mail_content)
+        else:
+            return demisto.executeCommand("reply-mail", mail_content)
 
 
 def get_email_cc(current_cc=None, additional_cc=None):
@@ -296,6 +302,10 @@ def get_email_from(integration_name):
                     email_from = content.get('configvalues').get('default_target_mailbox')
                 elif content.get('brand') == 'Mail Sender (New)':
                     email_from = content.get('configvalues').get('from')
+                elif content.get('brand') == 'Gmail':
+                    email_from = content.get('configvalues').get('adminEmail')
+                elif content.get('brand') == 'Gmail Single User':
+                    email_from = content.get('configvalues').get('email')
                 else:
                     email_from = ''
                 brand = content.get('brand')
@@ -328,7 +338,7 @@ def check_valid_args(args):
         demisto.executeCommand('setIncident',
             {
                 'customFields': {
-                    'emaileditor': message
+                    'emailthreadeditor': message
                 }
             })
 
@@ -362,11 +372,11 @@ def main():
         email_cc = custom_fields.get('emailcc', '')
         email_bcc = custom_fields.get('emailbcc', '')
         email_subject = custom_fields.get('emailsubject')
-        email_body = custom_fields.get('emaileditor')
+        email_body = custom_fields.get('emailthreadeditor')
 
     
     add_cc = custom_fields.get('addcctoemail', '')
-    email_team = custom_fields.get('emailteam','')
+    email_team = custom_fields.get('emailthreadteam','')
     email_from, email_brand = get_email_from(integration_name)
     email_latest_message = custom_fields.get('emaillatestmessage')
     files = args.get('files', {})
@@ -374,7 +384,7 @@ def main():
     emails = [{'Contents':''}]
 
     # Get the last email in War room
-    email_topic = custom_fields.get('emailtopic','email_subject')
+    email_topic = custom_fields.get('emailthreadtopic',email_subject)
     selected_topic = generate_email_topic(email_topic)
     # Condition to check when user creates a new topic while still select another topic in
     # the emailtopic field
@@ -416,9 +426,9 @@ def main():
             'id': incident_id,
             'customFields': {
                 'emailthreadhtml': title_html + thread_reply,
-                'emailtopic': email_subject,
+                'emailthreadtopic': email_subject,
                 'emailsubject': email_subject,
-                'emaileditor': '',
+                'emailthreadeditor': '',
                 'emailfrom': email_from
             }
         }),

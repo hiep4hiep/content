@@ -1,4 +1,3 @@
-from itertools import count
 import re
 import json
 import demistomock as demisto

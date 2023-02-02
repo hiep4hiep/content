@@ -32,15 +32,19 @@ Here is an example call:
 ```
 
 ## Set it up
-Go to About > Troubleshooting > Import the tar.gz file of this content pack
+- Unzip the `EmailThread.zip` file
+- Make sure you have `demisto-sdk` installed and set up on your computer. If not, follow this guide here https://github.com/demisto/demisto-sdk
+- Run `demisto-sdk upload -i EmailThread`
 
-There are 3 required items for the content pack to work. You need to verify each items if the import was successful.
-- Preprocessing rule
-- Email thread layout
-- Automation scripts
 
-### Verify Preprocessing rule
-Verify if Settings > Integrations > Pre-Process rules has this rule. The rule is used for getting reply email from user and link it to the working incident where the communication was originally initiated.
+### Enable XSOAR REST API integration
+- First you need to generate an admin role API key (Settings > Integrations > API Keys)
+- Then Go to Settings > Integrations > Find XSOAR REST API, add API key and enable this integration
+
+### Create Preprocessing rule
+Go to Settings > Integrations > Pre-Process rules then create pre-processing rule as below. The rule is used for getting reply email from user and link it to the working incident where the communication was originally initiated.
+
+The SourceBrand value is the integration that you use to fetch email in your XSOAR environment.
 
 ![image](https://user-images.githubusercontent.com/41276379/174940290-9a02f6f0-8fc0-4c72-848b-294defbf8e6f.png)
 
@@ -49,7 +53,14 @@ The pack includes a default layout *Email Thread v2*. Go to Settings > Objects S
 
 ![image](https://user-images.githubusercontent.com/41276379/174944744-dbea6d98-f901-42cc-b8ee-9756e36440cc.png)
 
-The 1st tab of the layout (Email) is used to send/receive/view all email communications which are tied to current incident. In order to add this tab to other incident layout, follow these steps:
+- You need to set input for the Send button on the layout. Click Send button, fill in **integration_name** field with the email `integration instance name` you use to send email from XSOAR. (This pack supports EWS O365 or EWS Mail Sender integration)
+	
+  ![image](https://user-images.githubusercontent.com/41276379/187349347-da93fafd-4857-4df9-b322-402efd8dc66d.png)
+
+- To test it, just create an Incident with type `Email Thread v2`
+- The 1st tab of the layout (Email) is used to send/receive/view all email communications which are tied to current incident. 
+
+### To add this tab to other incident layout, follow these steps:
 - Export the incident layout you want to add Email tab > you will get **layoutscontainer-layoutname.json** file
 	
   ![image](https://user-images.githubusercontent.com/41276379/174945468-2a5c26d3-5def-4a97-8888-83ba5a31b235.png)
@@ -227,9 +238,7 @@ The 1st tab of the layout (Email) is used to send/receive/view all email communi
 				"type": "custom"
 			},
  ```
- - Last step is to set input for the Send button on layout. Click Send button, fill in **integration_name** field with the email integration instance you use to send email from XSOAR. 
-	
-  ![image](https://user-images.githubusercontent.com/41276379/187349347-da93fafd-4857-4df9-b322-402efd8dc66d.png)
+
 
 	
 ### Automation Scripts

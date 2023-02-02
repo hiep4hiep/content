@@ -163,8 +163,8 @@ def store_topics(email_related_incident, email_subject, email_from, email_to, em
     inc = demisto.incidents()[0]['CustomFields']
     # Add new topic to the topic list if this is the new email
     email_topics = []
-    if "emailtopicslist" in inc:
-        email_topics = inc.get('emailtopicslist')
+    if "emailthreadtopicslist" in inc:
+        email_topics = inc.get('emailthreadtopicslist')
 
     if email_subject not in email_topics:
         email_topics.append(email_subject)
@@ -192,7 +192,7 @@ def store_topics(email_related_incident, email_subject, email_from, email_to, em
                         {'command': 'Set', 'incidents': email_related_incident,
                         'arguments': {'key': metadata_key, 'value': metadata_value}})
 
-    demisto.executeCommand("setIncident", {"emailtopicslist": email_topics})
+    demisto.executeCommand("setIncident", {"emailthreadtopicslist": email_topics})
 
 
 # Remove the [.] character in the email_subject to support using it as context key
@@ -268,24 +268,24 @@ def main():
 
         # If the user is currently viewing the topic, then push the message directly to emailhtml field
         # on the layout so the analyst can see it immediately.
-        if incident_details.get('CustomFields').get('emailtopic') == email_topic:
+        if incident_details.get('CustomFields').get('emailthreadtopic') == email_topic:
             demisto.executeCommand('setIncident', {
                 'id': email_related_incident,
                 'customFields': {
-                    'emailshowtrigger': str(random.randrange(1, 999)) + f"#{email_topic}#&{email_to}#&{email_cc}#&{email_from}#&{message_id}#&{original_email_from}"
+                    'emailthreadshowtrigger': str(random.randrange(1, 999)) + f"#{email_topic}#&{email_to}#&{email_cc}#&{email_from}#&{message_id}#&{original_email_from}"
                 }
             })
         
         # If this is newly send-in email, not initiated from XSOAR then add this new 
         # topic to topic list
-        email_topics_list = incident_details.get('CustomFields').get('emailtopicslist')
+        email_topics_list = incident_details.get('CustomFields').get('emailthreadtopicslist')
         if email_topics_list:
             if email_topic not in email_topics_list:
                 email_topics_list.append(email_topic)
                 demisto.executeCommand('setIncident', {
                     'id': email_related_incident,
                     'customFields': {
-                        'emailtopicslist': email_topics_list
+                        'emailthreadtopicslist': email_topics_list
                     }
                 })
 
@@ -302,7 +302,7 @@ def main():
             'id': new_incident_id,
             'customFields': {
                 'emailthreadhtml': title_html + email_reply,
-                'emailtopic': email_subject
+                'emailthreadtopic': email_subject
             }
         }),
         # Store email as war room entry

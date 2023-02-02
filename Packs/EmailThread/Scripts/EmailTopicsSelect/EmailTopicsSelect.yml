@@ -2,7 +2,8 @@ commonfields:
   id: EmailTopicsSelect
   version: -1
 name: EmailTopicsSelect
-comment: The script will run when selecting EmailTopic field on the layout to display the list of available topics
+comment: The script will run when selecting EmailTopic field on the layout to display
+  the list of available topics
 script: '-'
 type: python
 tags:
@@ -12,8 +13,8 @@ enabled: true
 scripttarget: 0
 subtype: python3
 runonce: false
-dockerimage: demisto/python3:3.10.6.33415
+dockerimage: demisto/python3:3.10.9.46032
 runas: DBotWeakRole
-fromversion: 6.5.0
+fromversion: 6.0.0
 tests:
 - No tests (auto formatted)

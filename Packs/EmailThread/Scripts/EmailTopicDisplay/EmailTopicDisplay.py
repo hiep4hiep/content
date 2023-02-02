@@ -3,8 +3,8 @@ import demistomock as demisto
 def main():
     inc = demisto.incidents()[0]['CustomFields']
     email_topics = []
-    if "emailtopicslist" in inc:
-        email_topics = inc.get('emailtopicslist')
+    if "emailthreadtopicslist" in inc:
+        email_topics = inc.get('emailthreadtopicslist')
 
     # Add topic to select options of emailtopics field
     demisto.results({'hidden': False, 'options': email_topics})

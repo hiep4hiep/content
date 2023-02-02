@@ -5,7 +5,7 @@
     "closeForm": false,
     "content": true,
     "editForm": true,
-    "fieldCalcScript": "9c3c2197-ff85-4308-89fd-c109f8574d7a",
+    "fieldCalcScript": "EmailTopicsDisplay",
     "group": 0,
     "hidden": false,
     "id": "incident_emailthreadtopic",
