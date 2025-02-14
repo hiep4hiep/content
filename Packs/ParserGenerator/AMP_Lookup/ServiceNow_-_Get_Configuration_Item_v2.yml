@@ -1,0 +1,516 @@
+id: cfba2f90-2124-4dd6-8bb7-d7e7ea3b3add
+version: 13
+vcShouldKeepItemLegacyProdMachine: false
+name: ServiceNow - Get Configuration Item v2
+description: Search for a configuration item in ServiceNow
+starttaskid: "0"
+tasks:
+  "0":
+    id: "0"
+    taskid: 9d7c56b4-4ba9-450a-8448-06a472de3226
+    type: start
+    task:
+      id: 9d7c56b4-4ba9-450a-8448-06a472de3226
+      version: -1
+      name: ""
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "1"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 50
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "1":
+    id: "1"
+    taskid: a96892b1-13dc-4fb7-88fd-aaa4c9d93f25
+    type: regular
+    task:
+      id: a96892b1-13dc-4fb7-88fd-aaa4c9d93f25
+      version: -1
+      name: Search
+      description: Queries the specified table in ServiceNow.
+      script: '|||servicenow-query-table'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "8"
+    scriptarguments:
+      extend-context:
+        simple: ServiceNow.Record.AssignmentGroup=result.assignment_group.value
+      ignore-outputs:
+        simple: "false"
+      limit:
+        simple: "1"
+      query:
+        simple: ${inputs.query}
+      table_name:
+        simple: ${inputs.table_name}
+      using:
+        simple: SNOW - Dev - ampaudev.service-now.com
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 195
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "2":
+    id: "2"
+    taskid: 9ea5293c-6d4a-4fae-87f9-27ea73dd1ce3
+    type: title
+    task:
+      id: 9ea5293c-6d4a-4fae-87f9-27ea73dd1ce3
+      version: -1
+      name: Done
+      type: title
+      iscommand: false
+      brand: ""
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 1420
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "3":
+    id: "3"
+    taskid: 4b14be76-be94-45d4-87dd-953eaf36df1f
+    type: condition
+    task:
+      id: 4b14be76-be94-45d4-87dd-953eaf36df1f
+      version: -1
+      name: Found?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "2"
+      "yes":
+      - "4"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isExists
+          left:
+            value:
+              simple: ServiceNow.Record.ID
+            iscontext: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 720
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "4":
+    id: "4"
+    taskid: bb8ea8e7-49e7-4337-8c40-4ff0f02550ba
+    type: regular
+    task:
+      id: bb8ea8e7-49e7-4337-8c40-4ff0f02550ba
+      version: -1
+      name: Query computer
+      description: Queries the cmdb_ci_computer table in ServiceNow.
+      script: ServiceNow v2|||servicenow-query-computers
+      type: regular
+      iscommand: true
+      brand: ServiceNow v2
+    nexttasks:
+      '#none#':
+      - "6"
+    scriptarguments:
+      computer_id:
+        simple: ${ServiceNow.Record.ID}
+      limit:
+        simple: "1"
+      using:
+        simple: SNOW - Dev - ampaudev.service-now.com
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 377.5,
+          "y": 895
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "5":
+    id: "5"
+    taskid: ef18be07-cbe7-47d2-82f4-e0316be21667
+    type: regular
+    task:
+      id: ef18be07-cbe7-47d2-82f4-e0316be21667
+      version: -1
+      name: Query user
+      description: Queries the sys_user table in ServiceNow.
+      script: ServiceNow v2|||servicenow-query-users
+      type: regular
+      iscommand: true
+      brand: ServiceNow v2
+    nexttasks:
+      '#none#':
+      - "2"
+    scriptarguments:
+      user_id:
+        simple: ${ServiceNow.Computer.AssignedTo}
+      using:
+        simple: SNOW - Dev - ampaudev.service-now.com
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 1245
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "6":
+    id: "6"
+    taskid: 7e9194e7-2c98-43f1-897f-21fa54697c24
+    type: condition
+    task:
+      id: 7e9194e7-2c98-43f1-897f-21fa54697c24
+      version: -1
+      name: Query user?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "2"
+      "yes":
+      - "5"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              complex:
+                root: inputs.query_user
+                transformers:
+                - operator: toLowerCase
+            iscontext: true
+          right:
+            value:
+              simple: "yes"
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 377.5,
+          "y": 1070
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "7":
+    id: "7"
+    taskid: 35c473c3-8eb9-4d2a-8df2-eb1fb0acab26
+    type: regular
+    task:
+      id: 35c473c3-8eb9-4d2a-8df2-eb1fb0acab26
+      version: -1
+      name: Search Assignment Group
+      description: Queries the sys_user_group table in ServiceNow.
+      script: '|||servicenow-query-groups'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "3"
+    scriptarguments:
+      group_id:
+        simple: ${ServiceNow.Record.AssignmentGroup.[0]}
+      using:
+        simple: SNOW - Dev - ampaudev.service-now.com
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 545
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "8":
+    id: "8"
+    taskid: 623bda5a-8dcc-4382-8075-43b542868de1
+    type: condition
+    task:
+      id: 623bda5a-8dcc-4382-8075-43b542868de1
+      version: -1
+      name: If Assignment group is found?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "11"
+      "yes":
+      - "7"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isNotEmpty
+          left:
+            value:
+              simple: ServiceNow.Record.AssignmentGroup
+            iscontext: true
+          right:
+            value: {}
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 370
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "10":
+    id: "10"
+    taskid: 7d4b3153-544b-4354-834e-0b69a6c90a03
+    type: regular
+    task:
+      id: 7d4b3153-544b-4354-834e-0b69a6c90a03
+      version: -1
+      name: Set static Assignment group
+      description: |-
+        Set a value in context under the key you entered. If no value is entered, the script doesn't do anything.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: SetAndHandleEmpty
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "4"
+    scriptarguments:
+      key:
+        simple: ServiceNow.Group.Name
+      value:
+        complex:
+          root: AssignmentGroupList
+          filters:
+          - - operator: isEqualString
+              left:
+                value:
+                  simple: AssignmentGroupList.AccountID
+                iscontext: true
+              right:
+                value:
+                  simple: alert.awsaccountid
+                iscontext: true
+          accessor: AssignmentGroup
+          transformers:
+          - operator: SetIfEmpty
+            args:
+              applyIfEmpty: {}
+              defaultValue:
+                value:
+                  simple: AMP_CDC_MSS_NTT_SNow
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 480,
+          "y": 720
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "11":
+    id: "11"
+    taskid: edd1b0d6-9e67-4032-8f28-25d1a5e472a5
+    type: regular
+    task:
+      id: edd1b0d6-9e67-4032-8f28-25d1a5e472a5
+      version: -1
+      name: Get Assignment Group List
+      description: |-
+        Set a value in context under the key you entered. If no value is entered, the script doesn't do anything.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: SetAndHandleEmpty
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "10"
+    scriptarguments:
+      key:
+        simple: AssignmentGroupList
+      value:
+        simple: ${lists.ASSIGNMENT_GROUP}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 480,
+          "y": 545
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: |-
+  {
+    "linkLabelsPosition": {
+      "8_7_yes": 0.89
+    },
+    "paper": {
+      "dimensions": {
+        "height": 1435,
+        "width": 810,
+        "x": 50,
+        "y": 50
+      }
+    }
+  }
+inputs:
+- key: table_name
+  value:
+    simple: cmdb_ci
+  required: true
+  description: ""
+  playbookInputQuery: null
+- key: query
+  value: {}
+  required: true
+  description: ""
+  playbookInputQuery: null
+- key: query_user
+  value:
+    simple: "no"
+  required: true
+  description: Get user information?
+  playbookInputQuery: null
+outputs:
+- contextPath: ServiceNow.Record.ID
+  description: The unique record identifier for the record.
+  type: string
+- contextPath: ServiceNow.Record.AssignmentGroup
+  description: Assignment group UID
+  type: string
+- contextPath: ServiceNow.Computer.ID
+  description: Computer system ID.
+- contextPath: ServiceNow.Computer.Name
+  description: Computer name.
+- contextPath: ServiceNow.Computer.DisplayName
+  description: Computer display name.
+- contextPath: ServiceNow.Computer.SupportGroup
+  description: Computer support group.
+- contextPath: ServiceNow.Computer.AssignedTo
+  description: Computer assigned to user system ID.
+- contextPath: ServiceNow.Computer.State
+  description: Computer state.
+- contextPath: ServiceNow.User.Name
+  description: User name (first and last).
+- contextPath: ServiceNow.User.UserName
+  description: User username.
+- contextPath: ServiceNow.User.Email
+  description: User email address.
+- contextPath: ServiceNow.User.ID
+  description: User system ID.
+- contextPath: ServiceNow.Group.Name
+  description: Assignment group name
+  type: unknown
+sourceplaybookid: f3ae3e96-eb05-4f78-8a4c-97b53ffff61a
+dirtyInputs: true

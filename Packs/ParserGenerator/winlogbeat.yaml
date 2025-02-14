@@ -1,0 +1,16 @@
+winlogbeat.event_logs:
+- name: Security
+  ignore_older: 1h
+  id: security-logs
+- name: System
+  ignore_older: 1h
+  id: system-logs
+- name: Application
+  ignore_older: 1h
+  id: application-logs
+- name: Microsoft-Windows-Sysmon/Operational
+  processors:
+    - add_fields:
+      fields:
+        vendor: microsoft
+        product: sysmon

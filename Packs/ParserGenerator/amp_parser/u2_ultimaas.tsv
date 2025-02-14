@@ -1,0 +1,51 @@
+Field Name	Parse statement	Description	Sample value from Log
+multiplefields	regexcapture(_raw_log,"\<(?P<pid>\d+)\>(?P<timestamp>[A-z]{3}\s\d{1,2}\s\d{2}\:\d{2}\:\d{2})\s(?P<dest_host>\w+[^\s])\sCEF\:\d\|(?P<vendor_product>\w+[^\|])\|(?P<dvc_type>\w+[^\|])\|(?P<product_version>[^\|]+)\|(?P<AUDIT_ID>[^\|]+)\|(?P<ActivityType>[^\|]+)\|(?P<ActivityID>[^\|]+)\|"	
+pid	multiplefields -> pid	
+timestamp	multiplefields -> timestamp	
+dest_host	multiplefields -> dest_host	
+vendor_product	multiplefields -> vendor_product	
+dvc_type	multiplefields -> dvc_type	
+product_version	multiplefields -> product_version	
+AUDIT_ID	multiplefields -> AUDIT_ID	
+ActivityType	multiplefields -> ActivityType	
+ActivityID	multiplefields -> ActivityID	
+app	"U2"	
+authentication_method	"Password"	
+fileId	arrayindex(regextract(_raw_log, "fileId=([^\s]+)"),0)	
+log_type	arrayindex(split(_raw_log,"|"),4)	
+cefVersion	arrayindex(regextract(_raw_log, "CEF:(\d)"),0)	
+cefSeverity	arrayindex(split(_raw_log,"|"),6)	
+vendorsubtype	arrayindex(split(_raw_log,"|"),1)	
+productsubtype	arrayindex(split(_raw_log,"|"),2)	
+deviceVersion	arrayindex(split(_raw_log,"|"),3)	
+cefSignature	arrayindex(split(_raw_log,"|"),4)	
+cefName	arrayindex(split(_raw_log,"|"),5)	
+outcome	arrayindex(regextract(_raw_log, "outcome=([^\=]+)\s"),0)	
+sproc	arrayindex(regextract(_raw_log, "sproc=([^\=]+)\s"),0)	
+PGM	arrayindex(regextract(_raw_log, "PGM=([^\=]+)\s"),0)	
+reason	arrayindex(regextract(_raw_log, "reason=([^\=]+)\s"),0)	
+signature_id	arrayindex(regextract(reason,"(^[^\s]+)"), 0)	
+File_Server	arrayindex(regextract(_raw_log, "File_Server=([^\=]+)\s"),0)	
+src	arrayindex(regextract(_raw_log, "src=([^\=]+)\s"),0)	
+dest	dest_host	
+host	dest_host	
+src	coalesce(src, host)	
+suser=arrayindex(regextract(_raw_log,"suser	([^\s]+)"),0)	
+duser=arrayindex(regextract(_raw_log,"duser	([^\s]+)"),0)	
+RazLeeSecurityAudit_Port	arrayindex(regextract(_raw_log, "RazLeeSecurityAudit_Port=([^\=]+)\s"),0)	
+RazLeeSecurityAudit_User_profile_name	arrayindex(regextract(_raw_log, "RazLeeSecurityAudit_User_profile_name=([^\=]+)\s"),0)	
+RazLeeSecurityAudit_Device_name	arrayindex(regextract(_raw_log, "RazLeeSecurityAudit_Device_name=([^\=]+)\s"),0)	
+signature	ActivityType	
+authentication_service	if(suser contains "U2$", "Local", 1=1, "LDAP")	
+RazLeeSecurityFirewall_Object_type	arrayindex(regextract(_raw_log, "RazLeeSecurityFirewall_Object_type=([^\=]+)\s"),0)	
+RazLeeSecurityFirewall_Requested_function	arrayindex(regextract(_raw_log, "RazLeeSecurityFirewall_Requested_function=([^\=]+)\s"),0)	
+RazLeeSecurityFirewall_Allow	arrayindex(regextract(_raw_log, "RazLeeSecurityFirewall_Allow_\(1=Yes\)=([^\=]+)\s"),0)	
+RazLeeSecurityFirewall_Decision_level	arrayindex(regextract(_raw_log, "RazLeeSecurityFirewall_Decision_level=([^\=]+)\s"),0)	
+RazLeeSecurityFirewall_Auth_grnt_to_user	arrayindex(regextract(_raw_log, "RazLeeSecurityFirewall_Auth_grnt_to_user=([^\=]+)\s"),0)	
+RazLeeSecurityFirewall_Auth_grnt_for_obj	arrayindex(regextract(_raw_log, "RazLeeSecurityFirewall_Auth_grnt_for_obj=([^\=]+)\s"),0)	
+RazLeeSecurityFirewall_IFS_File_name	arrayindex(regextract(_raw_log, "RazLeeSecurityFirewall_IFS_File_name=([^\=]+)\s"),0)	
+RazLeeSecurityFirewall_Secured_with_SSL	arrayindex(regextract(_raw_log, "RazLeeSecurityFirewall_Secured_with_SSL=([^\=]+)\s"),0)	
+RazLeeSecurityFirewall_Server_Id	arrayindex(regextract(_raw_log, "RazLeeSecurityFirewall_Server_Id=([^\=]+)\s"),0)	
+RazLeeSecurityAudit_Status	arrayindex(regextract(_raw_log, "RazLeeSecurityAudit_Status=([^\s]+)\s"),0)	
+action	if(RazLeeSecurityAudit_Status="*DISABLED(*ENABLED)", "lockout", RazLeeSecurityAudit_Status="*ENABLED(*DISABLED)", "unlocked", RazLeeSecurityAudit_Password_expired="N(Y)", "unlocked", RazLeeSecurityAudit_Password_expired="Y(N)", "lockout", RazLeeSecurityAudit_Password_expired="Y", "lockout", RazLeeSecurityAudit_Password_changed="Y", "modified", ActivityType="*SIGNON_Sign-On_completed" AND outcome="success", "success", ActivityType="Invalid_password" AND outcome="failure", "failure", 1=1, "error"	
+src_ip	src	

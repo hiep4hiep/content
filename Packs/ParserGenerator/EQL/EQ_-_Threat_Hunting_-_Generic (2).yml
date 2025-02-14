@@ -1,0 +1,1992 @@
+id: 61a8808d-e45c-4b4c-8469-3c857f203905
+version: 76
+contentitemexportablefields:
+  contentitemfields:
+    packID: ""
+    packName: Common Playbooks
+    itemVersion: 2.6.38
+    fromServerVersion: 6.5.0
+    toServerVersion: ""
+    definitionid: ""
+    prevname: ""
+vcShouldKeepItemLegacyProdMachine: false
+name: EQ - Threat Hunting - Generic
+description: "This playbook enables threat hunting for IOCs in your enterprise. It
+  currently supports the following integrations: \n- Splunk\n- Qradar\n- Pan-os \n-
+  Cortex Data Lake \n- Autofocus\n- Microsoft 365 Defender"
+starttaskid: "0"
+tasks:
+  "0":
+    id: "0"
+    taskid: ed2a9382-3e4f-46fd-8e28-5042a7e39eac
+    type: start
+    task:
+      id: ed2a9382-3e4f-46fd-8e28-5042a7e39eac
+      version: -1
+      name: ""
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "47"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 4317.5,
+          "y": 50
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "4":
+    id: "4"
+    taskid: 9ea56e79-a2a1-42ad-8642-81355ba5fe05
+    type: title
+    task:
+      id: 9ea56e79-a2a1-42ad-8642-81355ba5fe05
+      version: -1
+      name: Done
+      type: title
+      iscommand: false
+      brand: ""
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 2455,
+          "y": 3895
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "5":
+    id: "5"
+    taskid: 0bb82bae-6f7a-4eb3-8fec-0d70236197b2
+    type: title
+    task:
+      id: 0bb82bae-6f7a-4eb3-8fec-0d70236197b2
+      version: -1
+      name: MDE
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "24"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 4317.5,
+          "y": 865
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "6":
+    id: "6"
+    taskid: 167e88dc-b36e-4bc4-8ca0-fc3ed3fa8154
+    type: title
+    task:
+      id: 167e88dc-b36e-4bc4-8ca0-fc3ed3fa8154
+      version: -1
+      name: Splunk
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "37"
+      - "38"
+      - "39"
+      - "40"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 2117.5,
+          "y": 3210
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "19":
+    id: "19"
+    taskid: 9db92d41-00b8-4194-8563-9f36b0ac70ff
+    type: title
+    task:
+      id: 9db92d41-00b8-4194-8563-9f36b0ac70ff
+      version: -1
+      name: IP
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "49"
+      - "48"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3765,
+          "y": 3560
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "20":
+    id: "20"
+    taskid: 39c491a4-3320-4611-8eb5-eaebfc32ef46
+    type: title
+    task:
+      id: 39c491a4-3320-4611-8eb5-eaebfc32ef46
+      version: -1
+      name: Domain
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "52"
+      - "51"
+      - "50"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 2670,
+          "y": 3560
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "21":
+    id: "21"
+    taskid: 9d005df2-ced0-4126-87fe-2625f3794766
+    type: title
+    task:
+      id: 9d005df2-ced0-4126-87fe-2625f3794766
+      version: -1
+      name: URL
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "53"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 1790,
+          "y": 3560
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "22":
+    id: "22"
+    taskid: 65fd4b28-c673-4de5-853e-51b780d4c326
+    type: title
+    task:
+      id: 65fd4b28-c673-4de5-853e-51b780d4c326
+      version: -1
+      name: File
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "57"
+      - "56"
+      - "55"
+      - "54"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 695,
+          "y": 3560
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "24":
+    id: "24"
+    taskid: f6fa2a9b-4c0b-40e4-80d3-52de5c32ed51
+    type: title
+    task:
+      id: f6fa2a9b-4c0b-40e4-80d3-52de5c32ed51
+      version: -1
+      name: IP
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "44"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 4317.5,
+          "y": 1010
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "26":
+    id: "26"
+    taskid: 2824012a-fa83-4797-81e1-e226a2fcb4a9
+    type: title
+    task:
+      id: 2824012a-fa83-4797-81e1-e226a2fcb4a9
+      version: -1
+      name: Domain
+      description: 'Allows you to run programmatic queries like in Microsoft Defender
+        ATP Portal (https://securitycenter.windows.com/hunting). Limitations: You
+        can only run a query on data from the last 30 days. The results include a
+        maximum of 10,000 rows. The number of executions is limited (up to 15 calls
+        per minute, 15 minutes of running time every hour and 4 hours of running time
+        a day).'
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "43"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 4317.5,
+          "y": 1680
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "28":
+    id: "28"
+    taskid: cfe5db3f-6ec7-4318-8282-b86e056fa4fa
+    type: title
+    task:
+      id: cfe5db3f-6ec7-4318-8282-b86e056fa4fa
+      version: -1
+      name: URL
+      description: 'Allows you to run programmatic queries like in Microsoft Defender
+        ATP Portal (https://securitycenter.windows.com/hunting). Limitations: You
+        can only run a query on data from the last 30 days. The results include a
+        maximum of 10,000 rows. The number of executions is limited (up to 15 calls
+        per minute, 15 minutes of running time every hour and 4 hours of running time
+        a day).'
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "42"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 4317.5,
+          "y": 2700
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "30":
+    id: "30"
+    taskid: a4745ce4-0e3b-4d2b-8ffd-b245708b47df
+    type: title
+    task:
+      id: a4745ce4-0e3b-4d2b-8ffd-b245708b47df
+      version: -1
+      name: File
+      description: 'Allows you to run programmatic queries like in Microsoft Defender
+        ATP Portal (https://securitycenter.windows.com/hunting). Limitations: You
+        can only run a query on data from the last 30 days. The results include a
+        maximum of 10,000 rows. The number of executions is limited (up to 15 calls
+        per minute, 15 minutes of running time every hour and 4 hours of running time
+        a day).'
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "41"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 4317.5,
+          "y": 3385
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "31":
+    id: "31"
+    taskid: d74594da-b3b4-41f4-8d54-7031944c5a09
+    type: title
+    task:
+      id: d74594da-b3b4-41f4-8d54-7031944c5a09
+      version: -1
+      name: Collate file hash
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "32"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 4317.5,
+          "y": 370
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "32":
+    id: "32"
+    taskid: d8502213-e854-4309-8535-df106140abed
+    type: regular
+    task:
+      id: d8502213-e854-4309-8535-df106140abed
+      version: -1
+      name: Hash List
+      description: |-
+        Set a value in context under the key you entered. If no value is entered, the script doesn't do anything.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: SetAndHandleEmpty
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "33"
+    scriptarguments:
+      append:
+        simple: "false"
+      key:
+        simple: OriginalHashList
+      value:
+        simple: ${inputs.MD5},${inputs.SHA256},${inputs.SHA1}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 4317.5,
+          "y": 515
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "33":
+    id: "33"
+    taskid: 6cb28d0b-4b6f-4657-89ba-da4837f57814
+    type: regular
+    task:
+      id: 6cb28d0b-4b6f-4657-89ba-da4837f57814
+      version: -1
+      name: Remove "" value in Hash List
+      description: |-
+        Set a value in context under the key you entered. If no value is entered, the script doesn't do anything.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: SetAndHandleEmpty
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "6"
+      - "5"
+      - "62"
+    scriptarguments:
+      key:
+        simple: CleanHashList
+      value:
+        complex:
+          root: OriginalHashList
+          transformers:
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith: {}
+              toReplace:
+                value:
+                  simple: '"",'
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith: {}
+              toReplace:
+                value:
+                  simple: ',""'
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 4317.5,
+          "y": 690
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "34":
+    id: "34"
+    taskid: 400647b6-3f6e-4166-82f8-8add4ab6e8f1
+    type: regular
+    task:
+      id: 400647b6-3f6e-4166-82f8-8add4ab6e8f1
+      version: -1
+      name: Wait
+      description: Sleep for X seconds.
+      scriptName: Sleep
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "26"
+    scriptarguments:
+      seconds:
+        simple: "120"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 4430,
+          "y": 1505
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "35":
+    id: "35"
+    taskid: 71b99fa4-1264-4212-84f0-e57464182dff
+    type: regular
+    task:
+      id: 71b99fa4-1264-4212-84f0-e57464182dff
+      version: -1
+      name: Wait
+      description: Sleep for X seconds.
+      scriptName: Sleep
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "65"
+    scriptarguments:
+      seconds:
+        simple: "120"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 4430,
+          "y": 2175
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "36":
+    id: "36"
+    taskid: d3b39cc8-2ff9-4228-8c55-ddd3a9999d1b
+    type: regular
+    task:
+      id: d3b39cc8-2ff9-4228-8c55-ddd3a9999d1b
+      version: -1
+      name: Wait
+      description: Sleep for X seconds.
+      scriptName: Sleep
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "30"
+    scriptarguments:
+      seconds:
+        simple: "120"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 4430,
+          "y": 3195
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "37":
+    id: "37"
+    taskid: 11740caf-2e97-425a-831f-87cd3aca0a22
+    type: condition
+    task:
+      id: 11740caf-2e97-425a-831f-87cd3aca0a22
+      version: -1
+      name: Hash available?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "4"
+      "yes":
+      - "22"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: notContainsString
+          left:
+            value:
+              simple: CleanHashList
+            iscontext: true
+          right:
+            value:
+              simple: '""'
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 367.5,
+          "y": 3370
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "38":
+    id: "38"
+    taskid: acb0e34c-0b16-4b55-81be-446cd296b8fc
+    type: condition
+    task:
+      id: acb0e34c-0b16-4b55-81be-446cd296b8fc
+      version: -1
+      name: URL Available?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "4"
+      "yes":
+      - "21"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isNotEqualString
+          left:
+            value:
+              simple: inputs.URL
+            iscontext: true
+          right:
+            value:
+              simple: '""'
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 1677.5,
+          "y": 3370
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "39":
+    id: "39"
+    taskid: 72728f86-51ae-4e7e-8f4f-b876c68b97c0
+    type: condition
+    task:
+      id: 72728f86-51ae-4e7e-8f4f-b876c68b97c0
+      version: -1
+      name: Domain Available?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "4"
+      "yes":
+      - "20"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isNotEqualString
+          left:
+            value:
+              simple: inputs.Domain
+            iscontext: true
+          right:
+            value:
+              simple: '""'
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 2342.5,
+          "y": 3370
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "40":
+    id: "40"
+    taskid: e81c6d5b-cb68-4286-8ac1-e963e55b4188
+    type: condition
+    task:
+      id: e81c6d5b-cb68-4286-8ac1-e963e55b4188
+      version: -1
+      name: IP Available?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "4"
+      "yes":
+      - "19"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isNotEqualString
+          left:
+            value:
+              simple: inputs.IPAddress
+            iscontext: true
+          right:
+            value:
+              simple: '""'
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3652.5,
+          "y": 3370
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "41":
+    id: "41"
+    taskid: 8f993567-edba-4235-8496-c1fe49d1dff4
+    type: condition
+    task:
+      id: 8f993567-edba-4235-8496-c1fe49d1dff4
+      version: -1
+      name: Hash available?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "4"
+      "yes":
+      - "61"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isNotEqualString
+          left:
+            value:
+              simple: CleanHashList
+            iscontext: true
+          right:
+            value:
+              simple: '""'
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 4317.5,
+          "y": 3545
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "42":
+    id: "42"
+    taskid: 2e498b29-6cc5-4ca9-80e7-7a3ea224aae2
+    type: condition
+    task:
+      id: 2e498b29-6cc5-4ca9-80e7-7a3ea224aae2
+      version: -1
+      name: URL Available?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "30"
+      "yes":
+      - "60"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isNotEqualString
+          left:
+            value:
+              simple: inputs.URL
+            iscontext: true
+          right:
+            value:
+              simple: '""'
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 4317.5,
+          "y": 2845
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "43":
+    id: "43"
+    taskid: 7fcdc524-2e97-407f-8a03-61765a724d10
+    type: condition
+    task:
+      id: 7fcdc524-2e97-407f-8a03-61765a724d10
+      version: -1
+      name: Domain Available?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "28"
+      "yes":
+      - "59"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isNotEqualString
+          left:
+            value:
+              simple: inputs.Domain
+            iscontext: true
+          right:
+            value:
+              simple: '""'
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 4317.5,
+          "y": 1825
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "44":
+    id: "44"
+    taskid: 115fb76c-53cc-406d-822b-4c4700d9b794
+    type: condition
+    task:
+      id: 115fb76c-53cc-406d-822b-4c4700d9b794
+      version: -1
+      name: IP Available?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "26"
+      "yes":
+      - "58"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isNotEqualString
+          left:
+            value:
+              simple: inputs.IPAddress
+            iscontext: true
+          right:
+            value:
+              simple: '""'
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 4317.5,
+          "y": 1155
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "47":
+    id: "47"
+    taskid: c6d6c441-9b6b-4fc0-83ca-556cb6b835d3
+    type: regular
+    task:
+      id: c6d6c441-9b6b-4fc0-83ca-556cb6b835d3
+      version: -1
+      name: Clean context
+      description: |-
+        Delete field from context.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: DeleteContext
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "31"
+    scriptarguments:
+      all:
+        simple: "yes"
+      subplaybook:
+        simple: "yes"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 4317.5,
+          "y": 195
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 2
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "48":
+    id: "48"
+    taskid: 37d62139-ba1d-4a08-8086-04479baf63fa
+    type: playbook
+    task:
+      id: 37d62139-ba1d-4a08-8086-04479baf63fa
+      version: -1
+      name: Splunk - IP Hunting
+      playbookName: EQ - Splunk Search and Return Table
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "4"
+    scriptarguments:
+      search_name:
+        simple: Splunk_IP_Hunting_Network_Traffic
+      splunk_query:
+        simple: "| tstats prestats=false summariesonly=true allow_old_summaries=true
+          count from datamodel=Network_Traffic \nwhere (All_Traffic.src_ip IN (${inputs.IPAddress}))
+          OR (All_Traffic.dest_ip IN (${inputs.IPAddress})) \nby _time span=1h, sourcetype,
+          host, All_Traffic.src_zone, All_Traffic.src_ip, All_Traffic.dest_zone, All_Traffic.dest_ip,
+          All_Traffic.dest_port, All_Traffic.app, All_Traffic.action\n|\n`drop_dm_object_name(All_Traffic)`"
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 0
+    view: |-
+      {
+        "position": {
+          "x": 3980,
+          "y": 3720
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "49":
+    id: "49"
+    taskid: 1529e6f3-e138-434a-8f3a-2b6e812c7432
+    type: playbook
+    task:
+      id: 1529e6f3-e138-434a-8f3a-2b6e812c7432
+      version: -1
+      name: Splunk - IP Hunting
+      playbookName: EQ - Splunk Search and Return Table
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "4"
+    scriptarguments:
+      search_name:
+        simple: Splunk_IP_Hunting_DNS
+      splunk_query:
+        simple: "| tstats prestats=false summariesonly=true allow_old_summaries=true
+          count from datamodel=Network_Resolution\nwhere (DNS.query IN (${inputs.IPAddress}))
+          OR (DNS.dest IN (${inputs.IPAddress})) OR (DNS.answer IN (${inputs.IPAddress}))
+          \ \nby _time span=1h, sourcetype, host, DNS.src, DNS.src_port, DNS.dest,
+          DNS.query, DNS.answer, DNS.record_type, DNS.message_type, DNS.reply_code\n|
+          `drop_dm_object_name(DNS)`"
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 0
+    view: |-
+      {
+        "position": {
+          "x": 3550,
+          "y": 3720
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "50":
+    id: "50"
+    taskid: 34baece1-259f-43a2-85dd-c0d2a0511682
+    type: playbook
+    task:
+      id: 34baece1-259f-43a2-85dd-c0d2a0511682
+      version: -1
+      name: Splunk - Domain Hunting
+      playbookName: EQ - Splunk Search and Return Table
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "4"
+    scriptarguments:
+      search_name:
+        simple: Splunk_Domain_Hunting_DNS
+      splunk_query:
+        simple: "| tstats prestats=false summariesonly=true allow_old_summaries=true
+          count from datamodel=Network_Resolution \nwhere (DNS.query IN (${inputs.Domain}))
+          OR (DNS.dest IN (${inputs.Domain})) OR (DNS.answer IN (${inputs.Domain}))
+          \  \nby _time span=1h, sourcetype, host, DNS.src, DNS.src_port, DNS.dest,
+          DNS.query, DNS.answer, DNS.record_type, DNS.message_type, DNS.reply_code
+          \n| `drop_dm_object_name(DNS)`"
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 0
+    view: |-
+      {
+        "position": {
+          "x": 3100,
+          "y": 3720
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "51":
+    id: "51"
+    taskid: c4c25b36-e5cc-44ec-8534-8ae8f12fc031
+    type: playbook
+    task:
+      id: c4c25b36-e5cc-44ec-8534-8ae8f12fc031
+      version: -1
+      name: Splunk - Domain Hunting
+      playbookName: EQ - Splunk Search and Return Table
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "4"
+    scriptarguments:
+      search_name:
+        simple: Splunk_Domain_Hunting_Email
+      splunk_query:
+        simple: "| tstats prestats=false summariesonly=true allow_old_summaries=true
+          count from datamodel=Email \nwhere (All_Email.src_user_domain IN (${inputs.Domain})
+          OR All_Email.recipient_domain IN (${inputs.Domain})) \nby _time span=1h,
+          sourcetype, host, All_Email.src, All_Email.dest, All_Email.src_user, All_Email.recipient,
+          All_Email.subject, All_Email.action \n| `drop_dm_object_name(All_Email)`"
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 0
+    view: |-
+      {
+        "position": {
+          "x": 2670,
+          "y": 3720
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "52":
+    id: "52"
+    taskid: a30bce89-940e-4415-8b37-482b4a418054
+    type: playbook
+    task:
+      id: a30bce89-940e-4415-8b37-482b4a418054
+      version: -1
+      name: Splunk - Domain Hunting
+      playbookName: EQ - Splunk Search and Return Table
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "4"
+    scriptarguments:
+      search_name:
+        simple: Splunk_Domain_Hunting_Web
+      splunk_query:
+        simple: "| tstats prestats=false summariesonly=true allow_old_summaries=true
+          count from datamodel=Web \nwhere (Web.url_domain IN (${inputs.Domain}))
+          \nby _time span=1h, sourcetype, host, Web.src, Web.user, Web.category, Web.site,
+          Web.url_domain, Web.url, Web.http_method, Web.http_referrer, Web.http_user_agent,
+          Web.action \n| `drop_dm_object_name(Web)`"
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 0
+    view: |-
+      {
+        "position": {
+          "x": 2240,
+          "y": 3720
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "53":
+    id: "53"
+    taskid: 9e67ab59-6491-41c9-8e8a-6d4252c676b8
+    type: playbook
+    task:
+      id: 9e67ab59-6491-41c9-8e8a-6d4252c676b8
+      version: -1
+      name: Splunk - URL Hunting
+      playbookName: EQ - Splunk Search and Return Table
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "4"
+    scriptarguments:
+      search_name:
+        simple: Splunk_URL_Hunting_Email
+      splunk_query:
+        simple: "| tstats prestats=false summariesonly=true allow_old_summaries=true
+          count from datamodel=Email.All_Email \nwhere (All_Email.url IN (${inputs.URL}))
+          \nby _time span=1h, sourcetype, All_Email.url \n| `drop_dm_object_name(All_Email)`"
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 0
+    view: |-
+      {
+        "position": {
+          "x": 1790,
+          "y": 3720
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "54":
+    id: "54"
+    taskid: 650126a9-b218-4b57-8d8e-370d282887ab
+    type: playbook
+    task:
+      id: 650126a9-b218-4b57-8d8e-370d282887ab
+      version: -1
+      name: Splunk - File Hunting
+      playbookName: EQ - Splunk Search and Return Table
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "4"
+    scriptarguments:
+      search_name:
+        simple: Splunk_File_Hunting_Malware
+      splunk_query:
+        simple: "| tstats prestats=false summariesonly=true allow_old_summaries=true
+          count from datamodel=Malware.Malware_Attacks \nwhere (Malware_Attacks.file_hash
+          IN (${CleanHashList})) \nby _time span=1h, sourcetype, Malware_Attacks.src,
+          Malware_Attacks.dest, Malware_Attacks.signature, Malware_Attacks.severity,
+          Malware_Attacks.category, Malware_Attacks.action, Malware_Attacks.file_hash,
+          Malware_Attacks.file_name \n| `drop_dm_object_name(Malware_Attacks)` "
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 0
+    view: |-
+      {
+        "position": {
+          "x": 1340,
+          "y": 3720
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "55":
+    id: "55"
+    taskid: 9e01af87-3c1d-4d22-8954-6bb070970327
+    type: playbook
+    task:
+      id: 9e01af87-3c1d-4d22-8954-6bb070970327
+      version: -1
+      name: Splunk - File Hunting
+      playbookName: EQ - Splunk Search and Return Table
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "4"
+    scriptarguments:
+      search_name:
+        simple: Splunk_File_Hunting_IDS
+      splunk_query:
+        simple: "| tstats prestats=false summariesonly=true allow_old_summaries=true
+          count from datamodel=Intrusion_Detection.IDS_Attacks \nwhere (IDS_Attacks.file_hash
+          IN (${CleanHashList})) \nby _time span=1h, IDS_Attacks.dvc, IDS_Attacks.src,
+          IDS_Attacks.dest, IDS_Attacks.signature, IDS_Attacks.ids_type, IDS_Attacks.category,
+          IDS_Attacks.severity, IDS_Attacks.action, IDS_Attacks.file_hash, IDS_Attacks.file_name
+          \n| `drop_dm_object_name(Intrusion_Detection)` "
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 0
+    view: |-
+      {
+        "position": {
+          "x": 910,
+          "y": 3720
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "56":
+    id: "56"
+    taskid: 67404234-d5c0-43a3-8679-441954c76345
+    type: playbook
+    task:
+      id: 67404234-d5c0-43a3-8679-441954c76345
+      version: -1
+      name: Splunk - File Hunting
+      playbookName: EQ - Splunk Search and Return Table
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "4"
+    scriptarguments:
+      search_name:
+        simple: Splunk_File_Hunting_Email
+      splunk_query:
+        simple: "| tstats prestats=false summariesonly=true allow_old_summaries=true
+          count from datamodel=Email.All_Email \nwhere (All_Email.file_hash IN (${CleanHashList}))
+          \nby _time span=1h, sourcetype, All_Email.src_user, All_Email.recipient,
+          All_Email.dest, All_Email.file_name, All_Email.file_hash \n| `drop_dm_object_name(All_Email)`"
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 0
+    view: |-
+      {
+        "position": {
+          "x": 480,
+          "y": 3720
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "57":
+    id: "57"
+    taskid: 1ac36803-7b0a-4ad6-8c22-a7083122959b
+    type: playbook
+    task:
+      id: 1ac36803-7b0a-4ad6-8c22-a7083122959b
+      version: -1
+      name: Splunk - File Hunting
+      playbookName: EQ - Splunk Search and Return Table
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "4"
+    scriptarguments:
+      search_name:
+        simple: Splunk_File_Hunting_Endpoint
+      splunk_query:
+        simple: "| tstats prestats=false summariesonly=true allow_old_summaries=true
+          count from datamodel=Endpoint.Filesystem \nwhere (Filesystem.file_hash IN
+          (${CleanHashList})) \nby _time span=1h, sourcetype, Filesystem.user, Filesystem.dest,
+          Filesystem.action, Filesystem.file_hash, Filesystem.file_name, Filesystem.file_size,
+          Filesystem.file_path \n| `drop_dm_object_name(Filesystem)`"
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 0
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 3720
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "58":
+    id: "58"
+    taskid: 5156f3c7-9ef7-4953-8a48-9cc220018e13
+    type: playbook
+    task:
+      id: 5156f3c7-9ef7-4953-8a48-9cc220018e13
+      version: -1
+      name: MDE - IP Hunting
+      playbookName: EQ - MDE Hunt and return table
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "34"
+    scriptarguments:
+      mde_query:
+        simple: "let ipAddresses = pack_array(${inputs.IPAddress}); \nsearch in (DeviceNetworkEvents,
+          \ DeviceLogonEvents, DeviceEvents) \nTimestamp > ago(24h) and (RemoteIP
+          has_any (ipAddresses) or LocalIP has_any (ipAddresses)) \n| summarize make_set($table),
+          make_set(DeviceName), make_set(RemotePort), make_set(LocalPort), make_set(ActionType),
+          make_set(InitiatingProcessFileName), make_set(RemoteUrl) by RemoteIP, LocalIP "
+      search_name:
+        simple: MDE_IP_Hunting
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 0
+    view: |-
+      {
+        "position": {
+          "x": 4430,
+          "y": 1330
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "59":
+    id: "59"
+    taskid: 4e1d41ab-5a6d-47d3-81c9-fa1ad5b5d17c
+    type: playbook
+    task:
+      id: 4e1d41ab-5a6d-47d3-81c9-fa1ad5b5d17c
+      version: -1
+      name: MDE - Domain Hunting
+      playbookName: EQ - MDE Hunt and return table
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "35"
+    scriptarguments:
+      mde_query:
+        simple: |-
+          let domains = pack_array(${inputs.Domain});
+          search in (DeviceEvents)
+          Timestamp > ago(30d)
+          | where ActionType == "DnsQueryResponse"
+          | extend AdditionalFields = parse_json(AdditionalFields)
+          | where AdditionalFields.DnsQueryString in~ (domains) or AdditionalFields.DnsQueryResult.Result in~ (domains)
+          | summarize EventCount = count() by bin(Timestamp, 1h), DeviceName, ActionType, tostring(AdditionalFields.DnsQueryString), tostring(AdditionalFields.DnsQueryResult)
+      search_name:
+        simple: MDE_Domain_Hunting_DNS
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 0
+    view: |-
+      {
+        "position": {
+          "x": 4430,
+          "y": 2000
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "60":
+    id: "60"
+    taskid: 0ca19a65-fcde-4515-824f-c636d21ad38b
+    type: playbook
+    task:
+      id: 0ca19a65-fcde-4515-824f-c636d21ad38b
+      version: -1
+      name: MDE - URL Hunting
+      playbookName: EQ - MDE Hunt and return table
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "36"
+    scriptarguments:
+      mde_query:
+        simple: "let urls = pack_array(${inputs.URL});  \nsearch in (DeviceEvents,
+          DeviceNetworkEvents, DeviceFileEvents)  \nTimestamp > ago(30d) and (  \nisnotempty(RemoteUrl)
+          or isnotempty(FileOriginUrl) or isnotempty(FileOriginReferrerUrl)  \n)  \n|
+          extend host = parse_url(RemoteUrl).Host  \n| extend FileOriginReferrerUrlHost
+          = tostring(parse_url(FileOriginReferrerUrl).Host)  \n| extend FileOriginUrlHost
+          = tostring(parse_url(FileOriginUrl).Host)  \n| where RemoteUrl has_any (urls)
+          or host has_any (urls) or FileOriginUrl has_any (urls) or FileOriginReferrerUrl
+          has_any (urls)  \n| summarize make_set(DeviceName) by  tostring(host), FileOriginUrlHost,
+          FileOriginReferrerUrlHost"
+      search_name:
+        simple: MDE_URL_Hunting
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 0
+    view: |-
+      {
+        "position": {
+          "x": 4430,
+          "y": 3020
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "61":
+    id: "61"
+    taskid: a1583221-f75a-47dd-8c3c-6a57718ec6ab
+    type: playbook
+    task:
+      id: a1583221-f75a-47dd-8c3c-6a57718ec6ab
+      version: -1
+      name: MDE - File Hunting
+      playbookName: EQ - MDE Hunt and return table
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "4"
+    scriptarguments:
+      mde_query:
+        simple: "let fileHashes = pack_array(${CleanHashList});  \nsearch in (DeviceEvents,
+          DeviceProcessEvents, DeviceFileEvents, AlertEvidence)   \nTimestamp > ago(30d)
+          and (SHA256 in~ (fileHashes) or MD5 in~ (fileHashes) or SHA1 in~ (fileHashes))
+          \ \n| summarize make_set(FileName), make_set(DeviceName), make_set($table)
+          by SHA1, MD5, SHA256"
+      search_name:
+        simple: MDE_File_Hunting
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 0
+    view: |-
+      {
+        "position": {
+          "x": 4430,
+          "y": 3720
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "62":
+    id: "62"
+    taskid: 93c8bbb1-b740-43df-87ec-1bcd4736a35c
+    type: title
+    task:
+      id: 93c8bbb1-b740-43df-87ec-1bcd4736a35c
+      version: -1
+      name: Carbon Black
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "64"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 4767.5,
+          "y": 3385
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "63":
+    id: "63"
+    taskid: d9bbcfb0-3930-4855-8a88-be04887c4252
+    type: playbook
+    task:
+      id: d9bbcfb0-3930-4855-8a88-be04887c4252
+      version: -1
+      name: EQ - Carbon Black Search
+      playbookName: EQ - Carbon Black Search
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "4"
+    scriptarguments:
+      hash:
+        simple: ${CleanHashList}
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 100
+    view: |-
+      {
+        "position": {
+          "x": 4880,
+          "y": 3720
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "64":
+    id: "64"
+    taskid: 359fa2f5-50de-4ed2-8f8b-f23417fed89d
+    type: condition
+    task:
+      id: 359fa2f5-50de-4ed2-8f8b-f23417fed89d
+      version: -1
+      name: Hash available?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "4"
+      "yes":
+      - "63"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isNotEqualString
+          left:
+            value:
+              simple: CleanHashList
+            iscontext: true
+          right:
+            value:
+              simple: '""'
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 4767.5,
+          "y": 3545
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "65":
+    id: "65"
+    taskid: ecf0475a-e81a-47e1-8edc-ce3b8e47a46e
+    type: playbook
+    task:
+      id: ecf0475a-e81a-47e1-8edc-ce3b8e47a46e
+      version: -1
+      name: MDE - Domain Hunting
+      playbookName: EQ - MDE Hunt and return table
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "66"
+    scriptarguments:
+      mde_query:
+        simple: "let domains = pack_array(${inputs.Domain});\nsearch in (DeviceNetworkEvents)
+          \nTimestamp > ago(30d)\n| where isnotempty(RemoteUrl) and RemoteUrl in~
+          (domains)\n| summarize EventCount = count() by bin(Timestamp, 1h), DeviceName,
+          ActionType, RemoteUrl, RemoteIP, RemotePort"
+      search_name:
+        simple: MDE_Domain_Hunting_Network_Traffic
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 0
+    view: |-
+      {
+        "position": {
+          "x": 4430,
+          "y": 2350
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "66":
+    id: "66"
+    taskid: 531b3888-bc97-49f0-8562-ed2537b69063
+    type: regular
+    task:
+      id: 531b3888-bc97-49f0-8562-ed2537b69063
+      version: -1
+      name: Wait
+      description: Sleep for X seconds.
+      scriptName: Sleep
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "28"
+    scriptarguments:
+      seconds:
+        simple: "120"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 4430,
+          "y": 2525
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: |-
+  {
+    "linkLabelsPosition": {
+      "37_22_yes": 0.68,
+      "43_59_yes": 0.9,
+      "44_58_yes": 0.9,
+      "64_63_yes": 0.9
+    },
+    "paper": {
+      "dimensions": {
+        "height": 3910,
+        "width": 5210,
+        "x": 50,
+        "y": 50
+      }
+    }
+  }
+inputs:
+- key: MD5
+  value: {}
+  required: false
+  description: The MD5 hash file or an array of hashes to search.
+  playbookInputQuery: null
+- key: SHA256
+  value: {}
+  required: false
+  description: The SHA256 hash file or an array of hashes to search.
+  playbookInputQuery: null
+- key: SHA1
+  value: {}
+  required: false
+  description: The SHA1 hash file or an array of hashes to search.
+  playbookInputQuery: null
+- key: IPAddress
+  value: {}
+  required: false
+  description: |
+    The source or destination IP address to search. Can be a single address or an array of list of addresses.
+  playbookInputQuery: null
+- key: URL
+  value: {}
+  required: false
+  description: URL to search. Can be a single domain or URL or an array of domains
+    or URLs to search. By default, the LIKE clause is used.
+  playbookInputQuery: null
+- key: Domain
+  value: {}
+  required: false
+  description: Domain to search. Can be a single domain or URL or an array of domains
+    or URLs to search. By default, the LIKE clause is used.
+  playbookInputQuery: null
+- key: InternalRange
+  value:
+    complex:
+      root: lists
+      accessor: PrivateIPs
+      transformers:
+      - operator: RegexExtractAll
+        args:
+          error_if_no_match: {}
+          ignore_case: {}
+          multi_line: {}
+          period_matches_newline: {}
+          regex:
+            value:
+              simple: (\b(?:\d{1,3}\.){3}\d{1,3}\b/\d{1,2})
+          unpack_matches: {}
+      - operator: join
+        args:
+          separator:
+            value:
+              simple: ','
+  required: false
+  description: 'A comma-separated list of internal IP ranges to check IP addresses
+    against. The list should be provided in CIDR notation. For example, a list of
+    ranges would be: "172.16.0.0/12,10.0.0.0/8,192.168.0.0/16" (without quotes).'
+  playbookInputQuery: null
+- key: InternalDomainName
+  value: {}
+  required: false
+  description: The organization's internal domain name. This is provided for the script
+    IsInternalHostName that checks if the detected hostnames are internal or external,
+    if the hosts contain the internal domains suffix. For example, paloaltonetworks.com.
+    If there is more than one domain, use the | character to separate values such
+    as (paloaltonetworks.com|test.com).
+  playbookInputQuery: null
+- key: InternalHostRegex
+  value: {}
+  required: false
+  description: Provided for the script IsInternalHostName that checks if the detected
+    host names are internal or external, if the hosts match the organization's naming
+    convention. For example, the host testpc1 will have the following regex \w{6}\d{1}
+  playbookInputQuery: null
+- key: SplunkEarliestTime
+  value:
+    simple: -7d@d
+  required: false
+  description: The earliest time to search in Splunk.
+  playbookInputQuery: null
+- key: SplunkLatestTime
+  value:
+    simple: now
+  required: false
+  description: The latest time to search in Splunk.
+  playbookInputQuery: null
+inputSections:
+- inputs:
+  - MD5
+  - SHA256
+  - SHA1
+  - IPAddress
+  - URL
+  - Domain
+  - InternalRange
+  - InternalDomainName
+  - InternalHostRegex
+  - SplunkEarliestTime
+  - SplunkLatestTime
+  name: General (Inputs group)
+  description: Generic group for inputs
+outputSections:
+- outputs:
+  - Splunk.Result
+  - MicrosoftATP.Hunt.Result
+  - HTMLTable
+  name: General (Outputs group)
+  description: Generic group for outputs
+outputs:
+- contextPath: Splunk.Result
+  description: The results of the Splunk search. The results are a JSON array, in
+    which each item is a Splunk event.
+- contextPath: MicrosoftATP.Hunt.Result
+  description: The query results.
+- contextPath: HTMLTable
+  description: The HTML table we created from the array
+sourceplaybookid: Threat Hunting - Generic
+dirtyInputs: true

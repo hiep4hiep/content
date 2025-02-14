@@ -1,0 +1,54 @@
+filter _raw_log not contains "correlationID"
+| alter
+    log_timestamp = parse_timestamp("%Y-%m-%d %H:%M:%S",arrayindex(regextract(_raw_log,"(\d{4}-\d{2}-\d{2} \d{2}\:\d{2}\:\d{2}),\d{3}\s"),0))
+| alter
+    _time = if(log_timestamp != null, log_timestamp, _insert_time)
+| alter
+    log_level = arrayindex(regextract(_raw_log,"\d{4}-\d{2}-\d{2} \d{2}\:\d{2}\:\d{2},\d{3}\s(\w+)"),0),
+    WebContainer = arrayindex(regextract(_raw_log,"WebContainer : (\d+)"),0),
+    api_endpoint = arrayindex(regextract(_raw_log,"\[POST\]([^\n]+)"),0),
+    remote_ip = arrayindex(regextract(_raw_log,"\[Remote IP\]\[(.+)\]"),0),
+    x_request_id = arrayindex(regextract(_raw_log,"\[X-Request-Id\]\[(.+)\]"),0),
+    auth_url = arrayindex(regextract(_raw_log,"https://urldefense.proofpoint.com/v2/url?u=https-3A__.-2B-2522-29-2C0&d=DwIGAg&c=V9IgWpI5PvzTw83UyHGVSoW3Uc1MFWe5J8PTfkrzVSo&r=UhkEJepeo4gkjuxeXj-uRNDJ4tRRjUU6MfmsxqM_PvM&m=HNA0rTekHtcJFfz7Gguu1W9n9a5Ltyd5mv8F4Ylltxz5qU3J7eRoZq2vHj9FLWA5&s=G7IA8fYXejU_6_3wbMjcwjQVSEIACmaG6U6sq5ZDMjE&e= ),
+    message = arraystring(regextract(_raw_log,"\[WebContainer : \d+\] ([^\]\[\n\:]+)\n")," > ")
+| alter
+  signature = arrayindex(regextract(message,"(\w+.*?)\..*?status code received from Bank"),0),
+  status_code = arrayindex(regextract(message,"status code received from Bank (\d{3}.*?)"),0),
+  action = if(signature contains "Authentication success with Bank", "success", signature contains "Authentication with Bank not successful", "failure", message contains "change operation successful", "modified",  message contains "Error happened in change password", "modified",""),
+  status = if(message contains "change operation successful", "success", message contains "Error happened in change password", "failure","")
+
+;
+filter _raw_log contains "correlationID"
+| alter json_data = arrayindex(regextract(_raw_log,"({.+})"),0)
+| alter message = json_data -> message,
+  message_json_data = arrayindex(regextract(message,"({.+})"),0)
+| alter
+exception = json_data -> exception,
+status = json_data -> status,
+  c2app = json_data -> c2app,
+  c2subapp = json_data -> c2subapp,
+  c2env = json_data -> c2env,
+  c2ttl = json_data -> c2ttl,
+  c2sec = json_data -> c2sec,
+  _time = if(parse_timestamp("%Y-%m-%dT%H:%M:%S",json_data-> ["@timestamp"],"Australia/Sydney")!= null,parse_timestamp("%Y-%m-%dT%H:%M:%S",json_data-> ["@timestamp"],"Australia/Sydney")!= null,_insert_time),
+  client_addr = json_data -> client_addr,
+  source_ip = arrayindex(split(json_data -> ["X-Forwarded-For"],","),0),
+  iv_user = "iv-user",
+  method = json_data -> method,
+  host = json_data -> host,
+  request = json_data -> request,
+  junction = json_data -> junction,
+  response_code = to_integer(json_data -> response_code),
+  sent_byte = to_integer(json_data -> sent_bytes),
+  response_time_s = to_integer(json_data -> response_time_s),
+  response_time_m = to_integer(json_data -> response_time_m),
+   x_request_id = arrayindex(regextract(_raw_log,"\[X-Request-Id\]\[(.+)\]"),0),
+  message = arraystring(regextract(_raw_log,"\[WebContainer : \d+\] ([^\]\[\n\:]+)\n")," > "),
+  threat_name = json_data -> threat_name,
+  auth_url = arrayindex(regextract(_raw_log,"https://urldefense.proofpoint.com/v2/url?u=https-3A__.-2B-2522-29-2C0&d=DwIGAg&c=V9IgWpI5PvzTw83UyHGVSoW3Uc1MFWe5J8PTfkrzVSo&r=UhkEJepeo4gkjuxeXj-uRNDJ4tRRjUU6MfmsxqM_PvM&m=HNA0rTekHtcJFfz7Gguu1W9n9a5Ltyd5mv8F4Ylltxz5qU3J7eRoZq2vHj9FLWA5&s=G7IA8fYXejU_6_3wbMjcwjQVSEIACmaG6U6sq5ZDMjE&e= ),
+  remote_ip = arrayindex(regextract(_raw_log,"\[Remote IP\]\[(.+)\]"),0)
+| alter 
+  message_json_data = arrayindex(regextract(message,"({.+})"),0),
+  WebContainer = arrayindex(regextract(thread_name,"WebContainer :\s+(\d+.*?)"),0)
+| alter
+  signature = message_json_data -> status;

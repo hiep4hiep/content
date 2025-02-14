@@ -1,0 +1,15 @@
+filter _raw_log contains "Client"
+| alter log_timestamp = parse_timestamp("%Y-%m-%d %H:%M:%S",arrayindex(regextract(_raw_log,"(\d{4}-\d{2}-\d{2} \d{2}\:\d{2}\:\d{2}),\d{3}\s\|"),0)) 
+| alter 
+    _time = if(log_timestamp != null, log_timestamp, _insert_time),
+    client_ip = arrayindex(regextract(_raw_log,"Client-IP: ([^|]+)"),0),
+    x_forwarded_host = arrayindex(regextract(_raw_log,"X-Forwarded-Host: ([^|]+)"),0),
+    web_container = arrayindex(regextract(_raw_log,"WebContainer : (\d+)"),0),
+    auditor = arrayindex(split(_raw_log,"||"),6),
+    user_id = arrayindex(regextract(_raw_log,"UserId: \[(.*?)\]"),0),
+    x_request_id = arrayindex(regextract(_raw_log,"X-Request-ID: ([^|]+)"),0),
+    event_type = arrayindex(regextract(_raw_log,"Event: ([^,]+)"),0),
+    reason = arrayindex(regextract(_raw_log,"Reason:([^,]+)"),0),
+    scv_id = arrayindex(regextract(_raw_log,"Scvid: (\d+)"),0),
+    ldap_object = arrayindex(regextract(_raw_log,"Ldap Object: (\w+{.+})"),0)
+;

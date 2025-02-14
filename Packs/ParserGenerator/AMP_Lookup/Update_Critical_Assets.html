@@ -1,0 +1,19 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sample HTML Document</title>
+</head>
+<body>
+<table>
+        
+</table>
+
+<h3>AMP - Update Critical Assets Lookup Table</h3><h4>Task 0:</h4><br><strong>- Type: start</strong><br><strong>- Name:</strong> <br><strong>- Integration Command/Builtin Script:</strong> False<br><strong>- Id:</strong> 0<br><strong>- Type:</strong> start<br><strong>- Note:</strong> False<br><strong>- Quiet Mode:</strong> On<br><h4>Task 1:</h4><br><strong>- Type: regular</strong><br><strong>- Name:</strong> Download the Critical Asset CSV<br><strong>- Description:</strong> Generate critical assets csv<br><strong>- Script:</strong> |||snow-generate-critical-assets<br><strong>- Type:</strong> regular<br><strong>- Integration Command/Builtin Script:</strong> True<br><strong>- Script Arguments:</strong><br>&nbsp;&nbsp;retry-count: 3<br><strong>- Id:</strong> 1<br><strong>- Type:</strong> regular<br><strong>- Note:</strong> False<br><strong>- Quiet Mode:</strong> On<br><h4>Task 2:</h4><br><strong>- Type: regular</strong><br><strong>- Name:</strong> Convert CSV to JSON<br><strong>- Description:</strong> This script will parse a CSV file and place the unique IPs, Domains and Hashes into the context.<br><strong>- Scriptname:</strong> ParseCSV<br><strong>- Type:</strong> regular<br><strong>- Integration Command/Builtin Script:</strong> False<br><strong>- Script Arguments:</strong><br>&nbsp;&nbsp;entryID: ${lastCompletedTaskEntries}<br><strong>- Id:</strong> 2<br><strong>- Type:</strong> regular<br><strong>- Note:</strong> False<br><strong>- Quiet Mode:</strong> On<br><h4>Task 6:</h4><br><strong>- Type: regular</strong><br><strong>- Name:</strong> Send to XSIAM<br><strong>- Scriptname:</strong> UpdateLookUpTable<br><strong>- Type:</strong> regular<br><strong>- Integration Command/Builtin Script:</strong> False<br><strong>- Script Arguments:</strong><br>&nbsp;&nbsp;current_data: ${Current}<br>&nbsp;&nbsp;data: ${ParseCSV.ParsedCSV}<br><strong>- Id:</strong> 6<br><strong>- Type:</strong> regular<br><strong>- Continueonerror:</strong> True<br><strong>- Note:</strong> False<br><strong>- Quiet Mode:</strong> On<br><h4>Task 7:</h4><br><strong>- Type: regular</strong><br><strong>- Name:</strong> Close<br><strong>- Description:</strong> commands.local.cmd.close.inv<br><strong>- Script:</strong> Builtin|||closeInvestigation<br><strong>- Type:</strong> regular<br><strong>- Integration Command/Builtin Script:</strong> True<br><strong>- Id:</strong> 7<br><strong>- Type:</strong> regular<br><strong>- Note:</strong> False<br><strong>- Quiet Mode:</strong> On<br><h4>Task 8:</h4><br><strong>- Type: regular</strong><br><strong>- Name:</strong> Get Current Lookup content<br><strong>- Description:</strong> send HTTP POST request.<br><strong>- Script:</strong> |||core-api-post<br><strong>- Type:</strong> regular<br><strong>- Integration Command/Builtin Script:</strong> True<br><strong>- Script Arguments:</strong><br>&nbsp;&nbsp;body: {
+    "request": {
+        "limit": 1000,
+        "dataset_name": "critical_hosts_lookup"
+    }
+}<br>&nbsp;&nbsp;extend-context: Current=response.reply.data<br>&nbsp;&nbsp;uri: /public_api/v1/xql/lookups/get_data<br><strong>- Id:</strong> 8<br><strong>- Type:</strong> regular<br><strong>- Note:</strong> False<br><strong>- Quiet Mode:</strong> On<br></body></html>

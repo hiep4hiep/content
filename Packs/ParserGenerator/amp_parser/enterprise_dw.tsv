@@ -1,0 +1,5 @@
+Field Name	Parse statement	Description	Sample value from Log
+_time	if(EXTENDED_TIMESTAMP!=null, EXTENDED_TIMESTAMP , _insert_time )	
+original_timestamp	EXTENDED_TIMESTAMP,	
+PROTOCOL	arrayindex(regextract(COMMENT_TEXT, "PROTOCOL=(\w+)"), 0)	
+PORT	to_number(arrayindex(regextract(COMMENT_TEXT, "PORT=(\d+)"), 0))	

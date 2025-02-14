@@ -1,0 +1,360 @@
+id: 9b27fa0c-8d9f-4955-86cb-9ee3b010e95a
+version: 12
+vcShouldKeepItemLegacyProdMachine: false
+name: OTML - Successful Authentication From Low Confidence ASN
+tags:
+- prod
+starttaskid: "0"
+tasks:
+  "0":
+    id: "0"
+    taskid: 1b42d53d-d335-4b8a-8240-fb31d9b53054
+    type: start
+    task:
+      id: 1b42d53d-d335-4b8a-8240-fb31d9b53054
+      version: -1
+      name: ""
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "1"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 450,
+          "y": 50
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "1":
+    id: "1"
+    taskid: 353e44e9-788f-41ba-80e5-6676122b7ee1
+    type: regular
+    task:
+      id: 353e44e9-788f-41ba-80e5-6676122b7ee1
+      version: -1
+      name: Enrich IP address reputation
+      description: |-
+        Searches Cortex XSIAM Indicators.
+
+        Search for XSOAR Indicators and returns the id, indicator_type, value, and score/verdict.
+
+        You can add additional fields from the indicators using the add_field_to_context argument.
+      scriptName: SearchIndicator
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "2"
+    scriptarguments:
+      query:
+        simple: value:${alert.localip}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 450,
+          "y": 190
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "2":
+    id: "2"
+    taskid: f507e9a7-a6e9-4356-80f2-b2cc96154483
+    type: regular
+    task:
+      id: f507e9a7-a6e9-4356-80f2-b2cc96154483
+      version: -1
+      name: Check with Spur
+      description: Enrich indicators using the Spur Context API.
+      script: '|||spur-context-api-enrich'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "3"
+    scriptarguments:
+      ip:
+        simple: ${alert.localip}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 450,
+          "y": 350
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "3":
+    id: "3"
+    taskid: aa52e2ed-833e-4710-8c63-2913f1d17659
+    type: condition
+    task:
+      id: aa52e2ed-833e-4710-8c63-2913f1d17659
+      version: -1
+      name: Is IP benign and Global Protect
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "5"
+      "yes":
+      - "8"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: containsGeneral
+          left:
+            value:
+              simple: SpurContextAPI.Context.infrastructure
+            iscontext: true
+          right:
+            value:
+              simple: Global Protect
+      - - operator: lessThan
+          left:
+            value:
+              complex:
+                root: DBotScore
+                filters:
+                - - operator: isEqualString
+                    left:
+                      value:
+                        simple: DBotScore.Indicator
+                      iscontext: true
+                    right:
+                      value:
+                        simple: alert.localip
+                      iscontext: true
+                accessor: Score
+            iscontext: true
+          right:
+            value:
+              simple: "2"
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 450,
+          "y": 510
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "4":
+    id: "4"
+    taskid: 0cadbb98-078c-42a2-8732-e3f2ad22ad29
+    type: regular
+    task:
+      id: 0cadbb98-078c-42a2-8732-e3f2ad22ad29
+      version: -1
+      name: Close
+      description: commands.local.cmd.close.inv
+      script: Builtin|||closeInvestigation
+      type: regular
+      iscommand: true
+      brand: Builtin
+    scriptarguments:
+      closeReason:
+        simple: False Positive
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 920,
+          "y": 1055
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "5":
+    id: "5"
+    taskid: 87cb44f4-31d5-403e-8c2a-cface0bea8d1
+    type: condition
+    task:
+      id: 87cb44f4-31d5-403e-8c2a-cface0bea8d1
+      version: -1
+      name: Pending Analyst review
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      Close - False Positive:
+      - "8"
+      True Positive:
+      - "6"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 140,
+          "y": 710
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    message:
+      to: null
+      subject: null
+      body:
+        simple: What do you want to do with this alert?
+      methods: []
+      format: ""
+      bcc: null
+      cc: null
+      timings:
+        retriescount: 2
+        retriesinterval: 360
+        completeafterreplies: 1
+        completeafterv2: true
+        completeaftersla: false
+      replyOptions:
+      - Close - False Positive
+      - True Positive
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "6":
+    id: "6"
+    taskid: 7ffba854-b205-46b2-8982-762a880af38e
+    type: title
+    task:
+      id: 7ffba854-b205-46b2-8982-762a880af38e
+      version: -1
+      name: Raise to the customer
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "9"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 30,
+          "y": 910
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "8":
+    id: "8"
+    taskid: 8fabe328-cb04-464f-8791-3020bba6a19c
+    type: playbook
+    task:
+      id: 8fabe328-cb04-464f-8791-3020bba6a19c
+      version: -1
+      name: OTML - Close Jira Ticket
+      playbookName: OTML - Close Jira Ticket
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "4"
+    separatecontext: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 920,
+          "y": 890
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "9":
+    id: "9"
+    taskid: 08b7d16d-d183-440f-8eb7-475d7e872032
+    type: regular
+    task:
+      id: 08b7d16d-d183-440f-8eb7-475d7e872032
+      version: -1
+      name: Wait for confirmation
+      type: regular
+      iscommand: false
+      brand: ""
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 30,
+          "y": 1040
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: |-
+  {
+    "linkLabelsPosition": {},
+    "paper": {
+      "dimensions": {
+        "height": 1100,
+        "width": 1270,
+        "x": 30,
+        "y": 50
+      }
+    }
+  }
+inputs: []
+outputs: []
+quiet: true

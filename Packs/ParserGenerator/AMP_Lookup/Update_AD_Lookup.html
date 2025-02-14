@@ -1,0 +1,25 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sample HTML Document</title>
+</head>
+<body>
+<table>
+        
+</table>
+
+<h3>AMP - Update AD Lookup</h3><h4>Task 0:</h4><br><strong>- Type: start</strong><br><strong>- Name:</strong> <br><strong>- Integration Command/Builtin Script:</strong> False<br><strong>- Id:</strong> 0<br><strong>- Type:</strong> start<br><strong>- Note:</strong> False<br><strong>- Quiet Mode:</strong> On<br><h4>Task 1:</h4><br><strong>- Type: regular</strong><br><strong>- Name:</strong> Run AD Search<br><strong>- Description:</strong> Runs Active Directory queries.<br><strong>- Script:</strong> |||ad-search<br><strong>- Type:</strong> regular<br><strong>- Integration Command/Builtin Script:</strong> True<br><strong>- Script Arguments:</strong><br>&nbsp;&nbsp;attributes: desktopProfile,sAMAccountName<br>&nbsp;&nbsp;filter: (&(desktopProfile=high_privileged_ad_group))<br>&nbsp;&nbsp;size-limit: 400<br><strong>- Id:</strong> 1<br><strong>- Type:</strong> regular<br><strong>- Note:</strong> False<br><strong>- Quiet Mode:</strong> On<br><h4>Task 2:</h4><br><strong>- Type: regular</strong><br><strong>- Name:</strong> Convert JSON to String<br><strong>- Description:</strong> Dumps a json from context key input, and returns a json object string result<br><strong>- Scriptname:</strong> DumpJSON<br><strong>- Type:</strong> regular<br><strong>- Integration Command/Builtin Script:</strong> False<br><strong>- Script Arguments:</strong><br>&nbsp;&nbsp;key: ActiveDirectory.Search<br><strong>- Id:</strong> 2<br><strong>- Type:</strong> regular<br><strong>- Note:</strong> False<br><strong>- Quiet Mode:</strong> On<br><h4>Task 3:</h4><br><strong>- Type: regular</strong><br><strong>- Name:</strong> Format search string<br><strong>- Description:</strong> Set a value in context under the key you entered. If no value is entered, the script doesn't do anything.
+
+This automation runs using the default Limited User role, unless you explicitly change the permissions.
+For more information, see the section about permissions here:
+https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations<br><strong>- Scriptname:</strong> SetAndHandleEmpty<br><strong>- Type:</strong> regular<br><strong>- Integration Command/Builtin Script:</strong> False<br><strong>- Script Arguments:</strong><br>&nbsp;&nbsp;key: SearchString<br>&nbsp;&nbsp;value: {'complex': {'root': 'JsonStr', 'transformers': [{'operator': 'replace', 'args': {'limit': {}, 'replaceWith': {}, 'toReplace': {'value': {'simple': '['}}}}, {'operator': 'replace', 'args': {'limit': {}, 'replaceWith': {}, 'toReplace': {'value': {'simple': ']'}}}}, {'operator': 'replace', 'args': {'limit': {}, 'replaceWith': {'value': {'simple': '\\"'}}, 'toReplace': {'value': {'simple': '"'}}}}]}}<br><strong>- Id:</strong> 3<br><strong>- Type:</strong> regular<br><strong>- Note:</strong> False<br><strong>- Quiet Mode:</strong> On<br><h4>Task 4:</h4><br><strong>- Type: regular</strong><br><strong>- Name:</strong> Run query<br><strong>- Description:</strong> Execute an XQL query and retrieve results of an executed XQL query API. The command will be executed every 10 seconds until results are retrieved or until a timeout error is raised.
+When more than 1000 results are retrieved, the command will return a compressed gzipped JSON format file,
+unless the argument 'parse_result_file_to_context' is set to true and then the results will be extracted to the context.<br><strong>- Script:</strong> |||xdr-xql-generic-query<br><strong>- Type:</strong> regular<br><strong>- Integration Command/Builtin Script:</strong> True<br><strong>- Script Arguments:</strong><br>&nbsp;&nbsp;query: dataset = ad_high_desktop_profile | limit 1 | alter test_key = arraycreate(${query_string})
+| fields test_key
+| arrayexpand test_key
+| alter desktopProfile = test_key -> desktopProfile, sAMAccountName = test_key -> sAMAccountName
+| fields desktopProfile,sAMAccountName
+| target type = lookup append = false ad_high_desktop_profile<br>&nbsp;&nbsp;query_name: AD Update<br>&nbsp;&nbsp;retry-count: 2<br>&nbsp;&nbsp;retry-interval: 120<br><strong>- Id:</strong> 4<br><strong>- Type:</strong> regular<br><strong>- Continueonerror:</strong> True<br><strong>- Note:</strong> False<br><strong>- Quiet Mode:</strong> On<br><h4>Task 7:</h4><br><strong>- Type: regular</strong><br><strong>- Name:</strong> Prepare Search String<br><strong>- Scriptname:</strong> PrepareThreatIntelSearchString<br><strong>- Type:</strong> regular<br><strong>- Integration Command/Builtin Script:</strong> False<br><strong>- Script Arguments:</strong><br>&nbsp;&nbsp;search_string_input: ${SearchString}<br><strong>- Id:</strong> 7<br><strong>- Type:</strong> regular<br><strong>- Note:</strong> False<br><strong>- Quiet Mode:</strong> On<br></body></html>

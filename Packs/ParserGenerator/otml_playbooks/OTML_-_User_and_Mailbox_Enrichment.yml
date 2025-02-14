@@ -1,0 +1,480 @@
+id: 0e4ca7b4-b756-433f-89eb-8c7ae4075aba
+version: 16
+vcShouldKeepItemLegacyProdMachine: false
+name: OTML - User and Mailbox Enrichment
+tags:
+- prod
+starttaskid: "0"
+tasks:
+  "0":
+    id: "0"
+    taskid: 512e471f-886c-4401-8732-2c8befe40736
+    type: start
+    task:
+      id: 512e471f-886c-4401-8732-2c8befe40736
+      version: -1
+      name: ""
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "11"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 480,
+          "y": -100
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "1":
+    id: "1"
+    taskid: d3cd4f12-d7c8-42d5-8681-91f64845a3b2
+    type: regular
+    task:
+      id: d3cd4f12-d7c8-42d5-8681-91f64845a3b2
+      version: -1
+      name: Search On-Prem Mailbox
+      description: Retrieves a single folder.
+      script: EWS v2|||ews-get-folder
+      type: regular
+      iscommand: true
+      brand: EWS v2
+    nexttasks:
+      '#error#':
+      - "4"
+      '#none#':
+      - "2"
+    scriptarguments:
+      target-mailbox:
+        simple: ${inputs.email_address}
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: errorPath
+    view: |-
+      {
+        "position": {
+          "x": 480,
+          "y": 195
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "2":
+    id: "2"
+    taskid: 38ef83e0-2d82-40b8-8b98-c8833cf4b58f
+    type: condition
+    task:
+      id: 38ef83e0-2d82-40b8-8b98-c8833cf4b58f
+      version: -1
+      name: Has result?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "4"
+      "yes":
+      - "3"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isNotEmpty
+          left:
+            value:
+              simple: EWS.Folders.id
+            iscontext: true
+          right:
+            value: {}
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 807.5,
+          "y": 370
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "3":
+    id: "3"
+    taskid: a17b882d-f2ab-4e7c-8f96-86d9b04e23f8
+    type: regular
+    task:
+      id: a17b882d-f2ab-4e7c-8f96-86d9b04e23f8
+      version: -1
+      name: Set Mailbox location to On prem
+      description: |-
+        Set a value in context under the key you entered. If no value is entered, the script doesn't do anything.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: SetAndHandleEmpty
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "6"
+    scriptarguments:
+      key:
+        simple: mailbox_location
+      value:
+        simple: OnPrem
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 817.5,
+          "y": 545
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "4":
+    id: "4"
+    taskid: b2baf478-dd2d-4507-8d48-a6106aa8384d
+    type: regular
+    task:
+      id: b2baf478-dd2d-4507-8d48-a6106aa8384d
+      version: -1
+      name: Search O365 Mailbox
+      description: Retrieves a single folder.
+      script: EWSO365|||ews-get-folder
+      type: regular
+      iscommand: true
+      brand: EWSO365
+    nexttasks:
+      '#error#':
+      - "10"
+      '#none#':
+      - "8"
+    scriptarguments:
+      target-mailbox:
+        simple: ${inputs.email_address}
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: errorPath
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 545
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "5":
+    id: "5"
+    taskid: a2ee8dce-705b-46e2-821b-f161b167cf79
+    type: regular
+    task:
+      id: a2ee8dce-705b-46e2-821b-f161b167cf79
+      version: -1
+      name: Set Mailbox location to cloud
+      description: |-
+        Set a value in context under the key you entered. If no value is entered, the script doesn't do anything.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: SetAndHandleEmpty
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "7"
+    scriptarguments:
+      key:
+        simple: mailbox_location
+      value:
+        simple: Cloud
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 895
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "6":
+    id: "6"
+    taskid: 06c7226b-c7f1-4b3d-8b4e-cce354426b8c
+    type: regular
+    task:
+      id: 06c7226b-c7f1-4b3d-8b4e-cce354426b8c
+      version: -1
+      name: Get On-Prem AD User information
+      description: Retrieves detailed information about a user account. The user can
+        be specified by name, email address, or as an Active Directory Distinguished
+        Name (DN). If no filter is specified, all users are returned.
+      script: '|||ad-get-user'
+      type: regular
+      iscommand: true
+      brand: ""
+    scriptarguments:
+      email:
+        simple: ${inputs.email_address}
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 817.5,
+          "y": 720
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "7":
+    id: "7"
+    taskid: 22a6236d-3e71-4670-878a-0aad3e4375ae
+    type: regular
+    task:
+      id: 22a6236d-3e71-4670-878a-0aad3e4375ae
+      version: -1
+      name: Get Entra ID User information
+      description: Retrieves detailed information about a user account. The user can
+        be specified by name, email address, or as an Active Directory Distinguished
+        Name (DN). If no filter is specified, all users are returned.
+      script: '|||ad-get-user'
+      type: regular
+      iscommand: true
+      brand: ""
+    scriptarguments:
+      email:
+        simple: ${inputs.email_address}
+      execution-timeout:
+        simple: "30"
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 1070
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "8":
+    id: "8"
+    taskid: 7df35f94-d260-43af-8fdd-469d1743be5d
+    type: condition
+    task:
+      id: 7df35f94-d260-43af-8fdd-469d1743be5d
+      version: -1
+      name: Has result?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "10"
+      "yes":
+      - "5"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isNotEmpty
+          left:
+            value:
+              simple: EWS.Folders.id
+            iscontext: true
+          right:
+            value: {}
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 60,
+          "y": 720
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "10":
+    id: "10"
+    taskid: be5c7730-f4a9-4992-8f98-1e8ef19c076d
+    type: regular
+    task:
+      id: be5c7730-f4a9-4992-8f98-1e8ef19c076d
+      version: -1
+      name: Set Mailbox location to not found
+      description: |-
+        Set a value in context under the key you entered. If no value is entered, the script doesn't do anything.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: SetAndHandleEmpty
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "7"
+    scriptarguments:
+      key:
+        simple: mailbox_location
+      value:
+        simple: Not Found
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 480,
+          "y": 895
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "11":
+    id: "11"
+    taskid: b369426b-d481-4938-8e39-e9d9ac3c79ce
+    type: regular
+    task:
+      id: b369426b-d481-4938-8e39-e9d9ac3c79ce
+      version: -1
+      name: DeleteContext
+      description: |-
+        Delete field from context.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: DeleteContext
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "1"
+    scriptarguments:
+      all:
+        simple: "yes"
+      subplaybook:
+        simple: "yes"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 480,
+          "y": 30
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: |-
+  {
+    "linkLabelsPosition": {},
+    "paper": {
+      "dimensions": {
+        "height": 1265,
+        "width": 1147.5,
+        "x": 50,
+        "y": -100
+      }
+    }
+  }
+inputs:
+- key: email_address
+  value: {}
+  required: false
+  description: ""
+  playbookInputQuery: null
+- key: email_subject
+  value:
+    simple: ${Mimecast.Message.Subject}
+  required: false
+  description: ""
+  playbookInputQuery: null
+inputSections:
+- inputs:
+  - email_address
+  - email_subject
+  name: General (Inputs group)
+  description: Generic group for inputs
+outputSections:
+- outputs:
+  - ActiveDirectory
+  - mailbox_location
+  name: General (Outputs group)
+  description: Generic group for outputs
+outputs:
+- contextPath: ActiveDirectory
+  type: unknown
+- contextPath: mailbox_location
+  type: unknown
+quiet: true
+dirtyInputs: true

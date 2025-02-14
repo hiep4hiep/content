@@ -1,0 +1,315 @@
+id: 051562f6-17eb-47fa-8bce-f2c5728a1b5b
+version: 8
+vcShouldKeepItemLegacyProdMachine: false
+name: EQ - Carbon Black Search
+starttaskid: "0"
+tasks:
+  "0":
+    id: "0"
+    taskid: 2d5f331b-3af9-4243-848d-c253a8cf950b
+    type: start
+    task:
+      id: 2d5f331b-3af9-4243-848d-c253a8cf950b
+      version: -1
+      name: ""
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "5"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 450,
+          "y": 50
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "1":
+    id: "1"
+    taskid: 66d2d17e-52cd-45ff-8755-b1715948a641
+    type: regular
+    task:
+      id: 66d2d17e-52cd-45ff-8755-b1715948a641
+      version: -1
+      name: CarbonBlack - Search process
+      description: 'Creates a process search job and retrieves the search results.
+        At least one of the arguments (not including: rows, start, and time_range)
+        is required.'
+      script: '|||cbd-find-processes'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "2"
+    scriptarguments:
+      hash:
+        complex:
+          root: inputs.hash
+          transformers:
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith: {}
+              toReplace:
+                value:
+                  simple: '"'
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 450,
+          "y": 370
+        }
+      }
+    note: true
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 2
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "2":
+    id: "2"
+    taskid: 7384f25b-bdae-41a6-852e-a1dc1ca43e54
+    type: condition
+    task:
+      id: 7384f25b-bdae-41a6-852e-a1dc1ca43e54
+      version: -1
+      name: If any result?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "6"
+      "yes":
+      - "3"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isNotEmpty
+          left:
+            value:
+              simple: CarbonBlackDefense.Process.Results
+            iscontext: true
+          right:
+            value: {}
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 450,
+          "y": 545
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "3":
+    id: "3"
+    taskid: b896fe3f-f131-42db-852f-54b9b923d915
+    type: regular
+    task:
+      id: b896fe3f-f131-42db-852f-54b9b923d915
+      version: -1
+      name: Convert to Markdown
+      description: Accepts a json object and returns a markdown.
+      scriptName: JsonToTable
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "4"
+    scriptarguments:
+      extend-context:
+        simple: mdtable=.
+      title:
+        simple: CarbonBlack_Search_Process
+      value:
+        complex:
+          root: CarbonBlackDefense.Process.Results
+          filters:
+          - - operator: isExists
+              left:
+                value:
+                  simple: CarbonBlackDefense.Process.Results
+                iscontext: true
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 562.5,
+          "y": 720
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "4":
+    id: "4"
+    taskid: f8c95f19-6af6-41be-8a37-12b0f25685ad
+    type: regular
+    task:
+      id: f8c95f19-6af6-41be-8a37-12b0f25685ad
+      version: -1
+      name: Convert to HTML
+      description: Converts a given array to an HTML table
+      scriptName: ConvertTableToHTML
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "6"
+    scriptarguments:
+      table:
+        complex:
+          root: CarbonBlackDefense.Process.Results
+          filters:
+          - - operator: isExists
+              left:
+                value:
+                  simple: CarbonBlackDefense.Process.Results
+                iscontext: true
+      title:
+        simple: CarbonBlack_Search_Process
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 562.5,
+          "y": 895
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "5":
+    id: "5"
+    taskid: 28a07674-7d05-435a-8901-cc809c0d4865
+    type: regular
+    task:
+      id: 28a07674-7d05-435a-8901-cc809c0d4865
+      version: -1
+      name: Delete Context
+      description: |-
+        Delete field from context.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: DeleteContext
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "1"
+    scriptarguments:
+      all:
+        simple: "yes"
+      subplaybook:
+        simple: "yes"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 450,
+          "y": 195
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 2
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "6":
+    id: "6"
+    taskid: 40cc0540-c500-4d59-8ab6-18e69b57c87d
+    type: title
+    task:
+      id: 40cc0540-c500-4d59-8ab6-18e69b57c87d
+      version: -1
+      name: Done
+      type: title
+      iscommand: false
+      brand: ""
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 300,
+          "y": 1120
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: |-
+  {
+    "linkLabelsPosition": {},
+    "paper": {
+      "dimensions": {
+        "height": 1135,
+        "width": 642.5,
+        "x": 300,
+        "y": 50
+      }
+    }
+  }
+inputs:
+- key: hash
+  value: {}
+  required: false
+  description: ""
+  playbookInputQuery: null
+inputSections:
+- inputs:
+  - hash
+  name: General (Inputs group)
+  description: Generic group for inputs
+outputSections:
+- outputs:
+  - HTMLTable
+  name: General (Outputs group)
+  description: Generic group for outputs
+outputs:
+- contextPath: HTMLTable
+  description: The HTML table we created from the array
+dirtyInputs: true

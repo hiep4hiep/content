@@ -1,0 +1,873 @@
+id: 15eaa882-a3dd-4062-8b2d-f90517b909d9
+version: 27
+vcShouldKeepItemLegacyProdMachine: false
+name: ServiceNow - Log Ticket
+description: Log a ticket in ServiceNow and de-duplicate where appropriate
+starttaskid: "0"
+tasks:
+  "0":
+    id: "0"
+    taskid: 9b1803c2-2a4b-40a4-848b-df8c081d1d10
+    type: start
+    task:
+      id: 9b1803c2-2a4b-40a4-848b-df8c081d1d10
+      version: -1
+      name: ""
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "17"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 387.5,
+          "y": 60
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "1":
+    id: "1"
+    taskid: 515de30d-6bf3-4891-813a-650bb0db228c
+    type: regular
+    task:
+      id: 515de30d-6bf3-4891-813a-650bb0db228c
+      version: -1
+      name: Search for an existing ticket in ServiceNow
+      description: Retrieves ticket information according to the supplied query.
+      script: '|||servicenow-query-tickets'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "2"
+    scriptarguments:
+      limit:
+        simple: "1"
+      query:
+        simple: active=true^correlation_display=${inputs.correlationdisplay}^state!=6^state!=9^ORDERBYDESCsys_created_on
+      ticket_type:
+        simple: ${inputs.tickettype}
+      using:
+        simple: ${inputs.InstanceName}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 275,
+          "y": 370
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "2":
+    id: "2"
+    taskid: a523344f-0002-472e-8263-850b18dd2fd1
+    type: condition
+    task:
+      id: a523344f-0002-472e-8263-850b18dd2fd1
+      version: -1
+      name: Duplicate Exists?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "16"
+      "yes":
+      - "15"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isExists
+          left:
+            value:
+              simple: Ticket.ID
+            iscontext: true
+          right:
+            value: {}
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 387.5,
+          "y": 545
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "3":
+    id: "3"
+    taskid: c24e2fd1-4e27-4c35-8417-5fdf9250eea2
+    type: playbook
+    task:
+      id: c24e2fd1-4e27-4c35-8417-5fdf9250eea2
+      version: -1
+      name: Create ServiceNow Ticket - Vanilla
+      description: "Create ServiceNow Ticket allows you to open new tickets as a task
+        from a parent playbook.\nWhen creating the ticket, you can decide to update
+        based on on the ticket's state, which will wait for the ticket to resolve
+        or close with StatePolling. \nAlternatively, you can select to mirror the
+        ServiceNow ticket and incident fields.  To apply either of these options,
+        set the SyncTicket value in the playbook inputs to one of the following options:
+        \n1. StatePolling\n2. Mirror\n3. Leave Blank to use none."
+      playbookName: Create ServiceNow Ticket - Vanilla
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "11"
+    scriptarguments:
+      CallerInfo:
+        simple: ${inputs.caller}
+      Category:
+        simple: ${inputs.category}
+      Comment:
+        simple: ${inputs.ticketbody}
+      ContactType:
+        simple: ${inputs.ContactType}
+      Description:
+        simple: ${inputs.description}
+      FieldPolling:
+        simple: "false"
+      Impact:
+        simple: ${inputs.impact}
+      InstanceName:
+        simple: ${inputs.InstanceName}
+      MirrorCommentTags:
+        simple: comments,work_notes,ForServiceNow
+      MirrorDirection:
+        simple: Both
+      SetCaller:
+        simple: "true"
+      ShortDescription:
+        simple: ${inputs.shortdescription}
+      SubCategory:
+        simple: ${inputs.subcategory}
+      TicketBodyIsWorkNote:
+        simple: "false"
+      TicketType:
+        simple: ${inputs.tickettype}
+      Urgency:
+        simple: ${inputs.urgency}
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 100
+    view: |-
+      {
+        "position": {
+          "x": 602.5,
+          "y": 865
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "4":
+    id: "4"
+    taskid: 6fef4a5c-d0ba-4875-8540-af717f756967
+    type: regular
+    task:
+      id: 6fef4a5c-d0ba-4875-8540-af717f756967
+      version: -1
+      name: Update ticket fields
+      description: Updates the specified ticket.
+      script: '|||servicenow-update-ticket'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "9"
+    scriptarguments:
+      correlation_display:
+        simple: ${inputs.correlationdisplay}
+      correlation_id:
+        simple: ${inputs.correlationid}
+      id:
+        simple: ${ServiceNow.Ticket.ID}
+      ticket_type:
+        simple: ${inputs.tickettype}
+      using:
+        simple: ${inputs.InstanceName}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 275,
+          "y": 1360
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "5":
+    id: "5"
+    taskid: 33561cd5-77ea-429b-8981-60b41dad2343
+    type: regular
+    task:
+      id: 33561cd5-77ea-429b-8981-60b41dad2343
+      version: -1
+      name: 'Update Ticket notes '
+      description: Adds a comment to the specified ticket, by ticket ID.
+      script: '|||servicenow-add-comment'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "6"
+    scriptarguments:
+      comment:
+        simple: ${inputs.ticketbodyupdate}
+      id:
+        simple: ${Ticket.ID}
+      post-as-comment:
+        complex:
+          root: inputs.TicketBodyIsWorkNote
+          transformers:
+          - operator: toLowerCase
+      ticket_type:
+        simple: ${inputs.tickettype}
+      using:
+        simple: ${inputs.InstanceName}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 2380
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "6":
+    id: "6"
+    taskid: a778d273-5cbd-4439-8349-5aa284988dfd
+    type: title
+    task:
+      id: a778d273-5cbd-4439-8349-5aa284988dfd
+      version: -1
+      name: Done
+      type: title
+      iscommand: false
+      brand: ""
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 275,
+          "y": 2555
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "7":
+    id: "7"
+    taskid: aa1a0dd8-080d-4133-8854-5fcf0391fdd5
+    type: regular
+    task:
+      id: aa1a0dd8-080d-4133-8854-5fcf0391fdd5
+      version: -1
+      name: Set critical ticket fields in incident
+      description: commands.local.cmd.set.incident
+      script: Builtin|||setAlert
+      type: regular
+      iscommand: true
+      brand: Builtin
+    nexttasks:
+      '#none#':
+      - "5"
+    scriptarguments:
+      ticketnumber:
+        simple: ${Ticket.Number}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 2205
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "9":
+    id: "9"
+    taskid: 11f337fd-096b-4801-8955-9b06ca45afef
+    type: title
+    task:
+      id: 11f337fd-096b-4801-8955-9b06ca45afef
+      version: -1
+      name: Assignment Group
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "19"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 602.5,
+          "y": 1535
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "11":
+    id: "11"
+    taskid: 29242315-e001-4ce0-83fb-b384f8058449
+    type: title
+    task:
+      id: 29242315-e001-4ce0-83fb-b384f8058449
+      version: -1
+      name: Correlation Fields
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "18"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 602.5,
+          "y": 1040
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "12":
+    id: "12"
+    taskid: a5eb8b5d-3bbd-4e2e-8bf6-d69621a2ae4e
+    type: regular
+    task:
+      id: a5eb8b5d-3bbd-4e2e-8bf6-d69621a2ae4e
+      version: -1
+      name: Set the assignment group explicitly
+      description: Updates the specified ticket.
+      script: '|||servicenow-update-ticket'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "13"
+    scriptarguments:
+      assignment_group:
+        simple: ${inputs.assignmentgroup}
+      id:
+        simple: ${ServiceNow.Ticket.ID}
+      ticket_type:
+        simple: ${inputs.tickettype}
+      using:
+        simple: ${inputs.InstanceName}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 500,
+          "y": 2030
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "13":
+    id: "13"
+    taskid: 6bc9161e-01b7-44cb-818e-80bc7a645e23
+    type: title
+    task:
+      id: 6bc9161e-01b7-44cb-818e-80bc7a645e23
+      version: -1
+      name: Configuration Item
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "14"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 500,
+          "y": 2220
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "14":
+    id: "14"
+    taskid: 437f26b9-a8f5-4fab-8b02-0fe97e5f56eb
+    type: regular
+    task:
+      id: 437f26b9-a8f5-4fab-8b02-0fe97e5f56eb
+      version: -1
+      name: Set configuration item
+      description: Updates the specified ticket.
+      script: '|||servicenow-update-ticket'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "6"
+    scriptarguments:
+      cmdb_ci:
+        simple: ${inputs.configuration_item}
+      id:
+        simple: ${ServiceNow.Ticket.ID}
+      ticket_type:
+        simple: ${inputs.tickettype}
+      using:
+        simple: ${inputs.InstanceName}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 500,
+          "y": 2380
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "15":
+    id: "15"
+    taskid: a9a426ca-62e2-4766-8586-b03ce4e0cb47
+    type: title
+    task:
+      id: a9a426ca-62e2-4766-8586-b03ce4e0cb47
+      version: -1
+      name: Duplicate - Update Ticket
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "7"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 2045
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "16":
+    id: "16"
+    taskid: 5ee0a491-de0a-496a-86a3-2c8d5eb15570
+    type: title
+    task:
+      id: 5ee0a491-de0a-496a-86a3-2c8d5eb15570
+      version: -1
+      name: New SR Ticket Created
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "3"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 602.5,
+          "y": 730
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "17":
+    id: "17"
+    taskid: 5de2a70f-dfd8-4e75-8fee-22704fef9de2
+    type: condition
+    task:
+      id: 5de2a70f-dfd8-4e75-8fee-22704fef9de2
+      version: -1
+      name: The correlation ID is defined?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "2"
+      "yes":
+      - "1"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isExists
+          left:
+            value:
+              complex:
+                root: inputs.correlationid
+                filters:
+                - - operator: isExists
+                    left:
+                      value:
+                        simple: inputs.correlationid
+                      iscontext: true
+                - - operator: isNotEmpty
+                    left:
+                      value:
+                        simple: inputs.correlationid
+                      iscontext: true
+            iscontext: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 387.5,
+          "y": 195
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "18":
+    id: "18"
+    taskid: 325d9944-2753-4e14-8da6-fbeb6cc42c5f
+    type: condition
+    task:
+      id: 325d9944-2753-4e14-8da6-fbeb6cc42c5f
+      version: -1
+      name: The correlation ID is defined?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "9"
+      "yes":
+      - "4"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isExists
+          left:
+            value:
+              complex:
+                root: inputs.correlationid
+                filters:
+                - - operator: isExists
+                    left:
+                      value:
+                        simple: inputs.correlationid
+                      iscontext: true
+                - - operator: isNotEmpty
+                    left:
+                      value:
+                        simple: inputs.correlationid
+                      iscontext: true
+            iscontext: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 602.5,
+          "y": 1185
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "19":
+    id: "19"
+    taskid: 1831592f-fff9-4a1b-8b77-657cb6910d66
+    type: condition
+    task:
+      id: 1831592f-fff9-4a1b-8b77-657cb6910d66
+      version: -1
+      name: Assignment group defined?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "13"
+      "yes":
+      - "12"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isExists
+          left:
+            value:
+              complex:
+                root: inputs.assignmentgroup
+                filters:
+                - - operator: isExists
+                    left:
+                      value:
+                        simple: inputs.assignmentgroup
+                      iscontext: true
+                - - operator: isNotEmpty
+                    left:
+                      value:
+                        simple: inputs.assignmentgroup
+                      iscontext: true
+            iscontext: true
+          right:
+            value: {}
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 715,
+          "y": 1855
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: |-
+  {
+    "linkLabelsPosition": {},
+    "paper": {
+      "dimensions": {
+        "height": 2560,
+        "width": 1045,
+        "x": 50,
+        "y": 60
+      }
+    }
+  }
+inputs:
+- key: correlationid
+  value: {}
+  required: false
+  description: Correlation ID. Used to de-duplicate the ticket.
+  playbookInputQuery: null
+- key: ticketbody
+  value: {}
+  required: true
+  description: Note to set in the body of the ticket
+  playbookInputQuery: null
+- key: correlationdisplay
+  value: {}
+  required: false
+  description: Correlation Display Name. Used to de-duplicate the ticket.
+  playbookInputQuery: null
+- key: ticketbodyupdate
+  value: {}
+  required: false
+  description: Note to set in the body of the ticket when it's a duplicate ticket
+  playbookInputQuery: null
+- key: applicationname
+  value: {}
+  required: false
+  description: ""
+  playbookInputQuery: null
+- key: caller
+  value: {}
+  required: false
+  description: Caller ID
+  playbookInputQuery: null
+- key: description
+  value:
+    simple: ${alert.details}
+  required: true
+  description: Ticket description
+  playbookInputQuery: null
+- key: shortdescription
+  value:
+    simple: ${alert.imagedescription}
+  required: true
+  description: Ticket short description
+  playbookInputQuery: null
+- key: category
+  value:
+    simple: Security
+  required: true
+  description: Category
+  playbookInputQuery: null
+- key: subcategory
+  value: {}
+  required: true
+  description: Sub-category
+  playbookInputQuery: null
+- key: configuration_item
+  value: {}
+  required: false
+  description: Configuration Item ID
+  playbookInputQuery: null
+- key: impact
+  value: {}
+  required: true
+  description: Impact
+  playbookInputQuery: null
+- key: urgency
+  value: {}
+  required: true
+  description: Urgency
+  playbookInputQuery: null
+- key: assignmentgroup
+  value: {}
+  required: false
+  description: Assignment group
+  playbookInputQuery: null
+- key: tickettype
+  value:
+    simple: incident
+  required: true
+  description: Ticket type
+  playbookInputQuery: null
+- key: TicketBodyIsWorkNote
+  value:
+    simple: "false"
+  required: true
+  description: Possible values true/false
+  playbookInputQuery: null
+- key: ContactType
+  value:
+    simple: Integration
+  required: false
+  description: Contact Type
+  playbookInputQuery: null
+- key: InstanceName
+  value: {}
+  required: false
+  description: Integration Instance Name
+  playbookInputQuery: null
+inputSections:
+- inputs:
+  - correlationid
+  - ticketbody
+  - correlationdisplay
+  - ticketbodyupdate
+  - applicationname
+  - caller
+  - description
+  - shortdescription
+  - category
+  - subcategory
+  - configuration_item
+  - impact
+  - urgency
+  - assignmentgroup
+  - tickettype
+  - TicketBodyIsWorkNote
+  - ContactType
+  - InstanceName
+  name: General (Inputs group)
+  description: Generic group for inputs
+outputSections:
+- outputs: []
+  name: General (Outputs group)
+  description: Generic group for outputs
+outputs: []
+dirtyInputs: true

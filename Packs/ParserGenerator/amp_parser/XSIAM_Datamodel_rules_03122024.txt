@@ -1,0 +1,820 @@
+/* ENTERPRISE DATA WAREHOUSE. Name of the dataset will be added for Prod
+Query
+datamodel dataset = amp_edw_dev_2024_raw
+| fields xdm.event.operation_sub_type, xdm.source.host.hostname, xdm.source.user.username, xdm.event.type, xdm.intermediate.user.username, xdm.source.ipv4, xdm.event.description, xdm.auth.privilege_level, xdm.network.session_id
+*/
+[MODEL:dataset="amp_edw_raw"]
+filter action in ("success","failure") and DBLINK != "DBLINK"
+| alter xdm.event.type = "authentication",
+    xdm.source.host.hostname = USERHOST,
+    xdm.source.user.username = USERNAME,
+    xdm.event.operation_sub_type = ACTION_NAME,
+    xdm.intermediate.user.username = OS_USERNAME,
+    xdm.source.ipv4 = SRC_IP,
+    xdm.event.description = COMMENT_TEXT,
+    xdm.auth.privilege_level = PRIV_USED,
+    xdm.event.outcome = if(action = "success", XDM_CONST.OUTCOME_SUCCESS, action = "failure", XDM_CONST.OUTCOME_FAILED ),
+    xdm.auth.auth_method = DBLINK,
+    xdm.network.session_id = to_string(SESSIONID),
+    xdm.observer.name = _product,
+    xdm.network.ip_protocol = arrayindex(regextract(COMMENT_TEXT, "PROTOCOL=(\w+)"), 0),
+    xdm.source.port = to_number(arrayindex(regextract(COMMENT_TEXT, "PORT=(\d+)"), 0))   
+;
+filter ACTION_NAME not in ("LOGON","LOGOFF")
+| alter xdm.event.type = ACTION_NAME,
+    xdm.source.host.hostname = USERHOST,
+    xdm.source.user.username = USERNAME,
+    xdm.event.operation_sub_type = ACTION_NAME,
+    xdm.intermediate.user.username = OS_USERNAME,
+    xdm.source.ipv4 = SRC_IP,
+    xdm.event.description = COMMENT_TEXT,
+    xdm.auth.privilege_level = PRIV_USED,
+    xdm.event.outcome = if(action = "success", XDM_CONST.OUTCOME_SUCCESS, action = "failure", XDM_CONST.OUTCOME_FAILED ),
+    xdm.auth.auth_method = DBLINK,
+    xdm.network.session_id = to_string(SESSIONID),
+    xdm.observer.name = _product,
+    xdm.network.ip_protocol = arrayindex(regextract(COMMENT_TEXT, "PROTOCOL=(\w+)"), 0),
+    xdm.source.port = to_number(arrayindex(regextract(COMMENT_TEXT, "PORT=(\d+)"), 0))   
+;
+/* 
+AZURE Management activity. This dataset is not normalized by default. We use datamodel to map the data to authentication story
+*/
+[MODEL:dataset = "msft_o365_azure_ad_raw"]
+filter Operation in ("UserLoggedIn","UserLoginFailed")
+| alter
+    xdm.event.type = "authentication",
+//    xdm.event.id = Id,
+    xdm.source.ipv4 = ClientIP,
+    xdm.source.user.upn = UserId,
+    xdm.source.user.username = UserId,
+    xdm.event.original_event_type = Operation,
+    xdm.event.outcome = if(ResultStatus = "Success", XDM_CONST.OUTCOME_SUCCESS, XDM_CONST.OUTCOME_FAILED ),
+    xdm.event.outcome_reason = LogonError,
+    xdm.event.operation = to_json_string(ExtendedProperties) -> [0].Value,
+    xdm.target.host.hostname = if(Operation in ("UserLoggedIn","UserLoginFailed"),"Microsoft Office 365 AzureActiveDirectory",ObjectId),
+    xdm.event.description = to_json_string(DeviceProperties),
+    xdm.source.user_agent = to_json_string(arrayindex(arrayfilter(json_extract_array(ExtendedProperties, "$."),"@element" contains "UserAgent"),0)) -> Value,
+    xdm.auth.auth_method = to_json_string(arrayindex(arrayfilter(json_extract_array(ExtendedProperties, "$."),"@element" contains "RequestType"),0)) -> Value,
+    xdm.source.host.hostname = to_json_string(arrayindex(arrayfilter(json_extract_array(DeviceProperties, "$."),"@element" contains "DisplayName"),0)) -> Value,
+    xdm.source.host.os = to_json_string(arrayindex(arrayfilter(json_extract_array(DeviceProperties, "$."),"@element" contains "OS"),0)) -> Value,
+    xdm.network.session_id = to_json_string(arrayindex(arrayfilter(json_extract_array(DeviceProperties, "$."),"@element" contains "SessionId"),0)) -> Value,
+    xdm.observer.type = Workload,
+    xdm.observer.name = _product
+    //xdm.event.id = if(PolicyId !=null and Operation IN ("AlertEntityGenerated", "AlertTriggered", "AlertUpdated") and Workload="SecurityComplianceCenter", PolicyId),
+;
+
+
+/* Use OOTB model
+[MODEL:dataset = "msft_o365_general_raw"]
+filter Operation = "TeamsSessionStarted"
+| alter
+    xdm.event.type = "authentication", 
+    xdm.event.outcome = XDM_CONST.OUTCOME_SUCCESS,
+//    xdm.event.id = Id,
+    xdm.target.host.hostname = OrganizationId,
+    xdm.source.ipv4 = ClientIP,
+    xdm.source.user.upn = UserId,
+    xdm.source.user.username = UserId,
+    xdm.event.original_event_type = Operation,
+    xdm.observer.type = Workload,
+    xdm.observer.name = _product
+;
+filter Operation != "TeamsSessionStarted"
+| alter  
+    xdm.event.id = Id,
+    xdm.source.ipv4 = ClientIP,
+    xdm.source.user.upn = UserId,
+    xdm.source.user.username = UserId,
+    xdm.event.original_event_type = Operation,
+    xdm.observer.type = Workload,
+    xdm.observer.name = _product
+;
+*/
+
+
+/* 
+CyberArk Vault
+*/
+[MODEL: dataset = "cyber_ark_vault_raw"]
+alter
+    xdm.event.type = "authentication",
+    xdm.event.operation = act,
+    xdm.event.operation_sub_type = cs2,
+    xdm.event.description = msg,
+    xdm.event.outcome_reason = reason,
+    xdm.target.file.filename = fname,
+    xdm.source.user.username = suser,
+    xdm.intermediate.user.username = duser,
+    xdm.target.user.username = cs1,
+    xdm.source.ipv4 = shost,
+    xdm.target.ipv4 = dvc,
+    xdm.intermediate.ipv4 = dhost,
+    xdm.event.id = cefDeviceEventClassId,
+    //xdm.event.id = cn1,
+    xdm.target.application.name = _product,
+    xdm.observer.name = _product,
+    xdm.alert.description = _raw_log 
+;
+
+/* 
+IBM ISAM
+*/
+
+
+/* 
+IBM ISAM PROD
+*/
+[MODEL: dataset = "ibm_isam_rp_prod_raw"]
+filter junction contains "ddc" and (response_code = 200 or response_code = 404)
+| alter
+    xdm.event.type = "authentication",
+    xdm.source.application.name = c2app,
+    xdm.intermediate.application.name = c2subapp,
+    xdm.target.application.name = junction,
+    xdm.source.application.version = c2env,
+    xdm.source.application.publisher = c2sec,
+    xdm.target.ipv4 = client_addr,
+    xdm.source.ipv4 = source_ip,
+    xdm.source.host.ipv4_addresses = split(src,","),
+    xdm.source.user.username = iv_user,
+    xdm.network.http.method = method,
+    xdm.target.host.fqdn = host,
+    xdm.network.http.domain = host,
+    xdm.network.http.url = concat("https://urldefense.proofpoint.com/v2/url?u=https-3A__-2522-2Chost-2Crequest-2Cjunction&d=DwIGAg&c=V9IgWpI5PvzTw83UyHGVSoW3Uc1MFWe5J8PTfkrzVSo&r=UhkEJepeo4gkjuxeXj-uRNDJ4tRRjUU6MfmsxqM_PvM&m=HNA0rTekHtcJFfz7Gguu1W9n9a5Ltyd5mv8F4Ylltxz5qU3J7eRoZq2vHj9FLWA5&s=-YwX-m_rnc1SpWOGpGIAsyd6pJF6ck6-J2aqMLaRmGA&e= ),
+    xdm.network.http.response_code = to_string(response_code),
+    xdm.source.sent_bytes = sent_byte,
+    xdm.event.duration = response_time_m,
+    xdm.event.id = x_request_id
+;
+
+/* 
+IBM ISAM PROD
+*/
+[MODEL: dataset = "ibm_isam_rp_nonprod_raw"]
+filter junction contains "ddc" and (response_code = 200 or response_code = 404)
+| alter
+    xdm.event.type = "authentication",
+    xdm.source.application.name = c2app,
+    xdm.intermediate.application.name = c2subapp,
+    xdm.target.application.name = junction,
+    xdm.source.application.version = c2env,
+    xdm.source.application.publisher = c2sec,
+    xdm.target.ipv4 = client_addr,
+    xdm.source.ipv4 = source_ip,
+    xdm.source.host.ipv4_addresses = split(src,","),
+    xdm.source.user.username = iv_user,
+    xdm.network.http.method = method,
+    xdm.target.host.fqdn = host,
+    xdm.network.http.domain = host,
+    xdm.network.http.url = concat("https://urldefense.proofpoint.com/v2/url?u=https-3A__-2522-2Chost-2Crequest-2Cjunction&d=DwIGAg&c=V9IgWpI5PvzTw83UyHGVSoW3Uc1MFWe5J8PTfkrzVSo&r=UhkEJepeo4gkjuxeXj-uRNDJ4tRRjUU6MfmsxqM_PvM&m=HNA0rTekHtcJFfz7Gguu1W9n9a5Ltyd5mv8F4Ylltxz5qU3J7eRoZq2vHj9FLWA5&s=-YwX-m_rnc1SpWOGpGIAsyd6pJF6ck6-J2aqMLaRmGA&e= ),
+    xdm.network.http.response_code = to_string(response_code),
+    xdm.source.sent_bytes = sent_byte,
+    xdm.event.duration = response_time_m,
+    xdm.event.id = x_request_id
+;
+
+/*
+Trellix ETP
+*/
+[MODEL:dataset="trellix_etp_raw"]
+alter
+    xdm.email.sender = suser,
+    xdm.email.recipients = arraycreate(duser),
+    xdm.email.subject = subject,
+    xdm.network.http.url = fname,
+    xdm.event.description = cs4,
+    xdm.event.type = category,
+    xdm.event.operation = act,
+    xdm.alert.name = signature,
+    xdm.email.attachment.md5 = fileHash,
+    xdm.email.message_id = externalId,
+    xdm.target.application.name = _product,
+    xdm.observer.name = _product,
+    xdm.source.host.hostname = host,
+    xdm.target.file.path  = fname,
+    xdm.alert.original_threat_name = signature,
+    xdm.source.user.username = duser,
+    xdm.source.ipv4 = host,
+    xdm.observer.vendor = vendor_product 
+;
+
+/*
+Imperva WAF
+*/
+[MODEL:dataset="imperva_waf_raw"]
+filter _raw_log contains "CEF:0|Incapsula|SIEMintegration"
+| alter 
+    xdm.event.type = logsubtype,
+    xdm.event.id = fileId,
+    xdm.intermediate.host.device_id = siteid,
+    xdm.source.user.identifier = suid,
+    xdm.source.user_agent = requestClientApplication,
+    xdm.source.location.city = cicode,
+    xdm.network.http.browser = cs6,
+    xdm.source.location.country = ccode,
+    xdm.source.location.latitude = to_float(cs7),
+    xdm.source.location.longitude = to_float(cs8),
+    xdm.network.http.url = coalesce(concat(app, "://", request), request),
+    xdm.network.http.response_code = cn1,
+    xdm.event.outcome = act,
+    xdm.source.host.device_id = deviceExternalId,
+    xdm.target.ipv4 = sip,
+    xdm.target.port = to_integer(spt),
+    xdm.source.ipv4 = src,
+    xdm.source.port = to_integer(cpt),
+    xdm.target.application.name = _product,
+    xdm.observer.name = _product,
+    xdm.network.http.method = requestMethod,
+    xdm.source.sent_bytes = 0,
+    xdm.target.sent_bytes = to_integer(bytes_in),
+    xdm.observer.action = action,
+    xdm.observer.product = sourceServiceName,
+    xdm.alert.name = cefName,
+    xdm.target.domain = dest
+;
+filter _raw_log contains "CEF:0|Imperva Inc|Attack Analytics|"
+| alter 
+    xdm.event.type = logsubtype, 
+    xdm.event.id = fileId,
+    xdm.intermediate.host.device_id = ImpervaAADominantSiteIds,
+    xdm.source.user.identifier = suid,
+    xdm.source.user_agent = requestClientApplication,
+    xdm.source.location.city = cicode,
+    xdm.network.http.browser = cs6,
+    xdm.source.location.country = ImpervaAACountry,
+    xdm.source.location.latitude = to_float(cs7),
+    xdm.source.location.longitude = to_float(cs8),
+    xdm.network.http.url = coalesce(concat(app, "://", request), request),
+    xdm.network.http.response_code = cn1,
+    xdm.event.outcome = act,
+    xdm.source.host.device_id = deviceExternalId,
+    xdm.target.ipv4 = sip,
+    xdm.target.port = to_integer(spt),
+    xdm.source.ipv4 = src,
+    xdm.source.port = to_integer(cpt),
+    xdm.target.application.name = _product,
+    xdm.observer.name = _product,
+    xdm.network.http.method = requestMethod,
+    xdm.source.sent_bytes = 0,
+    xdm.target.sent_bytes = to_integer(bytes_in),
+    xdm.observer.action = action,
+    xdm.alert.name = cefName 
+;
+
+/*
+Efficient IP
+*/
+[MODEL:dataset="efficient_ip_ddi_raw"]
+filter event_type = "dhcpd"
+| alter
+    xdm.network.dhcp.chaddr = source_mac,
+    xdm.network.dhcp.ciaddr = if(source_ip_request != null, source_ip_request, source_ip_ack),
+    xdm.network.dhcp.client_hostname = source_device,
+    xdm.network.dhcp.message_type = if(
+        dhcp_message_type = "DHCPACK", XDM_CONST.DHCP_MESSAGE_TYPE_DHCPACK,
+        dhcp_message_type = "DHCPOFFER", XDM_CONST.DHCP_MESSAGE_TYPE_DHCPOFFER,
+        dhcp_message_type = "DHCPREQUEST", XDM_CONST.DHCP_MESSAGE_TYPE_DHCPREQUEST,
+        dhcp_message_type = "DHCPRELEASE", XDM_CONST.DHCP_MESSAGE_TYPE_DHCPRELEASE,
+        dhcp_message_type = "DHCPDECLINE", XDM_CONST.DHCP_MESSAGE_TYPE_DHCPDECLINE   
+    ),
+    xdm.network.dhcp.giaddr = source_ip_relay,
+    xdm.event.description = event_message;
+filter event_type = "named"
+| alter
+    xdm.source.ipv4 = dns_source_ip,
+    xdm.source.port = to_integer(dns_source_port),
+    xdm.event.description = event_message,
+    xdm.observer.name = _product;
+
+/*
+IBM Security Verify Prod
+*/
+[MODEL:dataset="ibm_security_verify_raw"]
+filter event_type = "authentication"
+| alter 
+    xdm.auth.service = servicename,
+    xdm.event.operation = json_extract_scalar(data, "$.action"),
+    xdm.event.original_event_type = event_type,
+    xdm.event.outcome = json_extract_scalar(data, "$.result"),
+    xdm.event.outcome_reason = null,
+    xdm.event.type = "authentication",
+    xdm.logon.type = XDM_CONST.LOGON_TYPE_INTERACTIVE,
+    xdm.source.host.device_category = json_extract_scalar(data, "$.sourceinstance"),
+    xdm.source.ipv4  = json_extract_scalar(data, "$.origin"),
+    xdm.source.user_agent = json_extract_scalar(data, "$.devicetype"),
+    //xdm.source.user.upn = json_extract_scalar(data, "$.username"),
+    xdm.source.user.username = json_extract_scalar(data, "$.username"),
+    xdm.target.resource.id  = to_string(json_extract_scalar(data, "$.resource")),
+    xdm.target.host.hostname = _reporting_device_ip,
+    xdm.observer.name = _product;
+
+filter event_type = "sso"
+| alter 
+    xdm.auth.service = servicename,
+    xdm.event.operation = json_extract_scalar(data, "$.action"),
+    xdm.event.original_event_type = event_type,
+    xdm.event.outcome = json_extract_scalar(data, "$.result"),
+    xdm.event.outcome_reason = json_extract_scalar(data, "$.cause"),
+    xdm.event.type = "authentication",
+    xdm.network.session_id = json_extract_scalar(data, "$.sessionid"),
+    xdm.source.ipv4  = json_extract_scalar(data, "$.origin"),
+    xdm.source.user_agent = json_extract_scalar(data, "$.devicetype"),
+    xdm.source.user.identifier = json_extract_scalar(data, "$.userid"),
+    //xdm.source.user.upn = json_extract_scalar(data, "$.username"),
+    xdm.source.user.username = json_extract_scalar(data, "$.username"),
+    xdm.target.application.name =  json_extract_scalar(data, "$.applicationname"),
+    xdm.target.host.hostname = _reporting_device_ip,
+    xdm.observer.name = _product;
+
+ filter event_type = "token"
+| alter 
+    xdm.auth.service = servicename,
+    xdm.event.operation = json_extract_scalar(data, "$.action"),
+    xdm.event.original_event_type = event_type,
+    xdm.event.outcome = json_extract_scalar(data, "$.result"),
+    xdm.event.outcome_reason = json_extract_scalar(data, "$.cause"),
+    xdm.event.type = "authentication",
+    xdm.source.agent.identifier = json_extract_scalar(data, "$.client_id"),
+    xdm.source.agent.type = json_extract_scalar(data, "$.client_category"),
+    xdm.source.application.name = json_extract_scalar(data, "$.devicetype"),
+    xdm.source.ipv4  = json_extract_scalar(data, "$.origin"),
+    xdm.source.user_agent  = json_extract_scalar(data, "$.client_name"),
+    xdm.target.application.name =  json_extract_scalar(data, "$.applicationname"),
+    xdm.target.resource.id = json_extract_scalar(data, "$.grant_id"),
+    xdm.target.resource.name = json_extract_scalar(data, "$.grant_type"),
+    xdm.target.host.hostname = _reporting_device_ip,
+    xdm.observer.name = _product;
+
+filter event_type = "management"
+| alter 
+    xdm.event.type = event_type,
+	xdm.event.original_event_type = servicename,
+	xdm.event.outcome = json_extract_scalar(data, "$.result"),
+	xdm.event.outcome_reason = json_extract_scalar(data, "$.cause"),
+    xdm.event.operation = json_extract_scalar(data, "$.action"),
+    xdm.source.ipv4  = json_extract_scalar(data, "$.origin"),
+    xdm.source.user.username = json_extract_scalar(data, "$.performedby"),
+    xdm.target.resource.type = json_extract_scalar(data, "$.resource"),
+	xdm.target.resource.id = json_extract_scalar(data, "$.target"),
+	xdm.target.resource.name = json_extract_scalar(data, "$.webhookname"),
+    xdm.target.host.hostname = _reporting_device_ip,
+    xdm.observer.name = _product;
+
+/*
+IBM Security Verify Non-prod
+*/
+[MODEL:dataset="ibm_security_verify_np_raw"]
+filter event_type = "authentication"
+| alter 
+    xdm.auth.service = servicename,
+    xdm.event.operation = json_extract_scalar(data, "$.action"),
+    xdm.event.original_event_type = event_type,
+    xdm.event.outcome = json_extract_scalar(data, "$.result"),
+    xdm.event.outcome_reason = null,
+    xdm.event.type = "authentication",
+    xdm.logon.type = XDM_CONST.LOGON_TYPE_INTERACTIVE,
+    xdm.source.host.device_category = json_extract_scalar(data, "$.sourceinstance"),
+    xdm.source.ipv4  = json_extract_scalar(data, "$.origin"),
+    xdm.source.user_agent = json_extract_scalar(data, "$.devicetype"),
+    //xdm.source.user.upn = json_extract_scalar(data, "$.username"),
+    xdm.source.user.username = json_extract_scalar(data, "$.username"),
+    xdm.target.resource.id  = to_string(json_extract_scalar(data, "$.resource")),
+    xdm.target.host.hostname = _reporting_device_ip,
+    xdm.observer.name = _product;
+
+filter event_type = "sso"
+| alter 
+    xdm.auth.service = servicename,
+    xdm.event.operation = json_extract_scalar(data, "$.action"),
+    xdm.event.original_event_type = event_type,
+    xdm.event.outcome = json_extract_scalar(data, "$.result"),
+    xdm.event.outcome_reason = json_extract_scalar(data, "$.cause"),
+    xdm.event.type = "authentication",
+    xdm.network.session_id = json_extract_scalar(data, "$.sessionid"),
+    xdm.source.ipv4  = json_extract_scalar(data, "$.origin"),
+    xdm.source.user_agent = json_extract_scalar(data, "$.devicetype"),
+    xdm.source.user.identifier = json_extract_scalar(data, "$.userid"),
+    //xdm.source.user.upn = json_extract_scalar(data, "$.username"),
+    xdm.source.user.username = json_extract_scalar(data, "$.username"),
+    xdm.target.application.name =  json_extract_scalar(data, "$.applicationname"),
+    xdm.target.host.hostname = _reporting_device_ip,
+    xdm.observer.name = _product;
+
+ filter event_type = "token"
+| alter 
+    xdm.auth.service = servicename,
+    xdm.event.operation = json_extract_scalar(data, "$.action"),
+    xdm.event.original_event_type = event_type,
+    xdm.event.outcome = json_extract_scalar(data, "$.result"),
+    xdm.event.outcome_reason = json_extract_scalar(data, "$.cause"),
+    xdm.event.type = "authentication",
+    xdm.source.agent.identifier = json_extract_scalar(data, "$.client_id"),
+    xdm.source.agent.type = json_extract_scalar(data, "$.client_category"),
+    xdm.source.application.name = json_extract_scalar(data, "$.devicetype"),
+    xdm.source.ipv4  = json_extract_scalar(data, "$.origin"),
+    xdm.source.user_agent  = json_extract_scalar(data, "$.client_name"),
+    xdm.target.application.name =  json_extract_scalar(data, "$.applicationname"),
+    xdm.target.resource.id = json_extract_scalar(data, "$.grant_id"),
+    xdm.target.resource.name = json_extract_scalar(data, "$.grant_type"),
+    xdm.target.host.hostname = _reporting_device_ip,
+    xdm.observer.name = _product;
+
+filter event_type = "management"
+| alter 
+    xdm.event.type = event_type,
+	xdm.event.original_event_type = servicename,
+	xdm.event.outcome = json_extract_scalar(data, "$.result"),
+	xdm.event.outcome_reason = json_extract_scalar(data, "$.cause"),
+    xdm.event.operation = json_extract_scalar(data, "$.action"),
+    xdm.source.ipv4  = json_extract_scalar(data, "$.origin"),
+    xdm.source.user.username = json_extract_scalar(data, "$.performedby"),
+    xdm.target.resource.type = json_extract_scalar(data, "$.resource"),
+	xdm.target.resource.id = json_extract_scalar(data, "$.target"),
+	xdm.target.resource.name = json_extract_scalar(data, "$.webhookname"),
+    xdm.target.host.hostname = _reporting_device_ip,
+    xdm.observer.name = _product;
+
+/* 
+Versa Gateway
+*/
+[RULE: common_versa_gateway]
+alter
+    xdm.source.ipv4 = sourceIPv4Address,
+    xdm.target.ipv4 = destinationIPv4Address,
+    xdm.source.port = to_integer(sourceTransportPort),
+    xdm.target.port = to_integer(destinationTransportPort),
+    xdm.network.ip_protocol = if(
+        to_integer(protocolIdentifier) = 6, XDM_CONST.IP_PROTOCOL_TCP,
+        to_integer(protocolIdentifier) = 17, XDM_CONST.IP_PROTOCOL_UDP
+    ),
+    xdm.source.user.username = if(fromUser = "Unknown",null,fromUser),
+    xdm.alert.severity = threatSeverity,
+    xdm.event.operation_sub_type = threatType,
+    xdm.event.type = logsubtype,
+    xdm.observer.name = _product;
+[MODEL:dataset="versa_gateway_raw"]
+filter event_type = "authEventLog"
+| alter
+    xdm.source.ipv4 = sourceIPv4Address,
+    xdm.target.ipv4 = destinationIPv4Address,
+    xdm.source.port = to_integer(sourceTransportPort),
+    xdm.target.port = to_integer(destinationTransportPort),
+    xdm.network.ip_protocol = if(
+        to_integer(protocolIdentifier) = 6, XDM_CONST.IP_PROTOCOL_TCP,
+        to_integer(protocolIdentifier) = 17, XDM_CONST.IP_PROTOCOL_UDP
+    ),
+    xdm.source.user.username = userName,
+    xdm.source.user.upn = userName,
+    xdm.alert.severity = threatSeverity,
+    xdm.event.operation_sub_type = threatType,
+    xdm.event.type = "authentication",
+    xdm.auth.auth_method = authMethod,
+    xdm.auth.service = authProfile,
+    xdm.event.outcome = if(authStatus contains "success",XDM_CONST.OUTCOME_SUCCESS, XDM_CONST.OUTCOME_FAILED),
+    xdm.event.outcome_reason = authStatusMessage,
+    xdm.observer.name = _product;
+filter event_type = "urlfLog"
+| call common_versa_gateway
+| alter
+    xdm.network.http.url = httpUrl,
+    xdm.network.http.url_category = urlCategory,
+    xdm.event.operation = urlfAction,
+    xdm.event.description = urlfActionMessage;
+filter event_type = "dnsfLog"
+| call common_versa_gateway
+| alter
+    xdm.network.dns.dns_question.name = dnsfDomain,
+    xdm.network.dns.dns_question.type = dnsfMsgType,
+    xdm.network.rule = dnsfRuleName,
+    xdm.event.operation = dnsfAction,
+    xdm.event.description = dnsfProfileName,
+    xdm.event.original_event_type = dnsfEvType,
+    xdm.network.http.domain = dnsfDomain,
+    xdm.network.http.url_category = dnsfDomainCategory;
+filter event_type = "ipfLog"
+| call common_versa_gateway
+| alter
+    xdm.network.rule = match,
+    xdm.event.operation = ipfAction,
+    xdm.event.description = ipfActionMessage,
+    xdm.source.user.domain = srcDomain,
+    xdm.target.domain = dstDomain;
+filter event_type = "idpLog"
+| call common_versa_gateway 
+| alter
+    xdm.session_context_id = flowId,
+    xdm.network.application_protocol = ipsProtocol,
+    xdm.network.application_protocol_category = ipsApplication,
+    xdm.event.operation = idpAction,
+    xdm.event.id = signatureId,
+    xdm.event.description = signatureMsg,
+    xdm.network.session_id = flowId,
+    xdm.network.rule = signatureMsg,
+    xdm.source.host.ipv4_addresses = arraycreate(sourceIPv4Address),
+    //xdm.source.ipv4 = sourceIPv4Address,
+    //xdm.target.ipv4 = destinationIPv4Address,
+    xdm.source.user.upn = if(fromUser = "Unknown",null,fromUser);
+filter event_type = "monStatsLog"
+| alter
+    xdm.event.original_event_type = mstatsType,
+    xdm.event.type = event_type,
+    xdm.target.ipv4 = destIp,
+    xdm.event.duration = to_integer(mstatsTotSessDuration),
+    xdm.event.description = mstatsTotSessCount,
+    xdm.source.sent_bytes = to_integer(mstatsTotSentOctets),
+    xdm.target.sent_bytes = to_integer(mstatsTotRecvdOctets);
+filter event_type = "alarmLogs"
+| alter
+    xdm.event.original_event_type = mstatsType,
+    xdm.event.type = event_type,
+    xdm.alert.category = alarmType,
+    xdm.event.operation_sub_type = alarmEventType,
+    xdm.alert.severity = alarmSeverity,
+    xdm.alert.name = alarmType,
+    xdm.alert.description = alarmCause,
+    xdm.alert.original_alert_id = alarmKey,
+    xdm.source.host.device_id = serialNum,
+    xdm.alert.subcategory = alarmKind;
+
+[MODEL:dataset="aruba_networks_clearpass_raw"]
+filter user_name != null
+| alter 
+    xdm.event.type = "authentication",
+    xdm.event.id = cefDeviceEventClassId,
+    xdm.event.original_event_type = cefName,
+	xdm.alert.severity = cefSeverity,
+    xdm.target.ipv4 = nas_ip,
+    xdm.source.user.username = user_name,
+    xdm.event.operation = XDM_CONST.OPERATION_TYPE_AUTH_LOGIN,
+    xdm.event.operation_sub_type = req_source,
+    xdm.event.outcome = if(login_status = "ACCEPT", XDM_CONST.OUTCOME_SUCCESS, XDM_CONST.OUTCOME_FAILED),
+    xdm.target.application.name = service_name ;
+
+[MODEL:dataset="fireeye_hx_raw"]
+filter cefVersion != null
+| alter
+        FireEye_Agent_Version = if(cs2Label = "FireEye Agent Version", cs2, null),
+        containment_action = if(cs3Label = "Containment action", cs3, null),
+        IOC_Name = if(cs4Label = "IOC Name", cs4, null),
+        Process_Name = if(cs4Label = "Process Name", cs4, null),
+        Target_OS = lowercase(if(cs6Label = "Target OS", cs6, null)),
+        resolution_cs = if(cs7Label = "Resolution", cs7, null),
+        Alert_Types = if(cs8Label = "Alert Types", cs8, null),
+        MD5_hash = if(cs9Label = "MD5", cs9, null),
+        Alert_Correlation_ID = if(cs10Label = "Alert Correlation ID", cs10, null),
+        Malware_Signature = if(cs11Label contains "malware signature", cs11, "unknown")
+// Mapping fields
+| alter
+        xdm.source.ipv4 = arrayindex(regextract(dst, "(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"),0),
+        xdm.source.ipv6 = arrayindex(regextract(dst, "([a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5})"),0),
+        xdm.source.host.hostname = dhost,
+        xdm.source.host.mac_addresses = arraycreate(dmac),
+        xdm.target.domain = dntdom,
+        xdm.observer.name = dvchost,
+        xdm.event.id = externalId,
+        xdm.event.type = cefName,
+        xdm.source.user.username = suser,
+        xdm.target.file.filename = fname,
+        xdm.target.file.path = filePath,
+        xdm.target.url = request,
+        xdm.event.description = coalesce(msg, categoryTupleDescription),
+        xdm.event.outcome = action,
+        xdm.event.log_level = if(cefSeverity = "10", XDM_CONST.LOG_LEVEL_ALERT, cefSeverity = "0", XDM_CONST.LOG_LEVEL_INFORMATIONAL, cefSeverity = "4", XDM_CONST.LOG_LEVEL_WARNING, cefSeverity = "7", XDM_CONST.LOG_LEVEL_ERROR),
+        xdm.alert.name = IOC_Name,
+        xdm.alert.subcategory = to_string(Alert_Types),
+        xdm.alert.description = act,
+        xdm.source.host.os = Target_OS,
+        xdm.observer.action = coalesce(resolution_cs, containment_action),
+        xdm.source.agent.version = FireEye_Agent_Version,
+        xdm.alert.original_alert_id = Alert_Correlation_ID,
+        xdm.source.process.name = Process_Name,
+        xdm.source.process.executable.md5 = MD5_hash,
+        xdm.source.host.os_family = if(Target_OS contains "windows", XDM_CONST.OS_FAMILY_WINDOWS, Target_OS contains "mac", XDM_CONST.OS_FAMILY_MACOS, Target_OS contains "linux", XDM_CONST.OS_FAMILY_LINUX, Target_OS contains "android", XDM_CONST.OS_FAMILY_ANDROID, Target_OS contains "ios", XDM_CONST.OS_FAMILY_IOS, Target_OS contains "ubuntu", XDM_CONST.OS_FAMILY_UBUNTU, Target_OS contains "debian", XDM_CONST.OS_FAMILY_DEBIAN, Target_OS contains "fedora", XDM_CONST.OS_FAMILY_FEDORA, Target_OS contains "centos", XDM_CONST.OS_FAMILY_CENTOS, Target_OS contains "chrome", XDM_CONST.OS_FAMILY_CHROMEOS, Target_OS contains "solaris", XDM_CONST.OS_FAMILY_SOLARIS, Target_OS contains "scada", XDM_CONST.OS_FAMILY_SCADA, to_string(Target_OS)),
+        xdm.alert.original_threat_name = Malware_Signature
+;
+
+[MODEL:dataset="peoplesoft_financials_raw"]
+filter _raw_log contains "authentication"
+| alter xdm.event.type = "authentication",
+    xdm.source.ipv4 = src,
+    xdm.source.user.username = user,
+    xdm.intermediate.user.username = src_user,
+    xdm.source.application.name = app,
+    xdm.event.outcome = if(action = "success", XDM_CONST.OUTCOME_SUCCESS, action = "failure", XDM_CONST.OUTCOME_FAILED),
+    xdm.event.outcome_reason = action,
+    xdm.event.operation = signature,
+    xdm.target.host.hostname = dest,
+    xdm.target.ipv4 = dest_ip,
+    xdm.event.description = signature,
+    xdm.observer.name = _product,
+    xdm.auth.auth_method = authentication_method,
+    xdm.auth.service = authentication_service
+;
+
+[MODEL:dataset="amp_north_raw"]
+alter xdm.event.type = "authentication",
+    xdm.source.ipv4 = src,
+    xdm.source.user.username = user,
+    xdm.event.original_event_type = app,
+    xdm.event.outcome = if(action = "success", XDM_CONST.OUTCOME_SUCCESS, action = "failure", XDM_CONST.OUTCOME_FAILED),
+    xdm.event.outcome_reason = action,
+    xdm.event.operation = signature,
+    xdm.target.host.hostname = dest,
+    xdm.event.description = signature,
+    xdm.observer.name = _product
+;
+[MODEL:dataset="amp_u2_ultimaas_raw"]
+alter xdm.event.type = "authentication",
+    xdm.source.ipv4 = coalesce(src,_reporting_device_ip),
+    xdm.source.user.username = user,
+    xdm.intermediate.user.username = suser,
+    xdm.source.application.name = app,
+    xdm.event.outcome = if(action = "success", XDM_CONST.OUTCOME_SUCCESS, action = "failure", XDM_CONST.OUTCOME_FAILED),
+    xdm.event.outcome_reason = reason,
+    xdm.event.operation = signature,
+    xdm.target.host.hostname = dest,
+    xdm.target.ipv4 = _reporting_device_ip,
+    xdm.event.description = signature,
+    xdm.observer.name = _product,
+    xdm.event.id = signature_id,
+    xdm.target.user.username = duser
+;
+
+[MODEL:dataset="was_mobility_services_raw"]
+filter message contains "login"
+| alter xdm.event.type = "authentication",
+    xdm.event.operation = class,
+    xdm.source.ipv4 = source_ip,
+    xdm.event.original_event_type = web_container,
+    xdm.event.description = message,
+    xdm.event.id = tam_id,
+    xdm.source.host.device_id = device_id,
+    xdm.source.user.username = user,
+    xdm.event.log_level = log_level,
+    xdm.event.outcome = if(action contains "successful",XDM_CONST.OUTCOME_SUCCESS, action contains "failure", XDM_CONST.OUTCOME_FAILED),
+    xdm.observer.name = _product
+;
+filter message not contains "login"
+| alter xdm.event.type = "authentication",
+    xdm.event.operation = class,
+    xdm.source.ipv4 = source_ip,
+    xdm.event.original_event_type = web_container,
+    xdm.event.description = message,
+    xdm.event.id = tam_id,
+    xdm.source.host.device_id = device_id,
+    xdm.source.user.username = user,
+    xdm.event.log_level = log_level,
+    xdm.observer.name = _product;
+
+
+[MODEL:dataset="was_mobility_audit_raw"]
+alter xdm.event.type = "authentication",
+    xdm.event.operation = event,
+    xdm.event.outcome_reason = reason,
+    xdm.source.user.username = user,
+    xdm.event.outcome = if(reason contains "successful",XDM_CONST.OUTCOME_SUCCESS, XDM_CONST.OUTCOME_FAILED),
+    xdm.event.operation_sub_type = class,
+    xdm.event.log_level = log_level,
+    xdm.event.id = web_container,
+    xdm.observer.name = _product;
+
+
+[MODEL:dataset="was_myamp_audit_raw"]
+filter event_type = "Logon"
+| alter
+    xdm.event.type = "authentication",
+    xdm.event.operation = event_type,
+    xdm.event.outcome_reason = reason,
+    xdm.target.host.hostname = auditor,
+    xdm.source.host.ipv4_addresses = split(client_ip,","),
+    xdm.source.user.username = user_id,
+    xdm.target.host.fqdn = x_forwarded_host,
+    xdm.event.id = web_container,
+    xdm.event.description = ldap_object,
+    xdm.event.outcome = if(reason contains "User logged in",XDM_CONST.OUTCOME_SUCCESS, XDM_CONST.OUTCOME_FAILED),
+    xdm.observer.name = _product;
+
+[MODEL:dataset="was_myamp_eam_raw"]
+alter
+    xdm.event.type = "authentication",
+    xdm.event.id = event -> event_id,
+    xdm.event.outcome_reason = event -> signature,
+    xdm.source.user.username = header_fields -> user,
+    xdm.event.operation = header_fields -> source_class,
+    xdm.event.original_event_type = header_fields -> WebContainer,
+    xdm.target.host.hostname = header_fields -> dest,
+    xdm.source.ipv4 = header_fields -> src,
+    xdm.event.log_level = header_fields -> log_level,
+    xdm.event.outcome = if(_raw_log ~= "(?:User not found|Invalid credentials supplied for user|The account is locked by user entering too many incorrect passwords|Blank or empty userid supplied)",XDM_CONST.OUTCOME_FAILED, XDM_CONST.OUTCOME_SUCCESS),
+    xdm.observer.name = _product;
+
+
+[MODEL:dataset="ibm_tim_raw"]
+alter 
+    xdm.event.type = "authentication",
+    xdm.event.description = LogText,
+    xdm.event.operation = Component,
+    xdm.event.log_level = arrayindex(regextract(_raw_log,"Severity=\"(.+)\""),0),
+    xdm.event.outcome_reason = MsgKey,
+    xdm.target.host.hostname = server_name,
+    xdm.source.user.username = if(LogText contains "login successfully", arrayindex(split(LogText," "),1),
+                                  LogText contains "password is not correct", arrayindex(split(LogText," "),7)
+    ),
+    xdm.event.outcome = if(MsgKey contains "AUTHENTICATION_SUCCESSFUL",XDM_CONST.OUTCOME_SUCCESS, MsgKey contains "AUTHENTICATION_FAILED",XDM_CONST.OUTCOME_FAILED),
+    xdm.source.ipv4 = arrayindex(regextract(LogText,"\d+\.\d+\.\d+\.\d+"),0),
+    xdm.source.ipv6 = arrayindex(regextract(LogText,"address (.+)\%3"),0);
+
+[MODEL:dataset="amazon_aws_raw"]
+filter responseElements -> ConsoleLogin != null
+| alter xdm.event.type = "authentication",
+    xdm.event.operation = eventName ,
+    xdm.event.original_event_type = eventtype,
+    xdm.target.host.fqdn = eventSource,
+    xdm.event.outcome = if(responseElements -> ConsoleLogin contains "Success",XDM_CONST.OUTCOME_SUCCESS, XDM_CONST.OUTCOME_FAILED),
+    xdm.source.user_agent = useragent,
+    xdm.source.ipv4 = sourceIPAddress,
+    xdm.event.description = useridentity,
+    xdm.source.user.username = arrayindex(split(useridentity -> principalId,":"),0),
+    xdm.target.cloud.project_id = userIdentity -> accountId,
+    xdm.auth.auth_method = userIdentity -> type,
+    xdm.target.url = additionaleventdata -> LoginTo,
+    xdm.auth.mfa.method = additionaleventdata -> MFAUsed,
+    xdm.auth.service = additionaleventdata -> SamlProviderArn,
+    xdm.target.cloud.region = awsregion;
+    
+
+[MODEL: dataset = salesforce_login_raw]
+alter xdm.source.user.identifier = replex(USER_ID ,"\"",""),
+    xdm.target.module.path = replex(URI ,"\"",""),
+    xdm.event.duration = to_integer(multiply(to_integer(replex(RUN_TIME ,"\"","")),1000)),
+    xdm.source.ipv4 = arrayindex(regextract(SOURCE_IP,"(\d+\.\d+\.\d+\.\d+)"),0),
+    xdm.source.user.username = replex(USER_NAME ,"\"",""),
+    xdm.source.user.user_type = if(USER_TYPE in ("Standard","PowerPartner","PowerCustomerSuccess","Guest","CustomerSuccess","CspLitePortal","CsnOnly"),XDM_CONST.USER_TYPE_REGULAR ,USER_TYPE = "SelfService",XDM_CONST.USER_TYPE_SERVICE_ACCOUNT ,to_string(replex(USER_TYPE ,"\"",""))),
+    xdm.event.type = replex(EVENT_TYPE ,"\"",""),
+    xdm.source.user_agent = replex(BROWSER_TYPE ,"\"",""),
+    xdm.network.tls.cipher = replex(CIPHER_SUITE ,"\"",""),
+    xdm.network.tls.protocol_version = replex(TLS_PROTOCOL ,"\"",""),
+    xdm.database.response_time = to_integer(replex(DB_TOTAL_TIME ,"\"","")),
+    xdm.logon.logon_guid = replex(LOGIN_KEY ,"\"",""),
+    xdm.observer.version = replex(API_VERSION,"\"",""),
+    xdm.event.outcome_reason = replex(LOGIN_STATUS ,"\"",""),
+    xdm.event.outcome = if(LOGIN_STATUS contains "LOGIN_NO_ERROR",XDM_CONST.OUTCOME_SUCCESS, LOGIN_STATUS = null, XDM_CONST.OUTCOME_SUCCESS, XDM_CONST.OUTCOME_FAILED),
+    xdm.source.host.os = replex(PLATFORM_TYPE,"\"",""),
+    xdm.auth.auth_method = replex(AUTHENTICATION_METHOD_REFERENCE ,"\"","");
+
+[MODEL:dataset="aruba_central_raw"]
+filter type != null
+| alter xdm.event.type = type,
+    xdm.source.user.username = user,
+    xdm.alert.name = type,
+    xdm.event.is_completed = if(acknowledged = false, false, true),
+    xdm.event.description = description,
+    xdm.event.duration = to_integer(Details -> duration),
+    xdm.event.outcome_reason = Details -> server_message,
+    xdm.alert.description = Details,
+    xdm.alert.severity = severity ;
+filter type = null
+| alter xdm.event.type = "Audit",
+    xdm.source.user.username = user,
+    xdm.target.host.hostname = `target`,
+    xdm.event.description = description ;
+
+[MODEL:dataset="cloudflare_dns_raw"]
+alter xdm.source.user.identifier = ActorID,
+xdm.event.type = ResourceType,
+xdm.source.user.username = coalesce(User_Name, ActorEmail) ,
+xdm.source.user.groups = arraycreate(User_Role),
+xdm.source.ipv4 = coalesce(User_IP , ActorIP ),
+xdm.observer.action = coalesce(Action,ActionType),
+xdm.event.operation_sub_type = coalesce(Action,ActionType),
+xdm.event.outcome = if(ActionResult = true, XDM_CONST.OUTCOME_SUCCESS , XDM_CONST.OUTCOME_FAILED ),
+xdm.event.description = Metadata ,
+xdm.event.outcome_reason = NewValue ;
+
+
+[MODEL:dataset="megaport_vpn_raw"]
+alter xdm.source.user.username = personName ,
+xdm.source.user.identifier = to_string(personId) ,
+xdm.source.ipv4 = ipAddress ,
+xdm.event.description = description ;
+
+[MODEL:dataset="amp_trustone_raw"]
+alter xdm.source.user.username = src_user,
+xdm.source.user.upn = user_id,
+xdm.auth.auth_method = authentication_method ,
+xdm.auth.service = authentication_service ,
+xdm.event.outcome = if(action = "success", XDM_CONST.OUTCOME_SUCCESS , action = "failure", XDM_CONST.OUTCOME_FAILED, action);
+
+
+
+
+
+
+
+
+
+
+
+
+
+

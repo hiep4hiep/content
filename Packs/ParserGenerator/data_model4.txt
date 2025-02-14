@@ -1,0 +1,66 @@
+Cisco ASA
+datamodel dataset=cisco_asa_vpn_raw | fields xdm.alert.severity,xdm.event.description,xdm.event.duration,xdm.event.id,xdm.event.log_level,xdm.event.operation,xdm.event.operation_sub_type,xdm.event.original_event_type,xdm.event.outcome,xdm.event.outcome_reason,xdm.network.dhcp.requested_address,xdm.network.icmp.code,xdm.network.icmp.type,xdm.network.ip_protocol,xdm.network.protocol_layers,xdm.network.rule,xdm.network.session_id,xdm.network.tls.client_certificate.issuer,xdm.network.tls.client_certificate.serial,xdm.network.tls.client_certificate.subject,xdm.network.vpn.allocated_ipv4,xdm.observer.name,xdm.source.application.name,xdm.source.host.hostname,xdm.source.ipv4,xdm.source.ipv6,xdm.source.location.city,xdm.source.location.country,xdm.source.process.executable.filename,xdm.source.process.name,xdm.source.sent_bytes,xdm.source.sent_packets,xdm.source.user.groups,xdm.source.user.username,xdm.source.user_agent,xdm.target.interface,xdm.target.ipv4,xdm.target.process.command_line,xdm.target.resource.name,xdm.target.resource.value,xdm.target.sent_bytes,xdm.target.url,xdm.target.user.groups,xdm.target.user.username,xdm.target.zone,cisco_asa_vpn_raw._raw_log
+
+Bluecoat
+"datamodel dataset = symantec_bluecoatproxysg_raw | filter xdm.event.type = ""authentication""
+| fields xdm.event.description,xdm.event.id,xdm.event.operation,xdm.event.operation_sub_type,xdm.event.outcome,xdm.event.outcome_reason,xdm.event.type,xdm.intermediate.ipv4,xdm.source.ipv4,xdm.source.ipv6,xdm.source.user.username,symantec_bluecoatproxysg_raw._raw_log"
+datamodel dataset = symantec_bluecoatproxysg_raw | filter xdm.event.type != "authentication" | filter xdm.network.http.method != null | fields xdm.event.type,xdm.intermediate.host.ipv4_addresses,xdm.intermediate.host.ipv6_addresses,xdm.intermediate.ipv4,xdm.intermediate.port,xdm.network.http.content_type,xdm.network.http.domain,xdm.network.http.method,xdm.network.http.referrer,xdm.network.http.response_code,xdm.network.http.url_category,xdm.network.ip_protocol,xdm.observer.action,xdm.observer.name,xdm.source.ipv4,xdm.source.ipv6,xdm.source.sent_bytes,xdm.source.user.groups,xdm.source.user.username,xdm.source.user_agent,xdm.target.port,xdm.target.resource.name,xdm.target.sent_bytes,xdm.target.url, symantec_bluecoatproxysg_raw._raw_log,
+
+Checkpoint
+datamodel dataset = check_point_vpn_1_firewall_1_raw | fields xdm.event.description,xdm.event.duration,xdm.event.id,xdm.event.outcome_reason,xdm.event.type,xdm.network.application_protocol,xdm.network.dns.dns_question.type,xdm.network.dns.dns_resource_record.type,xdm.network.icmp.code,xdm.network.icmp.type,xdm.network.ip_protocol,xdm.network.rule,xdm.network.session_id,xdm.observer.action,xdm.observer.name,xdm.observer.version,xdm.source.host.hostname,xdm.source.interface,xdm.source.ipv4,xdm.source.ipv6,xdm.source.port,xdm.source.sent_bytes,xdm.source.sent_packets,xdm.source.user.username,xdm.source.zone,xdm.target.host.hostname,xdm.target.ipv4,xdm.target.ipv6,xdm.target.port,xdm.target.sent_bytes,xdm.target.sent_packets,xdm.target.user.username,xdm.target.zone,check_point_vpn_1_firewall_1_raw._raw_log
+
+Citrix ADC
+"datamodel dataset = citrix_adc_raw
+| fields xdm.observer.name, xdm.event.type, xdm.event.id, xdm.event.description, xdm.source.ipv4, xdm.source.ipv6, xdm.source.port, xdm.target.port, xdm.target.ipv4, xdm.target.ipv6, xdm.source.sent_bytes, xdm.target.sent_bytes, xdm.source.application.name, xdm.session_context_id, xdm.source.user.username, xdm.source.user.domain, xdm.network.http.method,
+xdm.network.http.url, xdm.intermediate.host.hostname, xdm.network.session_id, xdm.event.outcome, xdm.source.user_agent, xdm.intermediate.ipv4, xdm.intermediate.port, xdm.network.tls.client_certificate.issuer, xdm.network.tls.client_certificate.subject, xdm.network.tls.client_certificate.version, xdm.network.tls.cipher,xdm.event.outcome_reason, citrix_adc_raw._raw_log"
+
+Fortigate
+datamodel dataset = fortinet_fortigate_raw | fields xdm.event.description,xdm.alert.description,xdm.target.zone,xdm.network.session_id,xdm.network.rule,xdm.target.application.name,xdm.event.operation,xdm.target.sent_bytes,xdm.target.host.hostname,xdm.source.host.hostname,xdm.observer.name,xdm.observer.unique_identifier,xdm.event.type,xdm.event.operation_sub_type,xdm.event.log_level,xdm.network.ip_protocol,xdm.observer.action,xdm.event.duration,xdm.source.sent_bytes,xdm.source.sent_packets,xdm.target.sent_packets,xdm.network.application_protocol_category,xdm.source.host.device_category,xdm.target.host.mac_addresses,xdm.source.host.mac_addresses,xdm.source.host.manufacturer,xdm.target.location.country,xdm.target.ipv4,xdm.target.port,xdm.target.interface,xdm.source.location.country,xdm.source.ipv4,xdm.source.port,xdm.source.interface,xdm.target.host.os_family,xdm.target.url,xdm.network.http.url_category,xdm.event.outcome_reason,xdm.alert.risks, fortinet_fortigate_raw._raw_log
+
+Infoblox
+"datamodel dataset = infoblox_infoblox_raw
+| filter xdm.event.type = ""DHCP"" and xdm.network.dhcp.message_type != null
+| fields xdm.source.process.name, xdm.source.process.pid, xdm.alert.severity,xdm.event.log_level, xdm.event.type, xdm.event.description,xdm.network.dhcp.message_type, xdm.source.host.mac_addresses,xdm.source.host.device_id, xdm.source.interface, xdm.source.ipv4,xdm.intermediate.ipv4, xdm.network.dhcp.giaddr, xdm.target.ipv4,xdm.network.dhcp.siaddr, xdm.network.dhcp.chaddr, xdm.network.dhcp.ciaddr,xdm.network.dhcp.client_hostname, xdm.network.dhcp.lease,xdm.network.dhcp.requested_address, xdm.network.dhcp.yiaddr,xdm.event.operation_sub_type, xdm.session_context_id, xdm.event.outcome,xdm.event.outcome_reason, infoblox_infoblox_raw._raw_log 
+"
+"
+datamodel dataset = infoblox_infoblox_raw
+| filter xdm.event.type = ""DNS Response""
+| fields
+xdm.alert.severity,xdm.event.type,xdm.event.description,xdm.event.log_level,xdm.event.outcome,xdm.event.outcome_reason,xdm.network.application_protocol,xdm.network.dns.authoritative,xdm.network.dns.dns_question.class,xdm.network.dns.dns_question.name,xdm.network.dns.dns_question.type,xdm.network.dns.dns_resource_record.class,xdm.network.dns.dns_resource_record.name,xdm.network.dns.dns_resource_record.type,xdm.network.dns.dns_resource_record.value,xdm.network.dns.is_response,xdm.network.dns.is_truncated,xdm.network.dns.response_code,xdm.network.ip_protocol,xdm.network.protocol_layers,xdm.source.ipv4,xdm.source.ipv6,xdm.source.port,xdm.source.process.name,xdm.source.process.pid,xdm.target.host.ipv4_addresses,xdm.target.host.ipv6_addresses,xdm.target.ipv4,xdm.target.ipv6, infoblox_infoblox_raw._raw_log 
+"
+"
+datamodel dataset = infoblox_infoblox_raw
+| filter xdm.event.type = ""DNS Query""
+| fields xdm.alert.severity, xdm.event.type, xdm.event.description, xdm.event.log_level, xdm.event.outcome, xdm.event.outcome_reason, xdm.intermediate.ipv4, xdm.intermediate.ipv6, xdm.network.application_protocol, xdm.network.dns.dns_question.class, xdm.network.dns.dns_question.name, xdm.network.dns.dns_question.type, xdm.network.dns.is_response, xdm.network.dns.response_code, xdm.network.ip_protocol, xdm.network.protocol_layers, xdm.source.ipv4, xdm.source.ipv6, xdm.source.port, xdm.source.process.name, xdm.source.process.pid, infoblox_infoblox_raw._raw_log 
+
+"
+"
+datamodel dataset = infoblox_infoblox_raw
+| filter xdm.event.type = ""ERROR""
+| fields xdm.event.type, xdm.source.process.name, xdm.source.process.pid, xdm.event.description, xdm.intermediate.ipv4, xdm.intermediate.host.hostname, infoblox_infoblox_raw._raw_log  "
+
+TrendMicro DS Manager
+datamodel dataset = trend_micro_deep_security_manager_raw | fields xdm.alert.description,xdm.alert.name,xdm.alert.severity,xdm.event.description,xdm.event.id,xdm.event.type,xdm.intermediate.ipv4,xdm.observer.type,xdm.observer.unique_identifier,xdm.observer.version,xdm.source.agent.identifier,xdm.source.agent.type,xdm.source.ipv4,xdm.source.ipv6,xdm.source.user.username,xdm.target.host.hostname,xdm.target.ipv4,xdm.target.resource.value,trend_micro_deep_security_manager_raw._raw_log
+
+
+TrendMicro DS Agent
+datamodel dataset = trend_micro_deep_security_agent_raw | fields xdm.alert.category,xdm.alert.description,xdm.alert.mitre_techniques,xdm.alert.name,xdm.alert.original_threat_id,xdm.event.operation,xdm.event.operation_sub_type,xdm.event.outcome,xdm.event.outcome_reason,xdm.event.tags,xdm.event.type,xdm.network.http.http_header.header,xdm.network.http.http_header.value,xdm.network.icmp.code,xdm.network.icmp.type,xdm.observer.action,xdm.source.host.hostname,xdm.source.interface,xdm.source.ipv4,xdm.source.ipv6,xdm.source.port,xdm.source.process.command_line,xdm.source.process.container_id,xdm.source.process.executable.extension,xdm.source.process.executable.filename,xdm.source.process.executable.md5,xdm.source.process.executable.path,xdm.source.process.executable.sha256,xdm.source.process.executable.size,xdm.source.process.name,xdm.source.sent_bytes,xdm.source.sent_packets,xdm.source.user.identifier,xdm.source.user.username,xdm.target.file.path,xdm.target.file_before.path,xdm.target.interface,xdm.target.ipv4,xdm.target.ipv6,xdm.target.port,xdm.target.process.name,xdm.target.registry.key,xdm.target.resource.type,xdm.target.resource.value,xdm.target.sent_bytes,xdm.target.url,xdm.target.user.username,trend_micro_deep_security_agent_raw._raw_log
+
+
+ZScaler FW
+"datamodel dataset = zscaler_fw_raw 
+|fields xdm.source.user.username, xdm.source.user.ou, xdm.intermediate.host.hostname, xdm.target.port, xdm.source.port, xdm.source.host.hostname, xdm.source.ipv4, xdm.target.ipv4, xdm.source.application.version, xdm.network.session_id, xdm.source.host.ipv4_addresses, xdm.source.agent.type, xdm.network.application_protocol, xdm.intermediate.ipv4, xdm.intermediate.port, xdm.network.rule, xdm.source.user.employee_id, xdm.source.sent_bytes, xdm.target.sent_bytes, xdm.network.ip_protocol, xdm.target.application.name, xdm.target.location.country, xdm.alert.category, xdm.alert.name, xdm.event.duration, xdm.network.http.url_category, xdm.target.application.publisher, xdm.event.outcome, zscaler_fw_raw._raw_log"
+
+
+ZScaler NSS
+"datamodel dataset = zscaler_nss_raw 
+|filter xdm.observer.product = ""tunnel""
+|fields xdm.event.type, xdm.network.application_protocol, xdm.source.user.username, xdm.source.location.region, xdm.source.ipv4, xdm.target.ipv4, xdm.source.port, xdm.source.sent_bytes, xdm.target.sent_bytes, xdm.event.id, xdm.observer.vendor, xdm.observer.product, zscaler_nss_raw._raw_log "
+"datamodel dataset = zscaler_nss_raw 
+|filter xdm.observer.product = ""nss""
+|fields 
+xdm.event.id, xdm.network.application_protocol, xdm.observer.action, xdm.network.rule , xdm.target.sent_bytes, xdm.source.sent_bytes, xdm.network.http.url_category, xdm.target.ipv4, xdm.network.http.method, xdm.network.http.referrer, xdm.source.user_agent, xdm.intermediate.host.hostname, xdm.source.ipv4, xdm.source.ipv6, xdm.network.http.response_code, xdm.source.user.username , xdm.source.host.ipv4_public_addresses , xdm.source.host.ipv6_public_addresses, xdm.source.host.ipv4_addresses, xdm.source.host.ipv6_addresses, xdm.alert.subcategory, xdm.alert.original_threat_name, xdm.source.user.ou, xdm.network.http.content_type, xdm.target.file.file_type, xdm.source.host.hostname, zscaler_nss_raw._raw_log"
+
+SilverFort
+"datamodel dataset = silverfort_admin_console_raw 
+|fields     xdm.source.user.username, xdm.source.user.upn, xdm.source.user.domain, xdm.source.host.hostname, xdm.source.ipv4, xdm.source.ipv6 ,xdm.target.application.name, xdm.target.resource.name, xdm.target.domain, xdm.event.operation_sub_type, xdm.event.description , xdm.alert.severity, xdm.event.outcome, xdm.observer.action, xdm.event.outcome_reason, xdm.event.type, xdm.event.tags, xdm.auth.mfa.client_details, silverfort_admin_console_raw._raw_log"

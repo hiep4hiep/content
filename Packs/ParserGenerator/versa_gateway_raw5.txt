@@ -1,0 +1,585 @@
+// Parse accessLog log                
+filter _raw_log contains "accessLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "accessLog",
+  flowId = arrayindex(regextract(_raw_log,"flowId=([^,]+)"),0),
+  flowCookie = arrayindex(regextract(_raw_log,"flowCookie=([^,]+)"),0),
+  flowStartMilliseconds = arrayindex(regextract(_raw_log,"flowStartMilliseconds=([^,]+)"),0),
+  flowEndMilliseconds = arrayindex(regextract(_raw_log,"flowEndMilliseconds=([^,]+)"),0),
+  sentOctets = arrayindex(regextract(_raw_log,"sentOctets=([^,]+)"),0),
+  sentPackets = arrayindex(regextract(_raw_log,"sentPackets=([^,]+)"),0),
+  recvdOctets = arrayindex(regextract(_raw_log,"recvdOctets=([^,]+)"),0),
+  recvdPackets = arrayindex(regextract(_raw_log,"recvdPackets=([^,]+)"),0),
+  appId = arrayindex(regextract(_raw_log,"appId=([^,]+)"),0),
+  eventType = arrayindex(regextract(_raw_log,"eventType=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  urlCategory = arrayindex(regextract(_raw_log,"urlCategory=([^,]+)"),0),
+  action = arrayindex(regextract(_raw_log,"action=([^,]+)"),0),
+  vsnId = arrayindex(regextract(_raw_log,"vsnId=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  appRisk = arrayindex(regextract(_raw_log,"appRisk=([^,]+)"),0),
+  appProductivity = arrayindex(regextract(_raw_log,"appProductivity=([^,]+)"),0),
+  appIdStr = arrayindex(regextract(_raw_log,"appIdStr=([^,]+)"),0),
+  appFamily = arrayindex(regextract(_raw_log,"appFamily=([^,]+)"),0),
+  appSubFamily = arrayindex(regextract(_raw_log,"appSubFamily=([^,]+)"),0),
+  rule = arrayindex(regextract(_raw_log,"rule=([^,]+)"),0),
+  forwardForwardingClass = arrayindex(regextract(_raw_log,"forwardForwardingClass=([^,]+)"),0),
+  reverseForwardingClass = arrayindex(regextract(_raw_log,"reverseForwardingClass=([^,]+)"),0),
+  host = arrayindex(regextract(_raw_log,"host=([^,]+)"),0),
+  deviceKey = arrayindex(regextract(_raw_log,"deviceKey=([^,]+)"),0),
+  deviceName = arrayindex(regextract(_raw_log,"deviceName=([^,]+)"),0),
+  sourceIPv4Address = arrayindex(regextract(_raw_log,"sourceIPv4Address=([^,]+)"),0),
+  destinationIPv4Address = arrayindex(regextract(_raw_log,"destinationIPv4Address=([^,]+)"),0),
+  sourceTransportPort = arrayindex(regextract(_raw_log,"sourceTransportPort=([^,]+)"),0),
+  destinationTransportPort = arrayindex(regextract(_raw_log,"destinationTransportPort=([^,]+)"),0),
+  protocolIdentifier = arrayindex(regextract(_raw_log,"protocolIdentifier=([^,]+)"),0),
+  fromUser = arrayindex(regextract(_raw_log,"fromUser=([^,]+)"),0),
+  eipProfileName = arrayindex(regextract(_raw_log,"eipProfileName=([^,]+)"),0),
+  traffScope = arrayindex(regextract(_raw_log,"traffScope=([^,]+)"),0),
+  srcSGT = arrayindex(regextract(_raw_log,"srcSGT=([^,]+)"),0),
+  destSGT = arrayindex(regextract(_raw_log,"destSGT=([^,]+)"),0);
+
+// Parse dnsfLog log                
+filter _raw_log contains "dnsfLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "dnsfLog",
+  flowId = arrayindex(regextract(_raw_log,"flowId=([^,]+)"),0),
+  flowCookie = arrayindex(regextract(_raw_log,"flowCookie=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  vsnId = arrayindex(regextract(_raw_log,"vsnId=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  dnsfProfileName = arrayindex(regextract(_raw_log,"dnsfProfileName=([^,]+)"),0),
+  dnsfMsgType = arrayindex(regextract(_raw_log,"dnsfMsgType=([^,]+)"),0),
+  dnsfEvType = arrayindex(regextract(_raw_log,"dnsfEvType=([^,]+)"),0),
+  dnsfAction = arrayindex(regextract(_raw_log,"dnsfAction=([^,]+)"),0),
+  dnsfDomain = arrayindex(regextract(_raw_log,"dnsfDomain=([^,]+)"),0),
+  dnsfRuleName = arrayindex(regextract(_raw_log,"dnsfRuleName=([^,]+)"),0),
+  dnsfBadResolvedV4Addr = arrayindex(regextract(_raw_log,"dnsfBadResolvedV4Addr=([^,]+)"),0),
+  dnsfBadResolvedV6Addr = arrayindex(regextract(_raw_log,"dnsfBadResolvedV6Addr=([^,]+)"),0),
+  dnsfBadCname = arrayindex(regextract(_raw_log,"dnsfBadCname=([^,]+)"),0),
+  dnsfDomainReputation = arrayindex(regextract(_raw_log,"dnsfDomainReputation=([^,]+)"),0),
+  dnsfDomainCategory = arrayindex(regextract(_raw_log,"dnsfDomainCategory=([^,]+)"),0),
+  dnsfIpReputation = arrayindex(regextract(_raw_log,"dnsfIpReputation=([^,]+)"),0),
+  dnsfIpGeoLocation = arrayindex(regextract(_raw_log,"dnsfIpGeoLocation=([^,]+)"),0),
+  sourceIPv4Address = arrayindex(regextract(_raw_log,"sourceIPv4Address=([^,]+)"),0),
+  destinationIPv4Address = arrayindex(regextract(_raw_log,"destinationIPv4Address=([^,]+)"),0),
+  sourceTransportPort = arrayindex(regextract(_raw_log,"sourceTransportPort=([^,]+)"),0),
+  destinationTransportPort = arrayindex(regextract(_raw_log,"destinationTransportPort=([^,]+)"),0),
+  protocolIdentifier = arrayindex(regextract(_raw_log,"protocolIdentifier=([^,]+)"),0),
+  fromUser = arrayindex(regextract(_raw_log,"fromUser=([^,]+)"),0),
+  threatSeverity = arrayindex(regextract(_raw_log,"threatSeverity=([^,]+)"),0),
+  threatType = arrayindex(regextract(_raw_log,"threatType=([^,]+)"),0),
+  dnsfSinkHoleIp = arrayindex(regextract(_raw_log,"dnsfSinkHoleIp=([^,]+)"),0);
+
+// Parse fileFilterLog log                
+filter _raw_log contains "fileFilterLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "fileFilterLog",
+  flowId = arrayindex(regextract(_raw_log,"flowId=([^,]+)"),0),
+  flowCookie = arrayindex(regextract(_raw_log,"flowCookie=([^,]+)"),0),
+  vsnId = arrayindex(regextract(_raw_log,"vsnId=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  profileName = arrayindex(regextract(_raw_log,"profileName=([^,]+)"),0),
+  appIdStr = arrayindex(regextract(_raw_log,"appIdStr=([^,]+)"),0),
+  fileName = arrayindex(regextract(_raw_log,"fileName=([^,]+)"),0),
+  fileType = arrayindex(regextract(_raw_log,"fileType=([^,]+)"),0),
+  fileSize = arrayindex(regextract(_raw_log,"fileSize=([^,]+)"),0),
+  fileTransDir = arrayindex(regextract(_raw_log,"fileTransDir=([^,]+)"),0),
+  fileFoundIn = arrayindex(regextract(_raw_log,"fileFoundIn=([^,]+)"),0),
+  fileSizeExceed = arrayindex(regextract(_raw_log,"fileSizeExceed=([^,]+)"),0),
+  fileFilterAction = arrayindex(regextract(_raw_log,"fileFilterAction=([^,]+)"),0),
+  fileHashType = arrayindex(regextract(_raw_log,"fileHashType=([^,]+)"),0),
+  fileHashValue = arrayindex(regextract(_raw_log,"fileHashValue=([^,]+)"),0),
+  fileRuleName = arrayindex(regextract(_raw_log,"fileRuleName=([^,]+)"),0),
+  sourceIPv4Address = arrayindex(regextract(_raw_log,"sourceIPv4Address=([^,]+)"),0),
+  destinationIPv4Address = arrayindex(regextract(_raw_log,"destinationIPv4Address=([^,]+)"),0),
+  sourceTransportPort = arrayindex(regextract(_raw_log,"sourceTransportPort=([^,]+)"),0),
+  destinationTransportPort = arrayindex(regextract(_raw_log,"destinationTransportPort=([^,]+)"),0),
+  protocolIdentifier = arrayindex(regextract(_raw_log,"protocolIdentifier=([^,]+)"),0),
+  fromUser = arrayindex(regextract(_raw_log,"fromUser=([^,]+)"),0),
+  threatType = arrayindex(regextract(_raw_log,"threatType=([^,]+)"),0),
+  threatSeverity = arrayindex(regextract(_raw_log,"threatSeverity=([^,]+)"),0);
+
+// Parse flowIdLog log                
+filter _raw_log contains "flowIdLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "flowIdLog",
+  flowId = arrayindex(regextract(_raw_log,"flowId=([^,]+)"),0),
+  flowCookie = arrayindex(regextract(_raw_log,"flowCookie=([^,]+)"),0),
+  sourceIPv4Address = arrayindex(regextract(_raw_log,"sourceIPv4Address=([^,]+)"),0),
+  destinationIPv4Address = arrayindex(regextract(_raw_log,"destinationIPv4Address=([^,]+)"),0),
+  sourcePort = arrayindex(regextract(_raw_log,"sourcePort=([^,]+)"),0),
+  destinationPort = arrayindex(regextract(_raw_log,"destinationPort=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  vsnId = arrayindex(regextract(_raw_log,"vsnId=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  ingressInterfaceName = arrayindex(regextract(_raw_log,"ingressInterfaceName=([^,]+)"),0),
+  egressInterfaceName = arrayindex(regextract(_raw_log,"egressInterfaceName=([^,]+)"),0),
+  fromCountry = arrayindex(regextract(_raw_log,"fromCountry=([^,]+)"),0),
+  toCountry = arrayindex(regextract(_raw_log,"toCountry=([^,]+)"),0),
+  protocolIdentifier = arrayindex(regextract(_raw_log,"protocolIdentifier=([^,]+)"),0),
+  fromZone = arrayindex(regextract(_raw_log,"fromZone=([^,]+)"),0),
+  fromUser = arrayindex(regextract(_raw_log,"fromUser=([^,]+)"),0),
+  toZone = arrayindex(regextract(_raw_log,"toZone=([^,]+)"),0),
+  icmpTypeIPv4 = arrayindex(regextract(_raw_log,"icmpTypeIPv4=([^,]+)"),0);
+
+// Parse secAccUserStatsLog log                
+filter _raw_log contains "secAccUserStatsLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "secAccUserStatsLog",
+  mstatsTimeBlock = arrayindex(regextract(_raw_log,"mstatsTimeBlock=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  mstatsTotSessDuration = arrayindex(regextract(_raw_log,"mstatsTotSessDuration=([^,]+)"),0),
+  userName = arrayindex(regextract(_raw_log,"userName=([^,]+)"),0),
+  racIP = arrayindex(regextract(_raw_log,"racIP=([^,]+)"),0),
+  racRxBytes = arrayindex(regextract(_raw_log,"racRxBytes=([^,]+)"),0),
+  racTxBytes = arrayindex(regextract(_raw_log,"racTxBytes=([^,]+)"),0),
+  roundTripTime = arrayindex(regextract(_raw_log,"roundTripTime=([^,]+)"),0),
+  latitude = arrayindex(regextract(_raw_log,"latitude=([^,]+)"),0),
+  longitude = arrayindex(regextract(_raw_log,"longitude=([^,]+)"),0),
+  isp = arrayindex(regextract(_raw_log,"isp=([^,]+)"),0),
+  lossRatio = arrayindex(regextract(_raw_log,"lossRatio=([^,]+)"),0),
+  delay = arrayindex(regextract(_raw_log,"delay=([^,]+)"),0),
+  delayVar = arrayindex(regextract(_raw_log,"delayVar=([^,]+)"),0),
+  racTunnelIP = arrayindex(regextract(_raw_log,"racTunnelIP=([^,]+)"),0),
+  racAccessType = arrayindex(regextract(_raw_log,"racAccessType=([^,]+)"),0);
+
+// Parse ipfLog log                
+filter _raw_log contains "ipfLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "ipfLog",
+  flowId = arrayindex(regextract(_raw_log,"flowId=([^,]+)"),0),
+  flowCookie = arrayindex(regextract(_raw_log,"flowCookie=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  vsnId = arrayindex(regextract(_raw_log,"vsnId=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  profileName = arrayindex(regextract(_raw_log,"profileName=([^,]+)"),0),
+  match = arrayindex(regextract(_raw_log,"match=([^,]+)"),0),
+  ipfAction = arrayindex(regextract(_raw_log,"ipfAction=([^,]+)"),0),
+  srcWhiteList = arrayindex(regextract(_raw_log,"srcWhiteList=([^,]+)"),0),
+  dstWhiteList = arrayindex(regextract(_raw_log,"dstWhiteList=([^,]+)"),0),
+  srcBlackList = arrayindex(regextract(_raw_log,"srcBlackList=([^,]+)"),0),
+  dstBlackList = arrayindex(regextract(_raw_log,"dstBlackList=([^,]+)"),0),
+  srcReputation = arrayindex(regextract(_raw_log,"srcReputation=([^,]+)"),0),
+  dstReputation = arrayindex(regextract(_raw_log,"dstReputation=([^,]+)"),0),
+  srcLocation = arrayindex(regextract(_raw_log,"srcLocation=([^,]+)"),0),
+  dstLocation = arrayindex(regextract(_raw_log,"dstLocation=([^,]+)"),0),
+  srcDomain = arrayindex(regextract(_raw_log,"srcDomain=([^,]+)"),0),
+  dstDomain = arrayindex(regextract(_raw_log,"dstDomain=([^,]+)"),0),
+  ipfActionMessage = arrayindex(regextract(_raw_log,"ipfActionMessage=([^,]+)"),0),
+  sourceIPv4Address = arrayindex(regextract(_raw_log,"sourceIPv4Address=([^,]+)"),0),
+  destinationIPv4Address = arrayindex(regextract(_raw_log,"destinationIPv4Address=([^,]+)"),0),
+  sourceTransportPort = arrayindex(regextract(_raw_log,"sourceTransportPort=([^,]+)"),0),
+  destinationTransportPort = arrayindex(regextract(_raw_log,"destinationTransportPort=([^,]+)"),0);
+
+// Parse urlfLog log                
+filter _raw_log contains "urlfLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "urlfLog",
+  flowId = arrayindex(regextract(_raw_log,"flowId=([^,]+)"),0),
+  flowCookie = arrayindex(regextract(_raw_log,"flowCookie=([^,]+)"),0),
+  vsnId = arrayindex(regextract(_raw_log,"vsnId=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  urlReputation = arrayindex(regextract(_raw_log,"urlReputation=([^,]+)"),0),
+  urlCategory = arrayindex(regextract(_raw_log,"urlCategory=([^,]+)"),0),
+  httpUrl = arrayindex(regextract(_raw_log,"httpUrl=([^,]+)"),0),
+  urlfProfile = arrayindex(regextract(_raw_log,"urlfProfile=([^,]+)"),0),
+  urlfAction = arrayindex(regextract(_raw_log,"urlfAction=([^,]+)"),0),
+  urlfActionMessage = arrayindex(regextract(_raw_log,"urlfActionMessage=([^,]+)"),0),
+  sourceIPv4Address = arrayindex(regextract(_raw_log,"sourceIPv4Address=([^,]+)"),0),
+  destinationIPv4Address = arrayindex(regextract(_raw_log,"destinationIPv4Address=([^,]+)"),0),
+  sourceTransportPort = arrayindex(regextract(_raw_log,"sourceTransportPort=([^,]+)"),0),
+  destinationTransportPort = arrayindex(regextract(_raw_log,"destinationTransportPort=([^,]+)"),0),
+  protocolIdentifier = arrayindex(regextract(_raw_log,"protocolIdentifier=([^,]+)"),0),
+  fromUser = arrayindex(regextract(_raw_log,"fromUser=([^,]+)"),0),
+  threatSeverity = arrayindex(regextract(_raw_log,"threatSeverity=([^,]+)"),0),
+  threatType = arrayindex(regextract(_raw_log,"threatType=([^,]+)"),0);
+
+// Parse sdwanHealthLog log                
+filter _raw_log contains "sdwanHealthLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "sdwanHealthLog",
+  generateTime = arrayindex(regextract(_raw_log,"generateTime=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  vsnId = arrayindex(regextract(_raw_log,"vsnId=([^,]+)"),0),
+  duration = arrayindex(regextract(_raw_log,"duration=([^,]+)"),0),
+  pathsUp = arrayindex(regextract(_raw_log,"pathsUp=([^,]+)"),0),
+  pathsDown = arrayindex(regextract(_raw_log,"pathsDown=([^,]+)"),0),
+  pathsNoConf = arrayindex(regextract(_raw_log,"pathsNoConf=([^,]+)"),0),
+  rmtSitesUp = arrayindex(regextract(_raw_log,"rmtSitesUp=([^,]+)"),0),
+  rmtSitesDown = arrayindex(regextract(_raw_log,"rmtSitesDown=([^,]+)"),0),
+  allRmtSitesDown = arrayindex(regextract(_raw_log,"allRmtSitesDown=([^,]+)"),0),
+  allRmtSitesDownTime = arrayindex(regextract(_raw_log,"allRmtSitesDownTime=([^,]+)"),0),
+  svcUptime = arrayindex(regextract(_raw_log,"svcUptime=([^,]+)"),0),
+  allLclCktDown = arrayindex(regextract(_raw_log,"allLclCktDown=([^,]+)"),0);
+
+// Parse eventLog log                
+filter _raw_log contains "eventLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "eventLog",
+  generateTime = arrayindex(regextract(_raw_log,"generateTime=([^,]+)"),0),
+  eventType = arrayindex(regextract(_raw_log,"eventType=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  vsnId = arrayindex(regextract(_raw_log,"vsnId=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  eventSetCntr = arrayindex(regextract(_raw_log,"eventSetCntr=([^,]+)"),0),
+  eventClrCntr = arrayindex(regextract(_raw_log,"eventClrCntr=([^,]+)"),0),
+  localSiteName = arrayindex(regextract(_raw_log,"localSiteName=([^,]+)"),0),
+  localAccCktName = arrayindex(regextract(_raw_log,"localAccCktName=([^,]+)"),0),
+  remoteSiteName = arrayindex(regextract(_raw_log,"remoteSiteName=([^,]+)"),0),
+  remoteAccCktName = arrayindex(regextract(_raw_log,"remoteAccCktName=([^,]+)"),0),
+  fwdClass = arrayindex(regextract(_raw_log,"fwdClass=([^,]+)"),0),
+  lastState = arrayindex(regextract(_raw_log,"lastState=([^,]+)"),0);
+
+// Parse authEventLog log                
+filter _raw_log contains "authEventLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "authEventLog",
+  flowId = arrayindex(regextract(_raw_log,"flowId=([^,]+)"),0),
+  flowCookie = arrayindex(regextract(_raw_log,"flowCookie=([^,]+)"),0),
+  vsnId = arrayindex(regextract(_raw_log,"vsnId=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  authProfile = arrayindex(regextract(_raw_log,"authProfile=([^,]+)"),0),
+  authMethod = arrayindex(regextract(_raw_log,"authMethod=([^,]+)"),0),
+  userName = arrayindex(regextract(_raw_log,"userName=([^,]+)"),0),
+  authStatus = arrayindex(regextract(_raw_log,"authStatus=([^,]+)"),0),
+  authStatusMessage = arrayindex(regextract(_raw_log,"authStatusMessage=([^,]+)"),0),
+  authTime = arrayindex(regextract(_raw_log,"authTime=([^,]+)"),0),
+  sourceIPv4Address = arrayindex(regextract(_raw_log,"sourceIPv4Address=([^,]+)"),0),
+  destinationIPv4Address = arrayindex(regextract(_raw_log,"destinationIPv4Address=([^,]+)"),0),
+  sourceTransportPort = arrayindex(regextract(_raw_log,"sourceTransportPort=([^,]+)"),0),
+  destinationTransportPort = arrayindex(regextract(_raw_log,"destinationTransportPort=([^,]+)"),0),
+  protocolIdentifier = arrayindex(regextract(_raw_log,"protocolIdentifier=([^,]+)"),0),
+  fromUser = arrayindex(regextract(_raw_log,"fromUser=([^,]+)"),0);
+
+// Parse sdwanBranchInfoLog log                
+filter _raw_log contains "sdwanBranchInfoLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "sdwanBranchInfoLog",
+  localSiteId = arrayindex(regextract(_raw_log,"localSiteId=([^,]+)"),0),
+  localSiteName = arrayindex(regextract(_raw_log,"localSiteName=([^,]+)"),0),
+  location = arrayindex(regextract(_raw_log,"location=([^,]+)"),0),
+  latitude = arrayindex(regextract(_raw_log,"latitude=([^,]+)"),0),
+  longitude = arrayindex(regextract(_raw_log,"longitude=([^,]+)"),0),
+  creationTime = arrayindex(regextract(_raw_log,"creationTime=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  siteType = arrayindex(regextract(_raw_log,"siteType=([^,]+)"),0);
+
+// Parse avLog log                
+filter _raw_log contains "avLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "avLog",
+  flowId = arrayindex(regextract(_raw_log,"flowId=([^,]+)"),0),
+  flowCookie = arrayindex(regextract(_raw_log,"flowCookie=([^,]+)"),0),
+  vsnId = arrayindex(regextract(_raw_log,"vsnId=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  profileName = arrayindex(regextract(_raw_log,"profileName=([^,]+)"),0),
+  appIdStr = arrayindex(regextract(_raw_log,"appIdStr=([^,]+)"),0),
+  fileName = arrayindex(regextract(_raw_log,"fileName=([^,]+)"),0),
+  fileType = arrayindex(regextract(_raw_log,"fileType=([^,]+)"),0),
+  fileTransDir = arrayindex(regextract(_raw_log,"fileTransDir=([^,]+)"),0),
+  avMalwareType = arrayindex(regextract(_raw_log,"avMalwareType=([^,]+)"),0),
+  avMalwareName = arrayindex(regextract(_raw_log,"avMalwareName=([^,]+)"),0),
+  avAccuracy = arrayindex(regextract(_raw_log,"avAccuracy=([^,]+)"),0),
+  avAction = arrayindex(regextract(_raw_log,"avAction=([^,]+)"),0),
+  sourceIPv4Address = arrayindex(regextract(_raw_log,"sourceIPv4Address=([^,]+)"),0),
+  destinationIPv4Address = arrayindex(regextract(_raw_log,"destinationIPv4Address=([^,]+)"),0),
+  sourceTransportPort = arrayindex(regextract(_raw_log,"sourceTransportPort=([^,]+)"),0),
+  destinationTransportPort = arrayindex(regextract(_raw_log,"destinationTransportPort=([^,]+)"),0);
+
+// Parse sdwanSiteListLog log                
+filter _raw_log contains "sdwanSiteListLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "sdwanSiteListLog",
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  transactionId = arrayindex(regextract(_raw_log,"transactionId=([^,]+)"),0),
+  eventType = arrayindex(regextract(_raw_log,"eventType=([^,]+)"),0),
+  siteCount = arrayindex(regextract(_raw_log,"siteCount=([^,]+)"),0),
+  siteList = arrayindex(regextract(_raw_log,"siteList=([^,]+)"),0);
+
+// Parse secAccUserConnEventLog log                
+filter _raw_log contains "secAccUserConnEventLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "secAccUserConnEventLog",
+  vsnId = arrayindex(regextract(_raw_log,"vsnId=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  userName = arrayindex(regextract(_raw_log,"userName=([^,]+)"),0),
+  deviceName = arrayindex(regextract(_raw_log,"deviceName=([^,]+)"),0),
+  racTunnelIP = arrayindex(regextract(_raw_log,"racTunnelIP=([^,]+)"),0),
+  racIP = arrayindex(regextract(_raw_log,"racIP=([^,]+)"),0),
+  racAccessType = arrayindex(regextract(_raw_log,"racAccessType=([^,]+)"),0),
+  racEventType = arrayindex(regextract(_raw_log,"racEventType=([^,]+)"),0),
+  secAccRuleName = arrayindex(regextract(_raw_log,"secAccRuleName=([^,]+)"),0),
+  secAccRuleAction = arrayindex(regextract(_raw_log,"secAccRuleAction=([^,]+)"),0),
+  authProfile = arrayindex(regextract(_raw_log,"authProfile=([^,]+)"),0),
+  vpnProfile = arrayindex(regextract(_raw_log,"vpnProfile=([^,]+)"),0),
+  rInst = arrayindex(regextract(_raw_log,"rInst=([^,]+)"),0),
+  uptime = arrayindex(regextract(_raw_log,"uptime=([^,]+)"),0),
+  failureReason = arrayindex(regextract(_raw_log,"failureReason=([^,]+)"),0);
+
+// Parse activeUserLog log                
+filter _raw_log contains "activeUserLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "activeUserLog",
+  generateTime = arrayindex(regextract(_raw_log,"generateTime=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  vsnId = arrayindex(regextract(_raw_log,"vsnId=([^,]+)"),0),
+  userName = arrayindex(regextract(_raw_log,"userName=([^,]+)"),0),
+  subscriptionType = arrayindex(regextract(_raw_log,"subscriptionType=([^,]+)"),0),
+  HitCount = arrayindex(regextract(_raw_log,"HitCount=([^,]+)"),0);
+
+// Parse entitlementLog log                
+filter _raw_log contains "entitlementLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "entitlementLog",
+  generateTime = arrayindex(regextract(_raw_log,"generateTime=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  vsnId = arrayindex(regextract(_raw_log,"vsnId=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  recvdOctets = arrayindex(regextract(_raw_log,"recvdOctets=([^,]+)"),0),
+  sentOctets = arrayindex(regextract(_raw_log,"sentOctets=([^,]+)"),0),
+  duration = arrayindex(regextract(_raw_log,"duration=([^,]+)"),0);
+
+// Parse sdwanSiteStatusLog log                
+filter _raw_log contains "sdwanSiteStatusLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "sdwanSiteStatusLog",
+  siteId = arrayindex(regextract(_raw_log,"siteId=([^,]+)"),0),
+  siteName = arrayindex(regextract(_raw_log,"siteName=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  siteStatus = arrayindex(regextract(_raw_log,"siteStatus=([^,]+)"),0),
+  duration = arrayindex(regextract(_raw_log,"duration=([^,]+)"),0);
+
+// Parse sdwanAccCktInfoLog log                
+filter _raw_log contains "sdwanAccCktInfoLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "sdwanAccCktInfoLog",
+  localAccCktId = arrayindex(regextract(_raw_log,"localAccCktId=([^,]+)"),0),
+  localAccCktName = arrayindex(regextract(_raw_log,"localAccCktName=([^,]+)"),0),
+  accCktBW = arrayindex(regextract(_raw_log,"accCktBW=([^,]+)"),0),
+  localAccCktIp = arrayindex(regextract(_raw_log,"localAccCktIp=([^,]+)"),0),
+  localSiteId = arrayindex(regextract(_raw_log,"localSiteId=([^,]+)"),0),
+  localSiteName = arrayindex(regextract(_raw_log,"localSiteName=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  uplinkBw = arrayindex(regextract(_raw_log,"uplinkBw=([^,]+)"),0),
+  downlinkBw = arrayindex(regextract(_raw_log,"downlinkBw=([^,]+)"),0),
+  cktProvider = arrayindex(regextract(_raw_log,"cktProvider=([^,]+)"),0),
+  cktType = arrayindex(regextract(_raw_log,"cktType=([^,]+)"),0),
+  cktMedia = arrayindex(regextract(_raw_log,"cktMedia=([^,]+)"),0);
+
+// Parse dnsfTunnelLog log                
+filter _raw_log contains "dnsfTunnelLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "dnsfTunnelLog",
+  flowId = arrayindex(regextract(_raw_log,"flowId=([^,]+)"),0),
+  flowCookie = arrayindex(regextract(_raw_log,"flowCookie=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  vsnId = arrayindex(regextract(_raw_log,"vsnId=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  dnsfProfileName = arrayindex(regextract(_raw_log,"dnsfProfileName=([^,]+)"),0),
+  dnsfAction = arrayindex(regextract(_raw_log,"dnsfAction=([^,]+)"),0),
+  dnsfDetectedDomain = arrayindex(regextract(_raw_log,"dnsfDetectedDomain=([^,]+)"),0),
+  dnsfDetectionType = arrayindex(regextract(_raw_log,"dnsfDetectionType=([^,]+)"),0),
+  dnsfDetectionReason = arrayindex(regextract(_raw_log,"dnsfDetectionReason=([^,]+)"),0),
+  dnsfDetectionTime = arrayindex(regextract(_raw_log,"dnsfDetectionTime=([^,]+)"),0),
+  dnsfTunnelClientIp = arrayindex(regextract(_raw_log,"dnsfTunnelClientIp=([^,]+)"),0),
+  sourceIPv4Address = arrayindex(regextract(_raw_log,"sourceIPv4Address=([^,]+)"),0),
+  destinationIPv4Address = arrayindex(regextract(_raw_log,"destinationIPv4Address=([^,]+)"),0),
+  sourceTransportPort = arrayindex(regextract(_raw_log,"sourceTransportPort=([^,]+)"),0),
+  destinationTransportPort = arrayindex(regextract(_raw_log,"destinationTransportPort=([^,]+)"),0),
+  protocolIdentifier = arrayindex(regextract(_raw_log,"protocolIdentifier=([^,]+)"),0),
+  fromUser = arrayindex(regextract(_raw_log,"fromUser=([^,]+)"),0),
+  threatSeverity = arrayindex(regextract(_raw_log,"threatSeverity=([^,]+)"),0),
+  threatType = arrayindex(regextract(_raw_log,"threatType=([^,]+)"),0),
+  dnsfSinkHoleIp = arrayindex(regextract(_raw_log,"dnsfSinkHoleIp=([^,]+)"),0);
+
+// Parse secAccUserRegEventLog log                
+filter _raw_log contains "secAccUserRegEventLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "secAccUserRegEventLog",
+  vsnId = arrayindex(regextract(_raw_log,"vsnId=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  userName = arrayindex(regextract(_raw_log,"userName=([^,]+)"),0),
+  latitude = arrayindex(regextract(_raw_log,"latitude=([^,]+)"),0),
+  longitude = arrayindex(regextract(_raw_log,"longitude=([^,]+)"),0),
+  os = arrayindex(regextract(_raw_log,"os=([^,]+)"),0),
+  osVersion = arrayindex(regextract(_raw_log,"osVersion=([^,]+)"),0),
+  secAccClientVersion = arrayindex(regextract(_raw_log,"secAccClientVersion=([^,]+)"),0),
+  secAccRuleName = arrayindex(regextract(_raw_log,"secAccRuleName=([^,]+)"),0),
+  secAccRuleAction = arrayindex(regextract(_raw_log,"secAccRuleAction=([^,]+)"),0),
+  secAccProfName = arrayindex(regextract(_raw_log,"secAccProfName=([^,]+)"),0);
+
+// Parse idpLog log                
+filter _raw_log contains "idpLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "idpLog",
+  flowId = arrayindex(regextract(_raw_log,"flowId=([^,]+)"),0),
+  flowCookie = arrayindex(regextract(_raw_log,"flowCookie=([^,]+)"),0),
+  signatureId = arrayindex(regextract(_raw_log,"signatureId=([^,]+)"),0),
+  groupId = arrayindex(regextract(_raw_log,"groupId=([^,]+)"),0),
+  signatureRev = arrayindex(regextract(_raw_log,"signatureRev=([^,]+)"),0),
+  vsnId = arrayindex(regextract(_raw_log,"vsnId=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  moduleId = arrayindex(regextract(_raw_log,"moduleId=([^,]+)"),0),
+  signaturePriority = arrayindex(regextract(_raw_log,"signaturePriority=([^,]+)"),0),
+  idpAction = arrayindex(regextract(_raw_log,"idpAction=([^,]+)"),0),
+  signatureMsg = arrayindex(regextract(_raw_log,"signatureMsg=([^,]+)"),0),
+  classMsg = arrayindex(regextract(_raw_log,"classMsg=([^,]+)"),0),
+  threatType = arrayindex(regextract(_raw_log,"threatType=([^,]+)"),0),
+  packetTime = arrayindex(regextract(_raw_log,"packetTime=([^,]+)"),0),
+  HitCount = arrayindex(regextract(_raw_log,"HitCount=([^,]+)"),0),
+  ipsProfile = arrayindex(regextract(_raw_log,"ipsProfile=([^,]+)"),0),
+  ipsProfileRule = arrayindex(regextract(_raw_log,"ipsProfileRule=([^,]+)"),0),
+  ipsDirection = arrayindex(regextract(_raw_log,"ipsDirection=([^,]+)"),0),
+  ipsProtocol = arrayindex(regextract(_raw_log,"ipsProtocol=([^,]+)"),0),
+  ipsApplication = arrayindex(regextract(_raw_log,"ipsApplication=([^,]+)"),0),
+  sourceIPv4Address = arrayindex(regextract(_raw_log,"sourceIPv4Address=([^,]+)"),0),
+  destinationIPv4Address = arrayindex(regextract(_raw_log,"destinationIPv4Address=([^,]+)"),0),
+  sourceTransportPort = arrayindex(regextract(_raw_log,"sourceTransportPort=([^,]+)"),0),
+  destinationTransportPort = arrayindex(regextract(_raw_log,"destinationTransportPort=([^,]+)"),0),
+  protocolIdentifier = arrayindex(regextract(_raw_log,"protocolIdentifier=([^,]+)"),0),
+  fromUser = arrayindex(regextract(_raw_log,"fromUser=([^,]+)"),0),
+  traffScope = arrayindex(regextract(_raw_log,"traffScope=([^,]+)"),0);
+
+// Parse monStatsLog log                
+filter _raw_log contains "monStatsLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "monStatsLog",
+  mstatsTimeBlock = arrayindex(regextract(_raw_log,"mstatsTimeBlock=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  vsnId = arrayindex(regextract(_raw_log,"vsnId=([^,]+)"),0),
+  mstatsTotSentOctets = arrayindex(regextract(_raw_log,"mstatsTotSentOctets=([^,]+)"),0),
+  mstatsTotRecvdOctets = arrayindex(regextract(_raw_log,"mstatsTotRecvdOctets=([^,]+)"),0),
+  mstatsTotSessDuration = arrayindex(regextract(_raw_log,"mstatsTotSessDuration=([^,]+)"),0),
+  mstatsTotSessCount = arrayindex(regextract(_raw_log,"mstatsTotSessCount=([^,]+)"),0),
+  mstatsType = arrayindex(regextract(_raw_log,"mstatsType=([^,]+)"),0),
+  urlCategory = arrayindex(regextract(_raw_log,"urlCategory=([^,]+)"),0),
+  mstatsAttribs = arrayindex(regextract(_raw_log,"mstatsAttribs=([^,]+)"),0);
+
+// Parse bwMonLog log                
+filter _raw_log contains "bwMonLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "bwMonLog",
+  generateTime = arrayindex(regextract(_raw_log,"generateTime=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  vsnId = arrayindex(regextract(_raw_log,"vsnId=([^,]+)"),0),
+  sentOctets = arrayindex(regextract(_raw_log,"sentOctets=([^,]+)"),0),
+  recvdOctets = arrayindex(regextract(_raw_log,"recvdOctets=([^,]+)"),0),
+  sessCnt = arrayindex(regextract(_raw_log,"sessCnt=([^,]+)"),0),
+  mstatsType = arrayindex(regextract(_raw_log,"mstatsType=([^,]+)"),0),
+  duration = arrayindex(regextract(_raw_log,"duration=([^,]+)"),0),
+  siteName = arrayindex(regextract(_raw_log,"siteName=([^,]+)"),0),
+  accCktName = arrayindex(regextract(_raw_log,"accCktName=([^,]+)"),0),
+  siteId = arrayindex(regextract(_raw_log,"siteId=([^,]+)"),0),
+  accCktId = arrayindex(regextract(_raw_log,"accCktId=([^,]+)"),0);
+
+// Parse sdwanB2BSlamLog log                
+filter _raw_log contains "sdwanB2BSlamLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "sdwanB2BSlamLog",
+  localAccCktName = arrayindex(regextract(_raw_log,"localAccCktName=([^,]+)"),0),
+  remoteAccCktName = arrayindex(regextract(_raw_log,"remoteAccCktName=([^,]+)"),0),
+  localSiteId = arrayindex(regextract(_raw_log,"localSiteId=([^,]+)"),0),
+  localSiteName = arrayindex(regextract(_raw_log,"localSiteName=([^,]+)"),0),
+  remoteSiteId = arrayindex(regextract(_raw_log,"remoteSiteId=([^,]+)"),0),
+  remoteSiteName = arrayindex(regextract(_raw_log,"remoteSiteName=([^,]+)"),0),
+  fwdClass = arrayindex(regextract(_raw_log,"fwdClass=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  delay = arrayindex(regextract(_raw_log,"delay=([^,]+)"),0),
+  fwdDelayVar = arrayindex(regextract(_raw_log,"fwdDelayVar=([^,]+)"),0),
+  revDelayVar = arrayindex(regextract(_raw_log,"revDelayVar=([^,]+)"),0),
+  fwdLoss = arrayindex(regextract(_raw_log,"fwdLoss=([^,]+)"),0),
+  revLoss = arrayindex(regextract(_raw_log,"revLoss=([^,]+)"),0),
+  fwdLossRatio = arrayindex(regextract(_raw_log,"fwdLossRatio=([^,]+)"),0),
+  revLossRatio = arrayindex(regextract(_raw_log,"revLossRatio=([^,]+)"),0),
+  pduLossRatio = arrayindex(regextract(_raw_log,"pduLossRatio=([^,]+)"),0),
+  fwdSent = arrayindex(regextract(_raw_log,"fwdSent=([^,]+)"),0),
+  revSent = arrayindex(regextract(_raw_log,"revSent=([^,]+)"),0),
+  generateTime = arrayindex(regextract(_raw_log,"generateTime=([^,]+)"),0);
+
+// Parse unknownUserStatsLog log                
+filter _raw_log contains "unknownUserStatsLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "unknownUserStatsLog",
+  generateTime = arrayindex(regextract(_raw_log,"generateTime=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  vsnId = arrayindex(regextract(_raw_log,"vsnId=([^,]+)"),0),
+  dnsSessCnt = arrayindex(regextract(_raw_log,"dnsSessCnt=([^,]+)"),0),
+  webSessCnt = arrayindex(regextract(_raw_log,"webSessCnt=([^,]+)"),0),
+  longSessCnt = arrayindex(regextract(_raw_log,"longSessCnt=([^,]+)"),0),
+  sessCnt = arrayindex(regextract(_raw_log,"sessCnt=([^,]+)"),0);
+
+// Parse secAccGlobalStatsLog log                
+filter _raw_log contains "secAccGlobalStatsLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "secAccGlobalStatsLog",
+  mstatsTimeBlock = arrayindex(regextract(_raw_log,"mstatsTimeBlock=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  concurrentUsers = arrayindex(regextract(_raw_log,"concurrentUsers=([^,]+)"),0),
+  failedAttempts = arrayindex(regextract(_raw_log,"failedAttempts=([^,]+)"),0),
+  successfulAttempts = arrayindex(regextract(_raw_log,"successfulAttempts=([^,]+)"),0),
+  racAccessType = arrayindex(regextract(_raw_log,"racAccessType=([^,]+)"),0);
+
+// Parse alarmLog log                
+filter _raw_log contains "alarmLog"
+| call common_field_versa_gateway
+| alter
+  logsubtype = "alarmLog",
+  alarmType = arrayindex(regextract(_raw_log,"alarmType=([^,]+)"),0),
+  alarmKey = arrayindex(regextract(_raw_log,"alarmKey=([^,]+)"),0),
+  generateTime = arrayindex(regextract(_raw_log,"generateTime=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  vsnId = arrayindex(regextract(_raw_log,"vsnId=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  alarmCause = arrayindex(regextract(_raw_log,"alarmCause=([^,]+)"),0),
+  alarmClearable = arrayindex(regextract(_raw_log,"alarmClearable=([^,]+)"),0),
+  alarmClass = arrayindex(regextract(_raw_log,"alarmClass=([^,]+)"),0),
+  alarmKind = arrayindex(regextract(_raw_log,"alarmKind=([^,]+)"),0),
+  alarmEventType = arrayindex(regextract(_raw_log,"alarmEventType=([^,]+)"),0),
+  alarmSeverity = arrayindex(regextract(_raw_log,"alarmSeverity=([^,]+)"),0),
+  alarmOwner = arrayindex(regextract(_raw_log,"alarmOwner=([^,]+)"),0),
+  alarmSeqNo = arrayindex(regextract(_raw_log,"alarmSeqNo=([^,]+)"),0),
+  alarmText = arrayindex(regextract(_raw_log,"alarmText=([^,]+)"),0),
+  serialNum = arrayindex(regextract(_raw_log,"serialNum=([^,]+)"),0);

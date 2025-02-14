@@ -1,0 +1,323 @@
+id: e59c9b52-9ca1-4fa3-801f-3aa8d098d33d
+version: 24
+vcShouldKeepItemLegacyProdMachine: false
+name: EQ - Splunk Search and Return Table
+starttaskid: "0"
+tasks:
+  "0":
+    id: "0"
+    taskid: 240db9c8-bd44-45e9-875e-7e1259c39df2
+    type: start
+    task:
+      id: 240db9c8-bd44-45e9-875e-7e1259c39df2
+      version: -1
+      name: ""
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "6"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 50
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "1":
+    id: "1"
+    taskid: 5d3cb479-6771-4f85-892a-af521fd7a192
+    type: regular
+    task:
+      id: 5d3cb479-6771-4f85-892a-af521fd7a192
+      version: -1
+      name: Splunk - IOC Hunting
+      description: Searches Splunk for events. For human readable output, the table
+        command is supported in the query argument. For example, `query=" * | table
+        field1 field2 field3"` will generate a table with field1, field2, and field3
+        as headers.
+      script: '|||splunk-search'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "2"
+    scriptarguments:
+      earliest_time:
+        simple: -30d
+      query:
+        simple: ${inputs.splunk_query}
+      retry-count:
+        simple: "3"
+      retry-interval:
+        simple: "120"
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 370
+        }
+      }
+    note: true
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 2
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "2":
+    id: "2"
+    taskid: 9973ef98-f8d9-480e-85c5-419072413cc2
+    type: condition
+    task:
+      id: 9973ef98-f8d9-480e-85c5-419072413cc2
+      version: -1
+      name: If any result?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "5"
+      "yes":
+      - "3"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isNotEmpty
+          left:
+            value:
+              simple: Splunk.Result
+            iscontext: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 545
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "3":
+    id: "3"
+    taskid: 1792c5ba-94aa-44e8-8c2f-4fc9cb29bc51
+    type: regular
+    task:
+      id: 1792c5ba-94aa-44e8-8c2f-4fc9cb29bc51
+      version: -1
+      name: Convert to Markdown
+      description: Accepts a json object and returns a markdown.
+      scriptName: JsonToTable
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "4"
+    scriptarguments:
+      extend-context:
+        simple: mdtable=.
+      title:
+        simple: ${inputs.search_name}
+      value:
+        complex:
+          root: Splunk.Result
+          filters:
+          - - operator: isExists
+              left:
+                value:
+                  simple: Splunk.Result
+                iscontext: true
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 162.5,
+          "y": 720
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "4":
+    id: "4"
+    taskid: 5ef8d424-7a04-4e4c-8a65-4059d65f1ac4
+    type: regular
+    task:
+      id: 5ef8d424-7a04-4e4c-8a65-4059d65f1ac4
+      version: -1
+      name: Convert to HTML
+      description: Converts a given array to an HTML table
+      scriptName: ConvertTableToHTML
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "5"
+    scriptarguments:
+      table:
+        complex:
+          root: Splunk.Result
+          filters:
+          - - operator: isExists
+              left:
+                value:
+                  simple: Splunk.Result
+                iscontext: true
+      title:
+        simple: ${inputs.search_name}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 162.5,
+          "y": 895
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 2
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "5":
+    id: "5"
+    taskid: ae83b782-4820-4e17-841b-0015950b3193
+    type: title
+    task:
+      id: ae83b782-4820-4e17-841b-0015950b3193
+      version: -1
+      name: Done
+      type: title
+      iscommand: false
+      brand: ""
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 1070
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "6":
+    id: "6"
+    taskid: 49881379-fbfa-446f-8273-8ce6af70b728
+    type: regular
+    task:
+      id: 49881379-fbfa-446f-8273-8ce6af70b728
+      version: -1
+      name: Delete Context
+      description: |-
+        Delete field from context.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: DeleteContext
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "1"
+    scriptarguments:
+      all:
+        simple: "yes"
+      subplaybook:
+        simple: "yes"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 195
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 2
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: |-
+  {
+    "linkLabelsPosition": {
+      "2_5_#default#": 0.5
+    },
+    "paper": {
+      "dimensions": {
+        "height": 1085,
+        "width": 492.5,
+        "x": 50,
+        "y": 50
+      }
+    }
+  }
+inputs:
+- key: splunk_query
+  value: {}
+  required: false
+  description: ""
+  playbookInputQuery: null
+- key: search_name
+  value: {}
+  required: false
+  description: ""
+  playbookInputQuery: null
+inputSections:
+- inputs:
+  - splunk_query
+  - search_name
+  name: General (Inputs group)
+  description: Generic group for inputs
+outputSections:
+- outputs:
+  - HTMLTable
+  - Splunk.Result
+  name: General (Outputs group)
+  description: Generic group for outputs
+outputs:
+- contextPath: HTMLTable
+  description: The HTML table we created from the array
+- contextPath: Splunk.Result
+  description: The results of the Splunk search. The results are a JSON array, in
+    which each item is a Splunk event.
+dirtyInputs: true

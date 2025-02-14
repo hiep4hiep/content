@@ -1,0 +1,12 @@
+Field Name	Parse statement	Description	Sample value from Log
+log_timestamp	parse_timestamp("%Y.%m.%d %H:%M:%S",arrayindex(regextract(_raw_log,"(\d{4}\.\d{2}\.\d{2} \d{2}\:\d{2}\:\d{2})"),0),"Australia/Sydney"	
+_time	if(log_timestamp != null, log_timestamp, _insert_time)	
+server_name	arrayindex(regextract(_raw_log,"<Server Format=\"IP\">(.+)</Server>"),0)	
+ProductId	arrayindex(regextract(_raw_log,"<ProductId>(.+)</ProductId>"),0)	
+Component	arrayindex(regextract(_raw_log,"<Component>(.+)</Component>"),0)	
+ProductInstance	arrayindex(regextract(_raw_log," <ProductInstance>(.+)</ProductInstance>"),0)	
+LogText	arrayindex(regextract(_raw_log,"<LogText><(.+)</LogText>"),0)	
+Type	arrayindex(regextract(_raw_log,"Type=([^\s]+)"),0)	
+Catalog	arrayindex(regextract(_raw_log,"Catalog=([^\s]+)"),0)	
+MsgKey	arrayindex(regextract(_raw_log,"MsgKey=\"([^\"]+)\""),0)	
+log_level	arrayindex(regextract(_raw_log,"Severity=\"(.+)\""),0	

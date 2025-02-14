@@ -1,0 +1,19 @@
+[MODEL:dataset="dragos_dragos_raw"]
+alter log_message = arrayindex(regextract(_raw_log,"\{.+\}"),0)
+| alter 
+    xdm.alert.description = log_message -> body,
+    xdm.alert.subcategory = log_message -> source,
+    xdm.alert.severity = log_message -> severity,
+    xdm.event.description = log_message -> summary,
+    xdm.intermediate.ipv4 = log_message -> ip,
+    xdm.intermediate.host.hostname = log_message -> host,
+    xdm.intermediate.user.domain  = log_message -> domain,
+    xdm.target.user.domain  = log_message -> dst_asset_domain,
+    xdm.target.host.hostname  = log_message -> dst_asset_hostname,
+    xdm.target.ipv4  = log_message -> dst_asset_ip,
+    xdm.target.host.mac_addresses = arraycreate(log_message -> dst_asset_mac),
+    xdm.source.user.domain  = log_message -> src_asset_domain,
+    xdm.source.host.hostname  = log_message -> src_asset_hostname,
+    xdm.source.ipv4 = log_message -> src_asset_ip,
+    xdm.source.host.mac_addresses = arraycreate(log_message -> src_asset_mac)
+;

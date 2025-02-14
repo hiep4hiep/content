@@ -1,0 +1,2337 @@
+
+RULE - MSCAP - The name of an account was changed EventCode=4781 RAW (CCX) - Summary Gen:
+	Rule_Id: 12
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - The name of an account was changed EventCode=4781 RAW (CCX) - Summary Gen
+// Author: Deven Amode, damode@paloaltonetworks.com
+// Date: 06/June/2024
+
+datamodel dataset = microsoft_windows_raw 
+|alter 
+    oldtargetusername=json_extract_scalar(microsoft_windows_raw.event_data,"$.OldTargetUserName"),
+    newtargetusername=json_extract_scalar(microsoft_windows_raw.event_data,"$.NewTargetUserName"),
+    samaccountname=json_extract_scalar(microsoft_windows_raw.event_data,"$.SamAccountName")
+//| alter samaccountname=if(array_length(samaccountname) > 1, arrayindex(samaccountname, 1), samaccountname) 
+|filter xdm.event.id = "4781" and oldtargetusername="*$" and newtargetusername != "*$"
+|comp values(microsoft_windows_raw._raw_log), earliest(_time) as first_time, latest(_time) as last_time, values(oldtargetusername) as oldtargetusername, values(newtargetusername) as newtargetusername, values(samaccountname) as samaccountname, values(xdm.source.user.username) as user, values(_vendor) as vendor, values(_product) as product, values(xdm.observer.name) as orig_host by xdm.target.ipv4,xdm.event.id 
+	Is_Enabled: True
+	Description: Rule 30
+	Alert_Name: "MSCAP - The name of an account was changed EventCode=4781 RAW (CCX) - Summary Gen
+	Alert_Category: EVASION
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'_vendor': 'vendor', 'eventid': 'xdm.event.id', '_product': 'product', 'targetip': 'xdm.target.ipv4', 'originalhost': 'orig_host', 'lasteventtime': 'last_time', 'firsteventtime': 'first_time', 'samaccountname': 'samaccountname', 'newtargetusername': 'newtargetusername', 'oldtargetusername': 'oldtargetusername', 'actor_effective_username': 'user'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Australia/Sydney
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['newtargetusername', 'oldtargetusername', 'orig_host', 'user', 'xdm.event.id', 'xdm.target.ipv4']
+	Dataset: alerts
+	Mitre_Defs: {'TA0005 - Defense Evasion': ['T1036.005 - Masquerading: Match Legitimate Name or Location']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - New Windows Account EventCode=4741 RAW (CCX) - Summary:
+	Rule_Id: 13
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - New Windows Account EventCode=4741 RAW (CCX) - Summary Gen
+/// Author: Deven Amode, damode@paloaltonetworks.com
+// Datasets: microsoft_windows_raw 
+// Date: 06/June/2024
+
+datamodel dataset = microsoft_windows_raw 
+|alter samaccountname=json_extract_scalar(microsoft_windows_raw.event_data,"$.SamAccountName")
+//| alter samaccountname=if(array_length(samaccountname) > 1, arrayindex(samaccountname, 1), samaccountname) 
+|filter xdm.event.id = "4741" and samaccountname = "*$"
+| filter xdm.source.user.username != "priv.*"
+| replacenull xdm.source.user.username = "missing", samaccountname = "missing"
+|comp values(microsoft_windows_raw._raw_log), earliest(_time) as first_time, latest(_time) as last_time, values(_vendor) as vendor, values(_product) as product, values(xdm.observer.name) as orig_host by xdm.target.ipv4,xdm.event.id,xdm.source.user.username,samaccountname, xdm.event.description 
+	Is_Enabled: True
+	Description: Rule 29
+	Alert_Name: MSCAP - New Windows Account EventCode=4741 RAW (CCX) - Summary
+	Alert_Category: EVASION
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'_vendor': 'vendor', 'eventid': 'xdm.event.id', '_product': 'product', 'targetip': 'xdm.target.ipv4', 'originalhost': 'orig_host', 'lasteventtime': 'last_time', 'firsteventtime': 'first_time', 'samaccountname': 'samaccountname', 'actor_effective_username': 'xdm.source.user.username'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Australia/Sydney
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['samaccountname', 'xdm.event.id', 'xdm.target.ipv4', 'orig_host', 'xdm.source.user.username']
+	Dataset: alerts
+	Mitre_Defs: {'TA0005 - Defense Evasion': ['T1036.005 - Masquerading: Match Legitimate Name or Location']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Windows Computer Account With SPN RAW (CCX) - Summary Gen:
+	Rule_Id: 14
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+ datamodel dataset = microsoft_windows_raw 
+ 
+ |alter 
+    serviceprincipalnames=json_extract_scalar(microsoft_windows_raw.event_data,"$.ServicePrincipalNames"),
+    newuacvalue=json_extract_scalar(microsoft_windows_raw.event_data,"$.NewUacValue"),
+    targetsid=json_extract_scalar(microsoft_windows_raw.event_data,"$.targetsid"),
+    dnshostname=json_extract_scalar(microsoft_windows_raw.event_data,"$.DnsHostName")
+
+| filter xdm.event.id ="4741" and serviceprincipalnames in ("*host/*", "*restrictedkrbhost/*") and newuacvalue="0x80"
+
+|comp values(_vendor) as vendor , values(_product) as vendor_product , values(xdm.observer.type) as orig_sourcetype , values(xdm.source.host.hostname) as orig_host , values(microsoft_windows_raw._raw_log ) as orig_raw, min(_time) as first_event_time, max(_time) as last_event_time , values(xdm.event.id) as eventcode , values(xdm.target.user.domain) as targetdomainname , values(targetsid) as targetsid , values(xdm.source.user.username) as user , values(xdm.source.ipv4) as src , values(dnshostname) as dnshostname , values(serviceprincipalnames) as serviceprincipalnames by xdm.target.ipv4, xdm.source.user.identifier  
+
+
+	Is_Enabled: True
+	Description: Rule 32
+	Alert_Name: MSCAP - Windows Computer Account With SPN RAW (CCX) - Summary Gen
+	Alert_Category: CREDENTIAL_ACCESS
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'host': 'dnshostname', 'source': 'src', '_vendor': 'vendor', 'targetip': 'xdm.target.ipv4', 'eventcode': 'eventcode', 'targetsid': 'targetsid', 'sourceuserid': 'xdm.source.user.identifier', 'targetdomain': 'targetdomainname', 'lasteventtime': 'last_event_time', 'vendorproduct': 'vendor_product', 'firsteventtime': 'first_event_time', 'originalsourcetype': 'orig_sourcetype', 'serviceprincipalnames': 'serviceprincipalnames', 'actor_effective_username': 'user'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Australia/Sydney
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['eventcode', 'targetdomainname', 'targetsid', 'user', 'src', 'xdm.source.user.identifier']
+	Dataset: alerts
+	Mitre_Defs: {'TA0006 - Credential Access': ['T1558 - Steal or Forge Kerberos Tickets']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Windows Server Defence Evasion Codes to Monitor RAW (CCX) - Summary Gen:
+	Rule_Id: 15
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+ // Title: MSCAP - Windows Server Defence Evasion Codes to Monitor RAW (CCX) - Summary Gen
+/// Author: Deven Amode, damode@paloaltonetworks.com
+// Datasets: microsoft_windows_raw 
+// Date: 07/June/2024
+
+datamodel dataset = microsoft_windows_raw
+
+|alter
+    Category = arrayindex(regextract(microsoft_windows_raw.message, "Category:\s*(.+?)\s+\w+:"),0 ),
+    Subcategory = arrayindex(regextract(microsoft_windows_raw.message, "Subcategory:\s*(.+)"),0 ),
+    Changes = arrayindex(regextract(microsoft_windows_raw.message, "Changes:\s*(.+)"),0 )
+ 
+| filter xdm.event.id ="4719"
+| filter xdm.source.user.username != "*$"
+
+|comp  
+    min(_time) as first_event_time,
+    max(_time) as last_event_time,
+    values(xdm.event.id) as eventcode,  
+    values(xdm.source.ipv4) as src ,
+    values(xdm.observer.type) as orig_sourcetype ,    
+    values(Changes) as Changes
+    by xdm.source.user.username, xdm.source.host.hostname, _vendor, _product, Category , Subcategory 
+	Is_Enabled: True
+	Description: Rule 12
+	Alert_Name: MSCAP - Windows Server Defence Evasion Codes to Monitor RAW (CCX) - Summary Gen
+	Alert_Category: EVASION
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'host': 'xdm.source.host.hostname', 'user': 'xdm.source.user.username', 'source': 'src', '_vendor': '_vendor', 'changes': 'Changes', '_product': '_product', 'eventcode': 'eventcode', 'subcategory': 'Subcategory', 'lasteventtime': 'last_event_time', 'alert_category': 'Category', 'firsteventtime': 'first_event_time', 'originalsourcetype': 'orig_sourcetype'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Australia/Sydney
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['eventcode', 'orig_sourcetype', 'src', 'xdm.source.user.username', 'xdm.source.host.hostname', 'Changes', 'Subcategory', 'Category']
+	Dataset: alerts
+	Mitre_Defs: {'TA0005 - Defense Evasion': ['T1562.001 - Impair Defenses: Disable or Modify Tools', 'T1562.002 - Impair Defenses: Disable Windows Event Logging', 'T1562.003 - Impair Defenses: Impair Command History Logging', 'T1562.004 - Impair Defenses: Disable or Modify System Firewall', 'T1562.006 - Impair Defenses: Indicator Blocking', 'T1562.007 - Impair Defenses: Disable or Modify Cloud Firewall', 'T1562.008 - Impair Defenses: Disable Cloud Logs']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Users Attempting To Auth Using Explicit Credentials RAW (CCX) - Summary Gen:
+	Rule_Id: 19
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+ // Title: MSCAP - Users Attempting To Auth Using Explicit Credentials RAW (CCX) - Summary Gen
+/// Author: Deven Amode, damode@paloaltonetworks.com
+// Datasets: microsoft_windows_raw 
+// Date: 07/June/2024
+
+datamodel dataset = microsoft_windows_raw 
+ 
+| filter xdm.event.id ="4648"
+
+|alter
+    ProcessPath= arrayindex(regextract(xdm.event.description, "Process Name:\s+([^\r\n]+)"),0 )
+| alter Target_Server= arrayindex(regextract(xdm.event.description, "Target Server Name:\s+([^\r\n]+)"),0 )
+| filter xdm.source.user.username="*$" AND ProcessPath != "C:\Windows\System32\taskhostw.exe"
+| filter ProcessPath NOT IN ("C:\Windows\System32\svchost.exe" , "C:\Windows\System32\winlogon.exe", "C:\Windows\System32\lsass.exe", "C:\Windows\System32\inetsrv\w3wp.exe") //Filtering known process Paths as they are known to be normal activity.
+| filter xdm.source.user.username != "*$" // Filtering Computer accounts running tasks, the objective of this detection is finding not computer accounts performing these tasks
+
+
+| comp     min(_time) as first_event_time, 
+    max(_time) as last_event_time, count() by xdm.source.process.name , ProcessPath , xdm.target.user.username , xdm.source.user.username , xdm.source.host.hostname, Target_Server , xdm.event.description
+	Is_Enabled: True
+	Description: Rule 73
+	Alert_Name: MSCAP - Users Attempting To Auth Using Explicit Credentials RAW (CCX) - Summary Gen
+	Alert_Category: LATERAL_MOVEMENT
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'originalraw': 'xdm.event.description', 'processpath': 'ProcessPath', 'lasteventtime': 'last_event_time', 'agent_hostname': 'xdm.source.host.hostname', 'firsteventtime': 'first_event_time', 'action_local_ip': 'Target_Server', 'actor_effective_username': 'xdm.target.user.username'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Australia/Sydney
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['ProcessPath', 'Target_Server', 'xdm.source.process.name', 'xdm.target.user.username', 'xdm.source.user.username', 'xdm.source.host.hostname', 'xdm.event.description', 'first_event_time', 'last_event_time']
+	Dataset: alerts
+	Mitre_Defs: {'TA0008 - Lateral Movement': []}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - RDP Login from Localhost RAW (CCX) - Summary Gen:
+	Rule_Id: 20
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - RDP Login from Localhost RAW (CCX) - Summary Gen
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: microsoft_windows_raw
+// Date: 06/June/2024
+
+config case_sensitive = false
+| datamodel dataset = microsoft_windows_raw
+| filter xdm.source.host.os_family = XDM_CONST.OS_FAMILY_WINDOWS
+| filter xdm.event.id = "4624"
+| filter xdm.logon.type = "REMOTE_INTERACTIVE"
+| filter xdm.source.ipv4 in ("127.0.0.1", "::1")
+
+| fields _time, xdm.event.id, xdm.event.original_event_type, xdm.logon.type, xdm.source.host.hostname, xdm.source.ipv4, xdm.observer.vendor, xdm.observer.product, xdm.target.user.username, xdm.target.user.upn, xdm.source.host.hostname, xdm.event.description 
+	Is_Enabled: True
+	Description: Rule 62
+	Alert_Name: MSCAP - RDP Login from Localhost RAW (CCX) - Summary Gen
+	Alert_Category: LATERAL_MOVEMENT
+	Alert_Domain: DOMAIN_SECURITY
+	Execution_Mode: REAL_TIME
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['xdm.event.description', 'xdm.event.id', 'xdm.event.original_event_type', 'xdm.logon.type', 'xdm.observer.product', 'xdm.observer.vendor', 'xdm.source.host.hostname', 'xdm.source.ipv4', 'xdm.target.user.upn', 'xdm.target.user.username']
+	Dataset: alerts
+	Mitre_Defs: {'TA0008 - Lateral Movement': ['T1021.001 - Remote Services: Remote Desktop Protocol']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: AUTO
+	Action: ALERTS
+
+RULE - MSANA - Breakglass Account Login Detection (PS) (CCX) - Summary Gen:
+	Rule_Id: 21
+	Severity: SEV_050_CRITICAL
+	Xql_Query: 
+// Title: MSANA - Breakglass Account Login Detection (PS) (CCX) - Summary Gen
+// Author: Deven Amode, damode@paloaltonetworks.com
+// Date: 17/June/2024
+
+dataset = msft_azure_ad_raw 
+
+|alter 
+    user = userPrincipalName,
+    action = json_extract_scalar(status,"$.errorCode"),
+    status_failurereason = json_extract_scalar(status,"$.failureReason"),
+    src_ip = ipAddress,  
+    location_countryorregion = json_extract_scalar(location,"$.countryOrRegion"),
+    network_country= json_extract_scalar(networkLocationDetails,"$.networknames"),
+    authentication_method_details = json_extract_scalar(authenticationdetails,"$.authenticationmethod"),
+    authentication_how = json_extract_scalar(authenticationdetails,"$.authenticationmethoddetail"),
+    authentication_result = json_extract_scalar(authenticationdetails,"$.authenticationstepresultdetail")
+
+|filter user in ("jack.yangbin@otmlhome.onmicrosoft.com", "guise.wartoto@otmlhome.onmicrosoft.com")
+
+| fields user, src_ip, action, status_failurereason, appdisplayname, clientappused, location_countryorregion, network_country, authentication_method_details, authentication_how, authentication_result, _collector_type, _product, _vendor
+	Is_Enabled: True
+	Description: Rule 51
+	Alert_Name: [DRAFT] MSANA - Breakglass Account Login Detection (PS) (CCX) - Summary Gen
+	Alert_Category: OTHER
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'countryname': 'network_country', 'eventaction': 'action', 'clientappused': 'clientAppUsed', 'failurereason': 'status_failurereason', 'action_country': 'location_countryorregion', 'appdisplayname': 'appDisplayName', '_collector_type': '_collector_type', 'action_local_ip': 'src_ip', 'authenticationhow': 'authentication_how', 'authenticationmethod': 'authentication_method_details', 'authenticationresult': 'authentication_result', 'authenticationdetails': 'authentication_method_details', 'actor_effective_username': 'user'}
+	Execution_Mode: REAL_TIME
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['appDisplayName', 'authentication_result', 'clientAppUsed', 'authentication_how', 'authentication_method_details', 'src_ip', 'user']
+	Dataset: alerts
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Detect Excessive Account Lockouts From Endpoint ACC (CCX) - Summary Gen:
+	Rule_Id: 22
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Detect Excessive Account Lockouts From Endpoint ACC (CCX) - Summary Gen
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: microsoft_windows_raw
+// Date: 07/June/2024
+
+/*
+Alert Suppression: 6h
+Suppression Fields: xdm.target.user.username, xdm.target.user.upn
+
+Fields Mapping:
+
+*/
+
+config case_sensitive = false
+| datamodel dataset = microsoft_windows_raw
+| filter xdm.source.host.os_family = XDM_CONST.OS_FAMILY_WINDOWS 
+| filter xdm.event.id = "4625"
+// logon using RDP and device
+| filter xdm.logon.type in ("INTERACTIVE", "REMOTE_INTERACTIVE") // discus if any other login type are to be added
+
+// | fields _time, xdm.event.original_event_type, xdm.event.id, xdm.logon.type, xdm.source.host.hostname, xdm.source.ipv4, xdm.target.user.upn, xdm.target.user.username, xdm.observer.vendor, xdm.observer.product, microsoft_windows_raw.event_data, *
+
+| comp count() as total_failed_attempts, values(xdm.event.original_event_type) as orig_event_type, values(xdm.source.host.hostname) as host, values(xdm.source.ipv4) as src, 
+values(xdm.observer.vendor) as vendor, values(xdm.observer.product) as product, min(_time) as login_failed_start_time, max(_time) as login_failed_end_time by xdm.target.user.username, xdm.target.user.upn
+| filter total_failed_attempts > 5  // filtering for login failed attempts count greater then 5 for a user
+
+| join (datamodel dataset = microsoft_windows_raw
+| filter xdm.source.host.os_family = XDM_CONST.OS_FAMILY_WINDOWS
+| filter xdm.event.id = "4740"
+| fields _time as account_locked_time, xdm.target.user.username as locked_account_user, xdm.source.host.hostname as locked_account_host) as locked_users locked_users.locked_account_user = xdm.target.user.username and timestamp_diff(locked_users.account_locked_time, login_failed_end_time, "SECOND") >= 0 
+
+| fields total_failed_attempts, login_failed_start_time, login_failed_end_time, account_locked_time, src, host, xdm.target.user.username, xdm.target.user.upn, vendor, product
+	Is_Enabled: True
+	Description: Rule 9
+	Alert_Name: MSCAP - Detect Excessive Account Lockouts From Endpoint ACC (CCX) - Summary Gen
+	Alert_Category: CREDENTIAL_ACCESS
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'host': 'host', 'source': 'src', '_vendor': 'vendor', 'endtime': 'login_failed_end_time', '_product': 'product', 'starttime': 'login_failed_start_time', 'agent_hostname': None, 'action_local_ip': None, 'action_remote_ip': None, 'accountlockedtime': 'account_locked_time', 'userprincipalname': 'xdm.target.user.upn', 'action_remote_port': None, 'agent_device_domain': None, 'totalfailedattempts': 'total_failed_attempts', 'actor_effective_username': 'xdm.target.user.username', 'actor_process_image_name': None, 'actor_process_image_path': None, 'actor_process_command_line': None, 'actor_process_image_sha256': None}
+	Execution_Mode: SCHEDULED
+	Search_Window: 12 minutes
+	Simple_Schedule: 10 minutes
+	Timezone: Asia/Calcutta
+	Crontab: */10 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['xdm.target.user.upn', 'xdm.target.user.username']
+	Dataset: alerts
+	Mitre_Defs: {'TA0006 - Credential Access': ['T1110 - Brute Force']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Azure Service Principal Addition RAW (CCX) - Summary Gen:
+	Rule_Id: 23
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Azure Service Principal Addition RAW (CCX) - Summary Gen
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: msft_azure_ad_audit_raw
+// Date: 07/June/2024
+
+/*
+Alert Suppression: 6h
+Suppression Fields: activityDisplayName, user
+
+Fields Mapping:
+Username - user
+First Seen : first_event_time
+Last Seen : last_event_time
+Event Action - activityDisplayName
+Source Status - result
+App-ID : app
+*/
+
+
+config case_sensitive = false
+| dataset = msft_azure_ad_audit_raw  
+| filter activityDisplayName = "Add service principal"
+| filter result = "success"
+| alter user = json_extract_scalar(initiatedBy, "$.user.userPrincipalName")
+| alter InitiatedApp = json_extract_scalar(initiatedBy, "$.app.displayName")
+| alter app = json_extract_scalar(targetResources, "$.0.displayName")
+| alter src = json_extract_scalar(initiatedBy, "$.user.ipAddress")
+
+
+
+| comp count() as total_events, values(src) as src_ip, earliest(activityDateTime) as first_event_time, latest(activityDateTime) as last_event_time, values(app) as app, values(_vendor) as vendor, values(_product) as produt by activityDisplayName, user, InitiatedApp , result 
+	Is_Enabled: True
+	Description: Rule 38
+	Alert_Name: MSCAP - Azure Service Principal Addition RAW (CCX) - Summary Gen
+	Alert_Category: LATERAL_MOVEMENT
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'lastseen': 'last_event_time', 'firstseen': 'first_event_time', 'fw_app_id': 'app', 'eventaction': 'activityDisplayName', 'initiatedapp': 'InitiatedApp', 'sourcestatus': 'result', 'actor_effective_username': 'user'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Asia/Calcutta
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['activityDisplayName', 'user']
+	Dataset: alerts
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Azure AAD MFA High Failure Ratio ACC (CCX) - Summary Gen:
+	Rule_Id: 24
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Azure AAD MFA High Failure Ratio ACC (CCX) - Summary Gen
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: msft_azure_ad_raw
+// Date: 10/June/2024
+
+/*
+Alert Suppression: 6h
+Suppression Fields: userPrincipalName, userDisplayName, authentication_method
+
+Fields Mapping:
+Username : userDisplayName
+Email : userPrincipalName
+Error Code : failure_code
+Failed Logon Event : failed_count
+Status Reason : failure_reason
+Location : location
+First Seen : first_event_time
+Last Seen : last_event_time
+Applicationname : app
+*/
+
+config case_sensitive = false
+| dataset = msft_azure_ad_raw  
+
+| alter authentication_method = json_extract_scalar(authenticationDetails, "$.0.authenticationMethod")
+| replacenull authentication_method = "missing"
+| filter authentication_method != "missing"
+| filter authentication_method not in ("null", "previously satisfied", "password", "passwordless phone sign-in")
+| alter authentication_step_req = json_extract_scalar(authenticationDetails, "$.0.authenticationStepResultDetail")
+| alter error_code = status -> errorCode
+| alter failure_reason = status -> failureReason
+// | alter additional_details = status -> additionalDetails
+
+| alter city = location -> city
+| alter country = location -> countryOrRegion
+| alter state = location -> state
+| alter location = format_string("%s | %s | %s", city, state, country)
+
+| comp count() as total_event, count(if(error_code = "0", True)) as success_count, count(if(error_code != "0", True)) as failed_count, earliest(createdDateTime) as first_event_time, latest(createdDateTime) as last_event_time, values(if(error_code != "0", error_code)) as failure_code, values(if(error_code != "0", failure_reason)) as failure_reason, values(ipAddress) as src_ip, values(appDisplayName) as app, values(location) as location, values(_product) as product, values(_vendor) as vendor by userPrincipalName, userDisplayName, authentication_method
+| filter failed_count > 10
+| filter success_count > 1
+| alter failure_ratio = divide(failed_count, total_event)
+| filter failure_ratio > 0.5
+	Is_Enabled: True
+	Description: Rule 11
+	Alert_Name: MSCAP - Azure AAD MFA High Failure Ratio ACC (CCX) - Summary Gen
+	Alert_Category: CREDENTIAL_ACCESS
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'email': 'userPrincipalName', '_vendor': 'vendor', '_product': 'product', 'lastseen': 'last_event_time', 'location': 'location', 'sourceip': 'src_ip', 'firstseen': 'first_event_time', 'failedcount': 'failed_count', 'failurecode': 'failure_code', 'totalevents': 'total_event', 'failureratio': 'failure_ratio', 'successcount': 'success_count', 'failurereason': 'failure_reason', 'applicationname': 'app', 'authenticationmethod': 'authentication_method', 'actor_effective_username': 'userDisplayName'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Asia/Calcutta
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['userDisplayName', 'userPrincipalName', 'authentication_method']
+	Dataset: alerts
+	Mitre_Defs: {'TA0001 - Initial Access': [], 'TA0006 - Credential Access': []}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Initial Access Consent Grant Attack via Azure Application RAW (CCX) - Summary Gen:
+	Rule_Id: 26
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Initial Access Consent Grant Attack via Azure Application RAW (CCX) - Summary Gen
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: msft_azure_ad_audit_raw
+// Date: 10/June/2024
+
+/*
+Alert Suppression : 6h
+Suppression Fields : activityDisplayName, user, app
+
+Fields Mapping:
+Username : user
+First Seen : first_event_time
+Last Seen : last_event_time
+Event Action : activityDisplayName
+App-ID : app
+Source Status : result
+
+*/
+
+config case_sensitive = false
+| dataset = msft_azure_ad_audit_raw 
+| filter activityDisplayName = "*consent to application*"
+| filter result = "success"
+
+| alter user = json_extract_scalar(initiatedBy, "$.user.userPrincipalName")
+| alter src = json_extract_scalar(initiatedBy, "$.user.ipAddress")
+| alter app = json_extract_scalar(targetResources, "$.0.displayName")
+| alter object_id = json_extract_scalar(targetResources, "$.0.id")
+| alter app_id = json_extract_scalar(additionalDetails, "$.1.value")
+| alter initiatedApp = json_extract_scalar(initiatedBy, "$.app.displayName")
+
+//filter of known Apps that are only Low Security // Production-PhishReporter, Sharepoint|Sapeins Connector, SignEasy, EasyLife 3655 Mail, Lucidpark, Employee Lookup, Teams Embedded Dashboard|Industry Intelligence are Enteprise Apps (which is allowed and permissions are set to low) All these apps have been reviewed.
+| filter app NOT IN ("SharePoint|sapiens Connector", "Signeasy", "Production-PhishReporter" , "EasyLife 365 Mail" , "Lucidspark" , "Employee Lookup", "Teams Embedded Dashboard | Industry Intelligence Inc.")
+
+| fields activityDateTime, user, src, app, app_id, object_id, activityDisplayName, operationType, category, _vendor, _product, result, *
+| comp count() as total_events, values(src) as src_ip, earliest(activityDateTime) as first_event_time, latest(activityDateTime) as last_event_time,  values(_vendor) as vendor, values(_product) as produt by app, app_id, object_id, activityDisplayName, user, initiatedApp, result
+	Is_Enabled: True
+	Description: Rule 33
+	Alert_Name: MSCAP - Initial Access Consent Grant Attack via Azure Application RAW (CCX) - Summary Gen
+	Alert_Category: CREDENTIAL_ACCESS
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'app': 'app', 'result': 'result', '_vendor': 'vendor', '_product': 'produt', 'objectid': 'object_id', 'sourceip': 'src_ip', 'totalevents': 'total_events', 'initiatedapp': 'initiatedApp', 'applicationid': 'app_id', 'lasteventtime': 'last_event_time', 'firsteventtime': 'first_event_time', 'activitydisplayname': 'activityDisplayName', 'actor_effective_username': 'user'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 20 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Asia/Calcutta
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['user', 'activityDisplayName', 'app']
+	Dataset: alerts
+	Mitre_Defs: {'TA0001 - Initial Access': ['T1566.002 - Phishing: Spearphishing Link'], 'TA0006 - Credential Access': ['T1528 - Steal Application Access Token']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Azure Active Directory PowerShell Sign-in RAW (CCX) - Summary Gen:
+	Rule_Id: 27
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+ // Title: MSCAP - Azure Active Directory PowerShell Sign-in RAW (CCX) - Summary Gen
+/// Author: Deven Amode, damode@paloaltonetworks.com
+// Datasets: msft_azure_ad_raw
+// Date: 11/June/2024
+
+config case_sensitive = false
+|dataset = msft_azure_ad_raw
+|fields _time, appdisplayname as app, userprincipalname as user , tokenIssuerType, status,_collector_type,_reporting_device_name, _vendor,_product, ipAddress 
+|filter user != "priv.*" // Filtering Administrators expected logins
+|filter user != "svc.snow@otmlhome.onmicrosoft.com" AND ipAddress != "202.1.241.28" // Filtering SVC SNOW login in from known IP address
+|alter status_error_code = json_extract_scalar(status, "$.errorCode")
+|filter app ="*powershell*" and tokenIssuerType ="azuread" and status_error_code = "0"
+|alter user = lowercase(user),action = if(status_error_code = "0", "allowed", status_error_code)
+	Is_Enabled: True
+	Description: Rule 35
+	Alert_Name: MSCAP - Azure Active Directory PowerShell Sign-in RAW (CCX) - Summary Gen
+	Alert_Category: EVASION
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'app': 'app', 'user': 'user', '_vendor': '_vendor', '_product': '_product', 'eventaction': 'action', 'failurereason': 'status', 'actoripaddress': 'ipAddress', '_collector_type': '_collector_type', 'statuserrorcode': 'status_error_code', 'tokenissuertype': 'tokenIssuerType', '_reporting_device_name': '_reporting_device_name'}
+	Execution_Mode: REAL_TIME
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['app', 'user', 'tokenIssuerType', 'status']
+	Dataset: alerts
+	Mitre_Defs: {'TA0001 - Initial Access': ['T1078.004 - Valid Accounts: Cloud Accounts']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - User Added as Owner for Azure Application RAW (CCX) - Summary Gen:
+	Rule_Id: 28
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - User Added as Owner for Azure Application RAW (CCX) - Summary Gen
+// Author: Deven Amode, damode@paloaltonetworks.com
+// Datasets: msft_azure_ad_audit_raw
+// Date: 11/June/2024
+
+config case_sensitive = false
+| dataset = msft_azure_ad_audit_raw 
+| filter activityDisplayName = "*add owner to application*"
+| filter result = "success"
+
+| alter user = json_extract_scalar(initiatedBy, "$.user.userPrincipalName")
+| alter src = json_extract_scalar(initiatedBy, "$.user.ipAddress")
+| alter app = json_extract_scalar(targetResources, "$.0.displayName")
+| alter Initiator_app = json_extract_scalar(initiatedBy, "$.app.displayName")
+
+| filter Initiator_app!="Power Virtual Agents Service"
+
+| fields activityDateTime, user, src, app, activityDisplayName as signature, operationType, category, _vendor, _product, result, *
+| comp count() as total_events, values(src) as src_ip, earliest(activityDateTime) as first_event_time, latest(activityDateTime) as last_event_time, values(app) as app, values(_vendor) as vendor, values(_product) as product by signature, user, result, Initiator_app 
+	Is_Enabled: True
+	Description: Rule 55
+	Alert_Name: MSCAP - User Added as Owner for Azure Application RAW (CCX) - Summary Gen
+	Alert_Category: PERSISTENCE
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'app': 'app', 'signature': 'signature', 'totalevents': 'total_events', 'initiatedapp': 'Initiator_app', 'lasteventtime': 'last_event_time', 'firsteventtime': 'first_event_time', 'action_local_ip': 'src_ip', 'eventdescription': 'result', 'actor_effective_username': 'user'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Australia/Sydney
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['app', 'src_ip', 'user', 'signature']
+	Dataset: alerts
+	Mitre_Defs: {'TA0003 - Persistence': ['T1098.001 - Account Manipulation: Additional Cloud Credentials']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Azure Service Principal Credentials Added RAW (CCX) - Summary Gen:
+	Rule_Id: 29
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Azure Service Principal Credentials Added RAW (CCX) - Summary Gen
+// Author: Deven Amode, damode@paloaltonetworks.com
+// Datasets: msft_azure_ad_audit_raw
+// Date: 11/June/2024
+
+config case_sensitive = false
+| dataset = msft_azure_ad_audit_raw 
+| filter activityDisplayName = "*add service principal credentials*"
+| filter result = "success"
+
+| alter user = json_extract_scalar(initiatedBy, "$.user.userPrincipalName")
+| alter src = json_extract_scalar(initiatedBy, "$.user.ipAddress")
+| alter app = json_extract_scalar(targetResources, "$.0.displayName")
+
+| fields  _time, app, user, activityDateTime as signature, _collector_type , category, _vendor, _product
+	Is_Enabled: True
+	Description: Rule 54
+	Alert_Name: MSCAP - Azure Service Principal Credentials Added RAW (CCX) - Summary Gen
+	Alert_Category: PERSISTENCE
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'app': 'app', 'signature': 'signature', 'alert_category': 'category', '_collector_type': '_collector_type', 'activitydatetime': '_insert_time', 'actor_effective_username': 'user'}
+	Execution_Mode: REAL_TIME
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['app', 'user', 'signature']
+	Dataset: alerts
+	Mitre_Defs: {'TA0040 - Impact': ['T1496 - Resource Hijacking'], 'TA0003 - Persistence': ['T1136.003 - Create Account: Cloud Account']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - User Added as Owner for Azure Service Principal RAW (CCX) - Summary Gen:
+	Rule_Id: 30
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - User Added as Owner for Azure Service Principal RAW (CCX) - Summary Gen
+// Author: Deven Amode, damode@paloaltonetworks.com
+// Datasets: msft_azure_ad_audit_raw
+// Date: 11/June/2024
+//PS24SEP24 - adding initated by and src to fields.
+
+config case_sensitive = false
+| dataset = msft_azure_ad_audit_raw 
+| filter activityDisplayName = "*add owner to service principal*" and result = "success"
+
+| alter 
+    user = json_extract_scalar(initiatedBy, "$.user.userPrincipalName"),
+    src = json_extract_scalar(initiatedBy, "$.user.ipAddress"),
+    target_app = json_extract_scalar(targetResources, "$.0.displayName"),
+    user_type = json_extract_scalar(targetResources, "$.0.type"),
+    initiator_app = json_extract_scalar (initiatedBy, "$.app.displayName")
+
+| fields  _time, target_app, initiator_app, src,  user, user_type, activityDisplayName as signature, _collector_type , _vendor, _product
+	Is_Enabled: True
+	Description: Rule 57
+	Alert_Name: MSCAP - User Added as Owner for Azure Service Principal RAW (CCX) - Summary Gen
+	Alert_Category: PERSISTENCE
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'app': 'target_app', '_vendor': '_vendor', 'usertype': 'user_type', 'signature': 'signature', 'initiatedapp': 'initiator_app', 'vendorproduct': '_product', 'actoripaddress': 'src', '_collector_type': '_collector_type', 'actor_effective_username': 'user'}
+	Execution_Mode: REAL_TIME
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['target_app', 'initiator_app', 'src', 'user', 'user_type', 'signature', '_collector_type', '_vendor', '_product', '_insert_time', '_tag', '_raw_log', '_id']
+	Dataset: alerts
+	Mitre_Defs: {'TA0003 - Persistence': ['T1098.001 - Account Manipulation: Additional Cloud Credentials']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Active Directory User Backdoors RAW (CCX) - Summary Gen:
+	Rule_Id: 31
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Active Directory User Backdoors RAW (CCX) - Summary Gen
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: microsoft_windows_raw
+// Date: 11/June/2024
+
+/*
+Alert Suppression : 6h
+Suppression Fields: xdm.event.id, xdm.event.original_event_type, object_class, attribute_ldap_display_name
+*/
+config case_sensitive = false
+| datamodel dataset = microsoft_windows_raw 
+| filter xdm.source.host.os_family = XDM_CONST.OS_FAMILY_WINDOWS
+| filter xdm.source.user.username != "SVC.SCCM"
+
+| alter allowed_to_delegate_to = json_extract_scalar(microsoft_windows_raw.event_data, "$.AllowedToDelegateTo")
+| alter attribute_ldap_display_name = json_extract_scalar(microsoft_windows_raw.event_data, "$.AttributeLDAPDisplayName")
+| alter object_class = json_extract_scalar(microsoft_windows_raw.event_data, "$.ObjectClass")
+| replacenull attribute_ldap_display_name = "missing", object_class = "missing"
+
+| alter p1 = if(xdm.event.id = "4738" and allowed_to_delegate_to not in ("-", "*", "<value not set>"), true, false)  // do we need to filter out "" and null values for allowed_to_delegate_to
+| alter p2 = if(xdm.event.id = "5136" and attribute_ldap_display_name = "msds-allowedtodelegateto", true, false)
+| alter p3 = if(xdm.event.id = "5136" and object_class = "user" and attribute_ldap_display_name = "serviceprincipalname", true, false)
+| alter p4 = if(xdm.event.id = "5136" and attribute_ldap_display_name = "msds-allowedtoactonbehalfofotheridentity", true, false)
+
+| alter result = if(p1 or (p2 or p3 or p4), true, false)
+| filter result = true
+
+| comp count() as total_events, earliest(_time) as first_event_time, latest(_time) as last_event_time, values(xdm.source.host.hostname) as host, values(xdm.observer.vendor) as vendor, values(xdm.observer.product) as product, values(xdm.source.user.username) as user, values(xdm.source.ipv4) as src by xdm.event.id, xdm.event.original_event_type, object_class, attribute_ldap_display_name
+	Is_Enabled: True
+	Description: Rule 47
+	Alert_Name: MSCAP - Active Directory User Backdoors RAW (CCX) - Summary Gen
+	Alert_Category: PERSISTENCE
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'host': 'host', 'user': 'user', 'source': 'src', '_vendor': 'vendor', 'eventid': 'xdm.event.id', '_product': 'product', 'objectclass': 'object_class', 'totalevents': 'total_events', 'lasteventtime': 'last_event_time', 'firsteventtime': 'first_event_time', 'ldapdisplayname': 'attribute_ldap_display_name', 'originaleventtype': 'xdm.event.original_event_type'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Asia/Calcutta
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['object_class', 'attribute_ldap_display_name', 'xdm.event.id', 'xdm.event.original_event_type']
+	Dataset: alerts
+	Mitre_Defs: {'TA0003 - Persistence': ['T1098.001 - Account Manipulation: Additional Cloud Credentials']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Kerberos User Enumeration RAW (CCX) - Summary Gen:
+	Rule_Id: 32
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Kerberos User Enumeration RAW (CCX) - Summary Gen
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: microsoft_windows_raw
+// Date: 11/June/2024
+
+/*
+Alert Suppression : 6h
+Suppression Fields : xdm.event.original_event_type, xdm.event.id, xdm.source.ipv4, user
+*/
+config case_sensitive = false
+| datamodel dataset = microsoft_windows_raw 
+| filter xdm.source.host.os_family = XDM_CONST.OS_FAMILY_WINDOWS
+| filter xdm.event.id = "4768"
+| alter status = json_extract_scalar(microsoft_windows_raw.event_data, "$.Status")
+| filter status = "0x6"
+| filter xdm.target.user.username != "*$"
+| replacenull xdm.source.ipv4 = "missing"
+
+//filter for Exchange Server 
+
+| filter xdm.source.ipv4 != "10.64.1.163"
+
+//filter for Gallagher system
+
+| filter xdm.source.ipv4 != "10.10.134.40"
+
+
+| fields _time, xdm.event.id, status, xdm.source.host.hostname, xdm.target.user.username, xdm.source.ipv4, xdm.target.ipv4, microsoft_windows_raw.event_data, *
+| comp count() as total_events, count_distinct(xdm.target.user.username) as unique_user_count, values(xdm.target.user.username) as user, earliest(_time) as first_event_time, latest(_time) as last_event_time, values(xdm.observer.vendor) as vendor, values(xdm.observer.product) as product by xdm.event.original_event_type, xdm.event.id, xdm.source.ipv4 
+| filter unique_user_count > 10 // filtering for more than 10 attempts to enumerate user accoutns user Kerberos
+	Is_Enabled: True
+	Description: Rule 49
+	Alert_Name: MSCAP - Kerberos User Enumeration RAW (CCX) - Summary Gen
+	Alert_Category: CREDENTIAL_ACCESS
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'user': 'user', '_vendor': 'vendor', 'eventid': 'xdm.event.id', '_product': 'product', 'sourceip': 'xdm.source.ipv4', 'totalevents': 'total_events', 'lasteventtime': 'last_event_time', 'firsteventtime': 'first_event_time', 'uniqueusercount': 'unique_user_count', 'originaleventtype': 'xdm.event.original_event_type'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 12 minutes
+	Simple_Schedule: 10 minutes
+	Timezone: Asia/Calcutta
+	Crontab: */10 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['xdm.event.id', 'xdm.event.original_event_type', 'xdm.source.ipv4', 'user']
+	Dataset: alerts
+	Mitre_Defs: {'TA0006 - Credential Access': ['T1110.003 - Brute Force: Password Spraying']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSANA - Azure Risky Sign-in Outside AU/PG (CCX) - Summary Gen:
+	Rule_Id: 36
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSANA - Azure Risky Sign-in Outside AU/PG (CCX) - Summary Gen
+// Author: Deven Amode, damode@paloaltonetworks.com
+// Date: 12/June/2024
+
+dataset = msft_azure_ad_raw 
+|alter 
+    country_or_region = json_extract_scalar(location , "$.countryOrRegion")
+
+| filter isInteractive != 0
+| filter userPrincipalName != "Tendai.Hove@oktedi.com" and  country_or_region !="ZW" //Filtering temp_any_user="Tendai.Hove@oktedi.com" AND tld=ZW - (CS) PS 28NOV2023 - user expected to be in Zimbabwe.
+| filter userPrincipalName != "david.gouws@oktedi.com" AND country_or_region != "ZA" //temp_user="david.gouws@oktedi.com" AND temp_src="165.255.244.179" - (CS) PS 29JAN2024 - removing this user from detection as allowed and expected to be in ZA.
+| filter userPrincipalName != "wenrui.zhou@oktedi.com" // User is a SAP consultant
+| filter userPrincipalName != "eliuda.tamlick@oktedi.com" //Need to be reviewed, as this user use VPN 
+| filter userPrincipalName NOT IN ("naveen.sharma@oktedi.com", "atul.gupta@sap.com") AND country_or_region != "IN" //SAP consultant from India
+| filter userPrincipalName != "zulfi.asdani@oktedi.com" AND country_or_region != "ID"
+| filter ipAddress != "52.253.83.89" AND userPrincipalName != "*@oktedi.com" //this is the IP address from a DataCenter in Singapore
+| filter userPrincipalName !="todd@gsanalysis.com" AND country_or_region != "US" // Allowed gsanalsysis.com users to login from the US
+| filter userPrincipalName !="mgoss@amcconsultants.com" AND country_or_region !="ZM" //African Mining Consults AMC allowed to login into OTML for this user mgoss Only.
+| filter userPrincipalName != "cameron@epts.co.nz" AND country_or_region != "NZ" //Allowed NZ Contractor to connect to OTML network
+
+|filter country_or_region not in ("au", "pg", "")
+| iploc ipAddress loc_continent AS Continent, loc_country AS Country, loc_region AS Region, loc_city AS City, loc_latlon AS lon
+|fields _time, ipAddress as src,userprincipalname as user, userDisplayName as UserDisplay, country_or_region as tld , _vendor ,_product
+	Is_Enabled: True
+	Description: Rule 65
+	Alert_Name: MSANA - Azure Risky Sign-in Outside AU/PG (CCX) - Summary Gen
+	Alert_Category: OTHER
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'userid': 'user', '_vendor': '_vendor', 'vendorproduct': '_product', 'action_country': 'tld', 'action_local_ip': 'src', 'actor_effective_username': 'user'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Australia/Sydney
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['src', 'tld', 'user', '_id', '_insert_time']
+	Dataset: alerts
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Azure Conditional Access Policy Modified RAW (CCX) - Summary Gen:
+	Rule_Id: 37
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Azure Conditional Access Policy Modified RAW (CCX) - Summary Gen
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: msft_azure_ad_audit_raw
+// Date: 12/June/2024
+
+/*
+Alert Suppressioin : 6h
+Suppression Fields : activityDisplayName, category, operationType, result, user, src, app, modified_properties, modified_properties_old_value, modified_properties_new_value
+
+Fields Mapping :
+Username : user
+Category : category
+Source Create Time : activityDateTime
+Operation Name : activityDisplayName
+Additional Data : modified_properties
+App-ID : app
+Event Action : operationType
+*/
+
+config case_sensitive = false
+| dataset = msft_azure_ad_audit_raw
+| filter activityDisplayName = "update conditional access policy"
+| alter user = json_extract_scalar(initiatedBy, "$.user.userPrincipalName")
+| alter src = json_extract_scalar(initiatedBy, "$.user.ipAddress")
+| alter app = json_extract_scalar(targetResources, "$.0.displayName")
+| filter result = "success"
+
+| alter modified_properties = json_extract_array(targetResources, "$.0.modifiedProperties")
+| alter modified_properties_old_value = arraymap(modified_properties, if("@element" -> displayName = "ConditionalAccessPolicy", "@element" -> oldValue))
+| alter modified_properties_new_value = arraymap(modified_properties, if("@element" -> displayName = "ConditionalAccessPolicy", "@element" -> newValue))
+| fields activityDateTime, activityDisplayName, category, operationType, result, user, src, app, modified_properties, modified_properties_old_value, modified_properties_new_value, _vendor, _product
+	Is_Enabled: True
+	Description: Rule 64
+	Alert_Name: MSCAP - Azure Conditional Access Policy Modified RAW (CCX) - Summary Gen
+	Alert_Category: PERSISTENCE
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'app': 'app', 'result': 'result', '_vendor': '_vendor', 'eventaction': 'operationType', 'operationname': 'activityDisplayName', 'operationtype': 'operationType', 'vendorproduct': '_product', 'additionaldata': 'modified_properties', 'alert_category': 'category', 'sourcecreatetime': 'activityDateTime', 'modifiedproperties': 'modified_properties', 'modifiedpropertiesnew': 'modified_properties_new_value', 'modifiedpropertiesold': 'modified_properties_old_value', 'actor_effective_username': 'user'}
+	Execution_Mode: REAL_TIME
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['activityDisplayName', 'app', 'category', 'modified_properties', 'modified_properties_new_value', 'modified_properties_old_value', 'operationType', 'result', 'src', 'user']
+	Dataset: alerts
+	Mitre_Defs: {'TA0003 - Persistence': ['T1098.001 - Account Manipulation: Additional Cloud Credentials']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Azure AAD Global Administrator Role Assignment RAW (CCX) - Summary Gen:
+	Rule_Id: 38
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Azure AAD Global Administrator Role Assignment RAW (CCX) - Summary Gen
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: 
+// Date: 12/June/2024
+
+/*
+Alert Suppression : 6h
+Suppression Fields : target_user, activityDisplayName, operationType
+*/
+
+config case_sensitive = false
+| dataset = msft_azure_ad_audit_raw
+| filter activityDisplayName = "*member to role*"
+| filter result = "success"
+
+| alter modified_properties = json_extract_array(targetResources, "$.0.modifiedProperties")
+| alter target_role_display_name = arrayindex(arraymap(modified_properties, if("@element" -> displayName = "Role.DisplayName", "@element" -> newValue)), 0)
+| alter target_template_id = arrayindex(arraymap(modified_properties, if("@element" -> displayName = "Role.TemplateId", "@element" -> newValue)), 0)
+| filter target_role_display_name contains "global administrator" or target_template_id contains "62e90394-69f5-4237-9190-012177145e10"
+
+| alter src_user = json_extract_scalar(initiatedBy, "$.user.userPrincipalName")
+| alter src = json_extract_scalar(initiatedBy, "$.user.ipAddress")
+| alter app = json_extract_scalar(initiatedBy, "$.app.displayName")
+| alter target_user = json_extract_scalar(targetResources, "$.0.userPrincipalName")
+| alter target_display_name = json_extract_scalar(targetResources, "$.0.displayName")
+| alter target_role_wellknown_name = arrayindex(arraymap(modified_properties, if("@element" -> displayName = "Role.WellKnownObjectName", "@element" -> newValue)), 0)
+
+| replacenull src_user = "missing", src = "missing", app = "missing", target_role_display_name = "missing", target_template_id = "missing", target_role_wellknown_name = "missing"
+| fields activityDateTime, activityDisplayName, result, category, operationType, app, src_user, target_user, target_role_display_name, target_template_id, target_display_name, target_role_wellknown_name, modified_properties, _vendor, _product, *
+
+| comp count() as total_events, values(activityDateTime) as first_event_time, values(activityDateTime) as last_event_time, values(_vendor) as vendor, values(_product) as product, values(src_user) as src_user, values(src) as src, values(app) as app, values(target_role_display_name) as target_role_display_name, values(target_template_id) as target_template_id, values(target_role_wellknown_name) as target_role_wellknown_name by target_user, activityDisplayName, result, operationType
+	Is_Enabled: True
+	Description: Rule 66
+	Alert_Name: MSCAP - Azure AAD Global Administrator Role Assignment RAW (CCX) - Summary Gen
+	Alert_Category: PERSISTENCE
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'app': 'app', 'result': 'result', '_vendor': 'vendor', 'targetuser': 'target_user', 'totalevents': 'total_events', 'lasteventtime': 'last_event_time', 'operationtype': 'operationType', 'vendorproduct': 'product', 'firsteventtime': 'first_event_time', 'action_local_ip': 'src', 'targettemplateid': 'target_template_id', 'newtargetusername': 'target_role_wellknown_name', 'activitydisplayname': 'activityDisplayName', 'targetroledisplayname': 'target_role_display_name', 'actor_effective_username': 'src_user'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Asia/Calcutta
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['target_user', 'activityDisplayName', 'operationType']
+	Dataset: alerts
+	Mitre_Defs: {'TA0003 - Persistence': [], 'TA0001 - Initial Access': ['T1078.004 - Valid Accounts: Cloud Accounts'], 'TA0005 - Defense Evasion': [], 'TA0004 - Privilege Escalation': []}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Web JSP Request via URL ACC (CCX) - Summary Gen:
+	Rule_Id: 39
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Web JSP Request via URL ACC (CCX) - Summary Gen
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: datamodel
+// Date: 12/June/2024
+
+/*
+Alert Suppression : 6h
+Suppression Fields : xdm.source.user_agent, xdm.network.http.url, xdm.source.ipv4, xdm.target.ipv4
+*/
+
+config case_sensitive = false
+| datamodel dataset in (mimecast_mimecast_raw, panw_ngfw_url_raw, msft_o365_azure_ad_raw)
+| filter xdm.event.type = "threat"
+| filter xdm.network.http.method = XDM_CONST.HTTP_METHOD_GET 
+| filter xdm.network.http.url in ("*.jsp?cmd=*", "*j&cmd=*")
+
+// filtering for inbound requests
+| filter incidr(xdm.source.ipv4, "10.0.0.0/8") = false and incidr(xdm.source.ipv4, "172.16.0.0/12") = false and incidr(xdm.source.ipv4, "192.168.0.0/16") = false // filter source ip not local ip
+| filter incidr(xdm.target.ipv4, "10.0.0.0/8") = true or incidr(xdm.target.ipv4, "172.16.0.0/12") = true or incidr(xdm.target.ipv4, "192.168.0.0/16") = true // filter for target ip  is local ip
+
+| comp count() as total_http_requests, earliest(_time) as first_seen, latest(_time) as last_seen, values(xdm.source.user.username) as user, values(xdm.observer.vendor) as vendor, values(xdm.observer.product) as product by xdm.source.user_agent, xdm.network.http.method, xdm.network.http.url, xdm.source.ipv4, xdm.target.ipv4
+	Is_Enabled: True
+	Description: Rule 36
+	Alert_Name: MSCAP - Web JSP Request via URL ACC (CCX) - Summary Gen
+	Alert_Category: PERSISTENCE
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'user': 'user', '_vendor': 'vendor', '_product': 'product', 'lastseen': 'last_seen', 'sourceip': 'xdm.source.ipv4', 'firstseen': 'first_seen', 'httpmethod': 'xdm.network.http.method', 'user_agent': 'xdm.source.user_agent', 'detectionurl': 'xdm.network.http.url', 'destinationip': 'xdm.target.ipv4', 'fw_url_domain': 'xdm.network.http.url', 'totalhttprequests': 'total_http_requests'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Asia/Calcutta
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['xdm.source.ipv4', 'xdm.target.ipv4', 'xdm.network.http.url', 'xdm.source.user_agent']
+	Dataset: alerts
+	Mitre_Defs: {'TA0003 - Persistence': ['T1505 - Server Software Component', 'T1505.003 - Server Software Component: Web Shell'], 'TA0001 - Initial Access': ['T1190 - Exploit Public-Facing Application']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - User Couldn't Call a Privileged Service LsaRegisterLogonProcess RAW (CCX) - Summary Gen:
+	Rule_Id: 40
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - User Couldn't Call a Privileged Service LsaRegisterLogonProcess RAW (CCX) - Summary Gen
+// Author: Deven Amode, damode@paloaltonetworks.com
+// Date: 13/June/2024
+
+config case_sensitive = false
+| datamodel dataset = microsoft_windows_raw 
+| alter 
+    service = json_extract_scalar(microsoft_windows_raw.event_data, "$.service"),
+    subjectusersid = json_extract_scalar(microsoft_windows_raw.event_data, "$.subjectusersid")
+| filter xdm.event.id  = "4673" and service="lsaregisterlogonprocess()" and microsoft_windows_raw.keywords = "0x8010000000000000" and subjectusersid not in ("nt authority\\network service", "nt service\\msolap$datainsight")
+|fields _time,_vendor as vendor,_product as vendor_product, microsoft_windows_raw._raw_log as orig_raw, xdm.source.host.hostname as orig_host, xdm.target.ipv4 as dest,xdm.observer.type as orig_sourcetype,xdm.source.ipv4 as src, xdm.source.user.username as user, microsoft_windows_raw.keywords as keywords,service, xdm.event.id as eventcode
+| comp values(orig_raw) , values(vendor) , values(vendor_product) , values(orig_host) , values(orig_sourcetype), values(src), values(user), earliest(_time) as first_event_time, latest(_time) as last_event_time by dest, eventcode, service, keywords  
+	Is_Enabled: True
+	Description: Rule 72
+	Alert_Name: MSCAP - User Couldn't Call a Privileged Service LsaRegisterLogonProcess RAW (CCX) - Summary Gen
+	Alert_Category: LATERAL_MOVEMENT
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'eventcode': 'eventcode', 'description': 'keywords', 'servicename': 'service', 'lasteventtime': 'last_event_time', 'agent_hostname': None, 'firsteventtime': 'first_event_time', 'action_local_ip': None, 'action_remote_ip': 'dest', 'action_remote_port': None, 'agent_device_domain': None, 'actor_effective_username': None, 'actor_process_image_name': None, 'actor_process_image_path': None, 'actor_process_command_line': None, 'actor_process_image_sha256': None}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Australia/Sydney
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['eventcode', 'service', 'keywords', 'dest']
+	Dataset: alerts
+	Mitre_Defs: {'TA0006 - Credential Access': ['T1558.003 - Steal or Forge Kerberos Tickets: Kerberoasting']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Kerberoasting SPN request against Excessive Accounts RAW (CCX) - Summary Gen:
+	Rule_Id: 41
+	Severity: SEV_040_HIGH
+	Xql_Query: 
+// Title: MSCAP - Kerberoasting SPN request against Excessive Accounts RAW (CCX) - Summary Gen
+// Author: Deven Amode, damode@paloaltonetworks.com
+// Date: 13/June/2024
+
+config case_sensitive = false
+| datamodel dataset = microsoft_windows_raw 
+| alter 
+    service_name = json_extract_scalar(microsoft_windows_raw.event_data, "$.ServiceName"),
+    service_id = json_extract_scalar(microsoft_windows_raw.event_data, "$.ServiceSid"),
+    ticket_options = json_extract_scalar(microsoft_windows_raw.event_data, "$.TicketOptions"),
+    ticket_encryption_type = json_extract_scalar(microsoft_windows_raw.event_data, "$.TicketEncryptionType")
+| filter xdm.event.id  = "4769" and service_name != "*$" and ticket_options in ("0x40810000","0x40800000","0x40810010") and ticket_encryption_type="0x17"
+| fields *, xdm.source.user.username as user,microsoft_windows_raw._raw_log
+
+//filter for this detection, all SAP Services SCCM, ADFS and SPFARM_PRD that can trigger this alert and is part of Regular Activity from these accounts.
+| filter service_name NOT IN ( "SAPSERVICEB1R", "SAPSERVICEE1D", "SAPSERVICEE1P", "SAPSERVICEE1Q", "SAPSERVICEE1R", "SAPSERVICEP1D", "SAPSERVICEP1P", "SAPSERVICEP1Q", "SAPSERVICEP1R", "SAPSERVICES1P","SAPServiceE1S","SVC.ADFS", "SVC.SCCM", "SVC_SPFARM_PRD", "SAPSERVICEB1P")
+
+
+| comp values(microsoft_windows_raw._raw_log) as orig_raw, values(xdm.source.ipv4) as src, values(xdm.target.ipv4) as dest ,values(service_name) as service_name, count_distinct(service_name) as service_count, values(service_id) as service_id, values(ticket_encryption_type) as ticket_encryption_type, values(ticket_options) as ticket_options, values(xdm.event.id) as eventcode, values(_vendor) as vendor , values(_product) as vendor_product , values(xdm.source.host.hostname) as orig_host, values(xdm.observer.type)as orig_sourcetype, earliest(_time) as first_event_time, latest(_time) as last_event_time by user
+
+	Is_Enabled: True
+	Description: Rule 69
+	Alert_Name: MSCAP - Kerberoasting SPN request against Excessive Accounts RAW (CCX) - Summary Gen
+	Alert_Category: CREDENTIAL_ACCESS
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'eventcode': 'eventcode', 'serviceid': 'service_id', 'originalraw': 'orig_raw', 'servicename': 'service_name', 'servicecount': 'service_count', 'lasteventtime': 'last_event_time', 'logsourcetype': 'orig_sourcetype', 'ticketoptions': 'ticket_options', 'agent_hostname': 'orig_host', 'firsteventtime': 'first_event_time', 'action_local_ip': 'src', 'action_remote_ip': 'dest', 'ticketencryptiontype': 'ticket_encryption_type', 'actor_effective_username': 'user'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Australia/Sydney
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['user', 'ticket_encryption_type', 'ticket_options', 'service_id', 'service_count', 'orig_host', 'eventcode', 'service_name', 'src']
+	Dataset: alerts
+	Mitre_Defs: {'TA0006 - Credential Access': ['T1558.003 - Steal or Forge Kerberos Tickets: Kerberoasting']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - User Added to Local Administrators RAW (CCX) - Summary Gen:
+	Rule_Id: 42
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - User Added to Local Administrators RAW (CCX) - Summary Gen
+// Author: Deven Amode, damode@paloaltonetworks.com
+// Date: 13/June/2024
+
+config case_sensitive = false
+| datamodel dataset = microsoft_windows_raw 
+| alter 
+    xdm.target.user.username  = json_extract_scalar(microsoft_windows_raw.event_data, "$.TargetUserName"),
+    xdm.target.resource.id =json_extract_scalar(microsoft_windows_raw.event_data,"$.targetsid"),
+    subject_username = json_extract_scalar(microsoft_windows_raw.event_data, "$.SubjectUserName")
+| filter xdm.event.id  = "4732" and xdm.target.user.username = "administr*" or  xdm.target.resource.id="s-1-5-32-544" and subject_username != "*$" 
+| fields *, xdm.source.user.username as user,microsoft_windows_raw._raw_log, xdm.event.id as event_code,xdm.target.ipv4 as dest
+
+|alter
+    SecurityID = arrayindex(regextract(xdm.event.description, "Member:\s+Security ID:\s+(S-\d-\d+-\d+-\d+-\d+-\d+-\d+)"),0 )
+|filter SecurityID != "S-1-5-21*" //Filtering Non-Unique SIDs that are well known https://learn.microsoft.com/en-us/windows/win32/secauthz/well-known-sids
+
+
+| comp values(microsoft_windows_raw._raw_log) as orig_raw, values(_vendor) as vendor , values(_product) as vendor_product , values(xdm.source.host.hostname) as orig_host, values(xdm.observer.type)as orig_sourcetype, earliest(_time) as first_event_time, latest(_time) as last_event_time by  xdm.target.user.username , dest, user, event_code, xdm.event.description , SecurityID 
+	Is_Enabled: True
+	Description: Rule 58
+	Alert_Name: MSCAP - User Added to Local Administrators RAW (CCX) - Summary Gen
+	Alert_Category: PRIVILEGE_ESCALATION
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'eventcode': 'event_code', 'targetuser': 'xdm.target.user.username', 'originalraw': 'orig_raw', 'logsourcetype': 'orig_sourcetype', 'vendorproduct': 'vendor_product', 'agent_hostname': 'orig_host', 'action_remote_ip': 'dest', 'eventdescription': 'xdm.event.description', 'actor_effective_username': 'user'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Australia/Sydney
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['event_code', 'user', 'xdm.target.user.username', 'orig_host']
+	Dataset: alerts
+	Mitre_Defs: {'TA0003 - Persistence': ['T1098 - Account Manipulation'], 'TA0001 - Initial Access': ['T1078 - Valid Accounts']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Suspicious Email Attachment Extensions ACC (CCX) - Summary Gen:
+	Rule_Id: 43
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Suspicious Email Attachment Extensions ACC (CCX) - Summary Gen
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: 
+// Date: 13/June/2024
+
+/*
+Alert Suppression : 6h
+Suppression Fields : xdm.email.sender, xdm.email.message_id
+*/
+
+config case_sensitive = false 
+|  datamodel dataset = mimecast_mimecast_raw
+
+// REGEX method - uncomment this section to use
+| alter file_name_list = arraystring(json_extract_scalar_array(to_json_string(replace(xdm.email.attachment.filename,"\\"","")),"$"),",")
+| alter matched_file_name =  regextract(file_name_list,"(?:avi|doc|docx|jpg|jpeg|mpg|mpg2|mpeg|pdf|png|ppt|pptx|swf|xls|xlsx|zip)\.(?:com|exe)(?:,|$)|\.(?:bat|chm|com|cmd|cpl|exe|hlp|hta|jar|js|msi|pif|ps1|rar|reg|scr|vbe|vbs|wsf)(?:,|$)")
+| filter matched_file_name != null
+
+
+/*
+| filter xdm.email.attachment.filename in ("*.avi.com", "*.avi.exe", "*.doc.com", "*.doc.exe", "*.docx.com", "*.docx.exe", "*.jpg.com", "*.jpg.exe", 
+ "*.jpeg.com", "*.jpeg.exe", "*.mpg.com", "*.mpg.exe", "*.mpg2.com", "*.mpg2.exe", "*.mpeg.com", "*.mpeg.exe", "*.pdf.com", "*.pdf.exe", 
+ "*.png.com", "*.png.exe", "*.ppt.com", "*.ppt.exe", "*.pptx.com", "*.pptx.exe", "*.swf.com", "*.swf.exe", "*.xls.com", "*.xls.exe", 
+ "*.xlsx.com", "*.xlsx.exe", "*.zip.com", "*.zip.exe", "*.bat", "*.chm", "*.com", "*.cmd", "*.cpl", "*.exe", "*.hlp", "*.hta", "*.jar", "*.js", 
+ "*.msi", "*.pif", "*.ps1", "*.rar", "*.reg", "*.scr", "*.vbe", "*.vbs", "*.wsf")
+ | filter xdm.email.attachment.filename NOT IN ("*.com_*", "* RAR *", "*salesforce.com*" , "*.json", "*.com.jpeg")
+*/
+
+| comp count() as total_events, values(xdm.observer.vendor) as vendor, values(xdm.observer.product) as product, earliest(_time) as first_event_time, latest(_time) as last_event_time, 
+values(file_name_list) as file_name by xdm.email.sender, xdm.email.message_id 
+
+| join (
+datamodel dataset = mimecast_mimecast_raw
+| alter email_recipients = arraystring(xdm.email.recipients, ",")
+
+// filtering for null or empty results in attachment filename, message_id and recipients
+| filter xdm.email.attachment.filename in ("", null)
+| filter xdm.email.message_id not in ("", null)
+| filter email_recipients not in ("", null)
+| fields xdm.email.message_id as message_id, xdm.email.sender as email_sender, email_recipients
+| comp values(email_recipients) as email_recipients by message_id, email_sender 
+| limit 10000000
+) as recipient_data recipient_data.message_id  = xdm.email.message_id 
+
+| fields total_events, first_event_time, last_event_time, xdm.email.message_id, xdm.email.sender, email_recipients, file_name, vendor, product
+	Is_Enabled: True
+	Description: Rule 63
+	Alert_Name: MSCAP - Suspicious Email Attachment Extensions ACC (CCX) - Summary Gen
+	Alert_Category: OTHER
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'_vendor': 'vendor', 'totalevents': 'total_events', 'lasteventtime': 'last_event_time', 'vendorproduct': 'product', 'emailmessageid': 'xdm.email.message_id', 'firsteventtime': 'first_event_time', 'fw_email_sender': 'xdm.email.sender', 'action_file_name': 'file_name', 'fw_email_recipient': 'email_recipients'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Asia/Calcutta
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['xdm.email.message_id', 'xdm.email.sender']
+	Dataset: alerts
+	Mitre_Defs: {'TA0001 - Initial Access': ['T1566.001 - Phishing: Spearphishing Attachment', 'T1566 - Phishing']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Multiple Users Remotely Failing To Authenticate From Host RAW (CCX) - Summary Gen:
+	Rule_Id: 45
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Multiple Users Remotely Failing To Authenticate From Host RAW (CCX) - Summary Gen
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: 
+// Date: 13/June/2024
+
+/*
+Alert Suppression : 6h
+Suppression Fields : workstation_name, xdm.source.user.username, target_user
+*/
+
+config case_sensitive = false
+|  datamodel dataset = microsoft_windows_raw 
+| filter xdm.source.host.os_family = XDM_CONST.OS_FAMILY_WINDOWS 
+| filter xdm.event.id = "4625"
+| filter xdm.logon.type = "NETWORK"
+| filter xdm.source.user.username != "-"
+
+| alter workstation_name = json_extract_scalar(microsoft_windows_raw.event_data, "$.WorkstationName")
+| replacenull workstation_name = "missing"
+
+| comp count() as total_events, count_distinct(xdm.target.user.username) as unique_accounts, values(xdm.source.host.hostname) as host, values(xdm.target.user.username) as target_user, earliest(_time) as first_event_time, latest(_time) as last_event_time, values(xdm.event.original_event_type) as event_type, values(xdm.observer.vendor) as vendor, values(xdm.observer.product) as product by workstation_name, xdm.source.user.username, xdm.event.id
+
+| filter unique_accounts > 10 // filtering for more than 10 unique user accounts
+	Is_Enabled: True
+	Description: Rule 71
+	Alert_Name: MSCAP - Multiple Users Remotely Failing To Authenticate From Host RAW (CCX) - Summary Gen
+	Alert_Category: CREDENTIAL_ACCESS
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'_vendor': 'vendor', 'eventid': 'xdm.event.id', 'targetuser': 'target_user', 'totalevents': 'total_events', 'workstation': 'workstation_name', 'lasteventtime': 'last_event_time', 'vendorproduct': 'product', 'agent_hostname': 'host', 'firsteventtime': 'first_event_time', 'uniqueaccounts': 'unique_accounts', 'action_local_ip': None, 'action_remote_ip': None, 'originaleventtype': 'event_type', 'action_remote_port': None, 'agent_device_domain': None, 'actor_effective_username': 'xdm.source.user.username', 'actor_process_image_name': None, 'actor_process_image_path': None, 'actor_process_command_line': None, 'actor_process_image_sha256': None}
+	Execution_Mode: SCHEDULED
+	Search_Window: 12 minutes
+	Simple_Schedule: 10 minutes
+	Timezone: Asia/Calcutta
+	Crontab: */10 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['xdm.source.user.username', 'target_user', 'workstation_name']
+	Dataset: alerts
+	Mitre_Defs: {'TA0006 - Credential Access': ['T1110.003 - Brute Force: Password Spraying']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Short Lived Windows Accounts ACC (CCX) - Summary Gen:
+	Rule_Id: 46
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Short Lived Windows Accounts ACC (CCX) - Summary Gen
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: microsoft_windows_raw
+// Date: 13/June/2024
+
+/*
+Alert Suppression : 8h
+Suppression Fields : xdm.target.user.username
+*/
+
+config case_sensitive = false
+| datamodel dataset = microsoft_windows_raw 
+| filter xdm.source.host.os_family = XDM_CONST.OS_FAMILY_WINDOWS 
+| filter xdm.event.id in ("4726", "4720")
+
+| alter user_principal_name = json_extract_scalar(microsoft_windows_raw.event_data, "$.UserPrincipalName")
+| alter user_display_name = json_extract_scalar(microsoft_windows_raw.event_data , "$.DisplayName")
+
+| alter user_creation_time = if(xdm.event.id = "4720", _time)
+| alter user_deletion_time = if(xdm.event.id = "4726", _time)
+
+| fields xdm.event.id, xdm.event.original_event_type, xdm.target.user.username, xdm.source.user.username, user_principal_name, user_display_name, microsoft_windows_raw.event_data, *
+
+| comp earliest(_time) as first_event_time, latest(_time) as last_event_time, values(xdm.source.user.username) as activity_by_user, min(user_creation_time) as creation_time, max(user_deletion_time) as deletion_time, values(user_principal_name) as user_principal_name, values(user_display_name) as user_display_name, values(xdm.observer.vendor) as vendor, values(xdm.observer.product) as product by xdm.target.user.username   
+| alter create_delete_time_diff = timestamp_diff(deletion_time, creation_time, "MINUTE")
+| filter create_delete_time_diff >= 0 and create_delete_time_diff <= 240  // in minutes  
+	Is_Enabled: True
+	Description: Rule 44
+	Alert_Name: MSCAP - Short Lived Windows Accounts ACC (CCX) - Summary Gen
+	Alert_Category: PERSISTENCE
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'_vendor': 'vendor', '_product': 'product', 'activity': 'activity_by_user', 'targetuser': 'xdm.target.user.username', 'deletiontime': 'deletion_time', 'sourceuserid': 'activity_by_user', 'lasteventtime': 'last_event_time', 'firsteventtime': 'first_event_time', 'timedifference': 'create_delete_time_diff', 'userdisplayname': 'user_display_name', 'usercreationtime': 'creation_time', 'userprincipalname': 'user_principal_name'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 8 hours
+	Simple_Schedule: custom
+	Timezone: Australia/Sydney
+	Crontab: 0 */4 * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 8 hours
+	Suppression_Fields: ['xdm.target.user.username']
+	Dataset: alerts
+	Mitre_Defs: {'TA0003 - Persistence': ['T1136 - Create Account', 'T1136.001 - Create Account: Local Account']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Microsoft O365 SecurityComplianceCenter Alerts RAW (CCX) - Summary Gen:
+	Rule_Id: 47
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Microsoft O365 SecurityComplianceCenter Alerts RAW (CCX) - Summary Gen
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: msft_o365_general_raw
+// Date: 14/June/2024
+
+config case_sensitive = false
+| dataset = msft_o365_general_raw 
+
+| filter Workload = "securitycompliancecenter"
+| filter Comments = "new alert"
+
+| filter Name not in ("Email messages containing malicious URL removed after delivery", 
+"activity from a password-spray associated ip address", "activity from a tor ip address", "activity from an anonymous proxy", 
+"admin triggered user compromise investigation", "dlp-high volume of content detected australia financial data", 
+ "failed exact data match upload", "form blocked due to potential phishing attempt", 
+"form flagged and confirmed as phishing", "messages containing malicious entity not removed after delivery", 
+"potential nation-state activity", "powerbi administrative activity", "ransomware activity", "suspicious connector activity", 
+"suspicious email deletion activity", "suspicious email sending patterns detected", 
+"suspicious inbox manipulation", "suspicious tenant sending patterns observed", 
+"tenant restricted from sending email", "tenant restricted from sending unprovisioned email", "unusual volume of external file sharing", 
+ "user restricted from sharing forms and collecting responses", "Email reported by user as malware or phish", "Email reported by user as junk", "Email reported by user as not junk", "Email messages containing malicious file removed after delivery​") 
+
+| filter Operation not in ("AlertEntityGenerated", "AlertUpdated")
+
+| alter f3u = data -> f3u,
+        trc = data -> trc,
+        suid = data -> suid,
+        ad = data -> ad,
+        dm = data -> dm,
+        op = data -> op,
+        lon = data -> lon,
+        tht = data -> tht
+
+| alter user = coalesce(f3u, trc, suid),
+        detection_description = coalesce(ad, dm),
+        signature = coalesce(tht, op, lon)
+
+| replacenull detection_description = Name, signature = Name, Id = "missing", AlertId = "missing", user = "missing"
+
+| alter action = if(ResultStatus = "succeeded", "success", 
+                ResultStatus in ("invalid", "cancelled", "interrupted"), "error", 
+                ResultStatus = "failed", "failure", 
+                ResultStatus = "pending", "pending", 
+                "missing")
+
+| comp count() as total_event, earliest(CreationTime) as first_event_time, latest(CreationTime) as last_event_time, values(user) as user, values(_vendor) as vendor, values(_product) as product, values(ResultStatus) as detection_action, values(action) as action, values(operation) as detection_operation, values(signature) as signature, values(detection_description) as detection_description, values(Category) as category, values(Severity) as severity, values(Source) as source, values(RelativeUrl) as resources, values(EntityType) as entityType, values(Id) as Id by Name, AlertId, Workload, Comments, AlertLinks 
+
+| fields total_event, first_event_time, last_event_time, user, detection_description, AlertId, Id, Comments as detection_status, action, Severity, Workload as vendor_product, resources, source, detection_operation, Name as detection_title, AlertLinks , signature, entityType, detection_action, category, vendor, product
+	Is_Enabled: True
+	Description: Rule 18
+	Alert_Name: MSCAP - Microsoft O365 SecurityComplianceCenter Alerts RAW (CCX) - Summary Gen
+	Alert_Category: OTHER
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'title': 'detection_title', 'source': 'source', '_vendor': 'vendor', 'comment': 'detection_status', '_product': 'product', 'lastseen': 'last_event_time', 'severity': 'severity', 'firstseen': 'first_event_time', 'resources': 'resources', 'signature': 'signature', 'entitytype': 'entityType', 'alertaction': 'detection_action', 'eventaction': 'action', 'detectionurl': 'resources', 'operationname': 'detection_operation', 'alert_category': 'category', 'originalalertid': 'AlertId', 'eventdescriptions': 'detection_description', 'actor_effective_username': 'user'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Asia/Calcutta
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['AlertId', 'detection_title']
+	Dataset: alerts
+	Mitre_Defs: {'TA0001 - Initial Access': ['T1078.004 - Valid Accounts: Cloud Accounts']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Azure AAD User Enabled from Disabled State RAW (CCX) - Summary Gen:
+	Rule_Id: 50
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Azure AAD User Enabled from Disabled State RAW (CCX) - Summary Gen
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: msft_azure_ad_audit_raw
+// Date: 14/June/2024
+
+/*
+Alert Suppression : 8h
+Suppression Fields : userPrincipalName, activity_by_user
+
+Fields Mapping:
+Username : user
+Event Action : action
+Category : category
+Last Modified On : last_seen_disabled
+Operation Name : operationType
+*/
+
+config case_sensitive = false
+| dataset = msft_azure_ad_audit_raw
+
+| alter modified_properties = json_extract_array(targetResources, "$.0.modifiedProperties")
+
+| alter type = json_extract_scalar(targetResources, "$.0.type")
+| filter type = "User"
+| alter account_enabled = arraymap(modified_properties, if("@element" -> displayName = "accountEnabled", true))
+| filter account_enabled = true
+
+| filter result = "success"
+
+| alter previous_status = arraymap(modified_properties, if("@element" -> displayName = "accountEnabled", "@element" -> oldValue))
+| filter previous_status contains "false"
+| alter current_status = arraymap(modified_properties, if("@element" -> displayName = "accountEnabled", "@element" -> newValue))
+| filter current_status contains "true"
+
+| alter activity_by_user = json_extract_scalar(initiatedBy, "$.user.userPrincipalName")
+
+| alter userPrincipalName = json_extract_scalar(targetResources, "$.0.userPrincipalName")
+| replacenull userPrincipalName = "missing"
+| filter activity_by_user != "Sync_BSSOND02_1a4ebc93591d@otmlhome.onmicrosoft.com"
+
+| comp min(activityDateTime) as last_seen_disabled, values(activityDisplayName) as action by userPrincipalName, activity_by_user, result, operationType, category
+
+	Is_Enabled: True
+	Description: Rule 52
+	Alert_Name: MSCAP - Azure AAD User Enabled from Disabled State RAW (CCX) - Summary Gen
+	Alert_Category: PERSISTENCE
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'activity': 'activity_by_user', 'eventaction': 'action', 'operationname': 'operationType', 'operationtype': 'operationType', 'alert_category': 'category', 'lastmodifiedon': 'last_seen_disabled', 'userprincipalname': 'userPrincipalName', 'actor_effective_username': 'userPrincipalName'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 5 hours
+	Simple_Schedule: custom
+	Timezone: Asia/Calcutta
+	Crontab: 0 */4 * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 8 hours
+	Suppression_Fields: ['userPrincipalName', 'activity_by_user']
+	Dataset: alerts
+	Mitre_Defs: {'TA0003 - Persistence': ['T1078.004 - Valid Accounts: Cloud Accounts']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Azure Active Directory Risky Sign-in RAW (CCX) - Summary Gen:
+	Rule_Id: 51
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Azure Active Directory Risky Sign-in RAW (CCX) - Summary Gen
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: msft_azure_ad_raw
+// Date: 14/June/2024
+
+/*
+Alert Suppression : 6h
+Suppression Fields : userDisplayName, userPrincipalName, src_ip, signature
+Fields Mapping:
+Username : userDisplayName
+User Id : userPrincipalName
+First Seen : first_event_time
+Last Seen : last_event_time
+Remote Ip : src_ip
+location : location
+Src OS : operating_system
+Error Code : error_code
+Additional Data : additional_details
+Signature : signature
+Severity : severity
+*/
+
+config case_sensitive = false
+| dataset = msft_azure_ad_raw
+| filter riskState = "atrisk"
+
+| alter error_code = status -> errorCode, additional_details = status -> additionalDetails
+| alter browser = deviceDetail -> browser, os = deviceDetail -> operatingSystem
+| alter city = location -> city, country = location -> countryOrRegion, state = location -> state
+| alter location = format_string("%s | %s | %s", city, state, country)
+
+| replacenull userId = "missing", userDisplayName = "missing", riskDetail = "missing", riskEventTypes = "missing", additionalData = "missing"
+
+| filter Location !="*| AU"
+| filter location !="*| PG"
+
+
+| comp count() as total_events, min(createdDateTime) as first_event_time, max(createdDateTime) as last_event_time, values(location) as location, values(browser) as browser, values(os) as operating_system, values(riskDetail) as risk_detail, values(additional_details) as additional_details, values(error_code) as error_code, values(ipAddress) as src_ip, values(riskEventTypes)  as signature, values(riskLevelDuringSignIn) as severity by userDisplayName, userPrincipalName, riskState
+	Is_Enabled: True
+	Description: Rule 45
+	Alert_Name: MSCAP - Azure Active Directory Risky Sign-in RAW (CCX) - Summary Gen
+	Alert_Category: PRIVILEGE_ESCALATION
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'srcos': 'operating_system', 'userid': 'userPrincipalName', 'lastseen': 'last_event_time', 'location': 'location', 'severity': 'severity', 'errorcode': 'error_code', 'firstseen': 'first_event_time', 'signature': 'signature', 'additionaldata': 'additional_details', 'action_local_ip': 'src_ip', 'userdisplayname': 'userDisplayName', 'action_remote_ip': 'src_ip', 'actor_effective_username': 'userPrincipalName'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Asia/Calcutta
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['src_ip', 'userDisplayName', 'userPrincipalName', 'signature']
+	Dataset: alerts
+	Mitre_Defs: {'TA0003 - Persistence': [], 'TA0001 - Initial Access': ['T1078.004 - Valid Accounts: Cloud Accounts'], 'TA0005 - Defense Evasion': [], 'TA0004 - Privilege Escalation': []}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Tenable Compromised Host Detection RAW (CCX) - Summary Gen:
+	Rule_Id: 52
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Tenable Compromised Host Detection RAW (CCX) - Summary Gen
+// Author: Deven Amode, damode@paloaltonetworks.com
+// Date: 14/June/2024
+
+datamodel dataset = tenable_io_vulnerabilities_raw
+| alter 
+    signature = json_extract_scalar(tenable_io_vulnerabilities_raw.plugin,"$.synopsis"),
+    port = json_extract_scalar(tenable_io_vulnerabilities_raw.port,"$.port"),
+    last_detected = format_timestamp("%ft%t%:z", tenable_io_vulnerabilities_raw.last_found),
+    xdm.target.host.ipv4_addresses = arraystring(xdm.target.host.ipv4_addresses, "|"),
+    xdm.target.host.ipv6_addresses = arraystring(xdm.target.host.ipv6_addresses, "|")
+
+| fields *, xdm.alert.category as detection_family, xdm.alert.severity as detection_severity, xdm.alert.description as description,xdm.alert.name as detection_name,xdm.alert.original_alert_id as detection_id,xdm.event.description as detection_output, tenable_io_vulnerabilities_raw.severity_modification_type as severity_modification_type
+| filter 
+    detection_severity != "informational" and xdm.target.host.ipv4_addresses not in ("bvmswhp01", "10.10.144.10", "btenwh01","bvmsppp01", "10.40.144.12", "btenpp01","bvmsndp01", "10.50.144.10", "btenb201","bnesswh01", "10.10.143.21", "btenwh02","btenmi01", "10.25.144.10") and (severity_modification_type != "accepted") and xdm.target.host.ipv6_addresses not in ("bvmswhp01", "10.10.144.10", "btenwh01","bvmsppp01", "10.40.144.12", "btenpp01","bvmsndp01", "10.50.144.10", "btenb201","bnesswh01", "10.10.143.21", "btenwh02","btenmi01", "10.25.144.10") and
+    (detection_family="backdoors" and signature="*") or
+    (detection_family="*" and signature="implant") or
+    (detection_family="web servers" and signature="backdoor detection") or 
+    (detection_family="*" and signature="*malicious process detection*") 
+    
+
+| comp 
+    values(xdm.observer.type) as orig_sourcetype, 
+    values(xdm.observer.name ) as orig_host, //_collector_name
+    values(detection_family) as detection_family, 
+    values(detection_name) as detection_name, 
+    values(description) as description, 
+    values(port) as port, 
+    values(detection_severity) as detection_severity, 
+    values(detection_output) as detection_output, 
+    values(_vendor) as vendor, 
+    values(_product) as vendor_product, 
+    count(), earliest(_time) as first_event_time, latest(_time) as last_event_time 
+    by signature, xdm.target.host.fqdn
+
+/*acceptrisk, plugin.solution, solution fields not found
+port.service field not found and doesn't exist in Splunk Tenable addon either
+ src_ip=if(isnotnull(ipv4), ipv4, ipv6) - ipv4 and ipv6 are mapped to src_ip in SPL, however, in Splunk addon, it is mapped to dest_ip
+*/
+	Is_Enabled: True
+	Description: Rule 26
+	Alert_Name: MSCAP - Tenable Compromised Host Detection RAW (CCX) - Summary Gen
+	Alert_Category: OTHER
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'port': 'port', '_vendor': 'vendor', 'signature': 'signature', 'description': 'description', 'originalhost': 'orig_host', 'destinationip': 'xdm.target.host.fqdn', 'detectionname': 'detection_name', 'lasteventtime': 'last_event_time', 'vendorproduct': 'vendor_product', 'firsteventtime': 'first_event_time', 'destinationipv6': 'first_event_time', 'detectionfamily': 'first_event_time', 'detectionoutput': 'detection_output', 'detectionseverity': 'detection_severity', 'originalsourcetype': 'orig_sourcetype'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Australia/Sydney
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['detection_name', 'signature', 'port', 'detection_output', 'detection_severity', 'detection_family', 'xdm.target.host.fqdn']
+	Dataset: alerts
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Windows Domain Trust Modification via Windows Event Code RAW (CCX) - Summary Gen:
+	Rule_Id: 54
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Windows Domain Trust Modification via Windows Event Code RAW (CCX) - Summary Gen
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: microsoft_windows_raw
+// Date: 17/June/2024
+
+/*
+Alert Suppression : 6h
+Suppression Fields : xdm.event.id, signature, xdm.event.original_event_type, user
+*/
+
+config case_sensitive = false
+| datamodel dataset = microsoft_windows_raw 
+| filter xdm.source.host.os_family = XDM_CONST.OS_FAMILY_WINDOWS 
+| filter xdm.event.id in ("4706", "4707", "4716")
+| alter signature = if(xdm.event.id = "4706", "a new trust was created to a domain.", xdm.event.id = "4707", "a trust to a domain was removed.", xdm.event.id = "4716", "trusted domain information was modified.")
+| replacenull xdm.source.ipv4 = "missing", xdm.source.user.username = "missing"
+| fields xdm.event.id, signature, xdm.event.original_event_type, xdm.source.ipv4, xdm.source.user.username, microsoft_windows_raw.event_data, *
+
+| comp count() as total_events, min(_time) as first_event_time, max(_time) as last_event_time, values(xdm.source.user.domain) as src_nt_domain, values(xdm.source.user.username) as user, values(xdm.source.host.hostname) as host, values(xdm.observer.product) as product, values(xdm.observer.vendor) as vendor by xdm.event.id, signature, xdm.event.original_event_type
+	Is_Enabled: True
+	Description: Rule 56
+	Alert_Name: MSCAP - Windows Domain Trust Modification via Windows Event Code RAW (CCX) - Summary Gen
+	Alert_Category: PRIVILEGE_ESCALATION
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'eventid': 'xdm.event.id', 'signature': 'signature', 'totalevents': 'total_events', 'sourcedomain': 'src_nt_domain', 'lasteventtime': 'last_event_time', 'agent_hostname': 'host', 'firsteventtime': 'first_event_time', 'action_local_ip': None, 'action_remote_ip': None, 'originaleventtype': 'xdm.event.original_event_type', 'action_remote_port': None, 'agent_device_domain': 'src_nt_domain', 'actor_effective_username': 'user', 'actor_process_image_name': None, 'actor_process_image_path': None, 'actor_process_command_line': None, 'actor_process_image_sha256': None}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Asia/Calcutta
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['xdm.event.id', 'xdm.event.original_event_type', 'signature', 'user']
+	Dataset: alerts
+	Mitre_Defs: {'TA0005 - Defense Evasion': [], 'TA0004 - Privilege Escalation': ['T1484.002 - Domain Policy Modification: Domain Trust Modification']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Service Account or Non Domain Admin RDP Login to Domain Controller RAW (CCX) - Summary Gen:
+	Rule_Id: 55
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Service Account or Non Domain Admin RDP Login to Domain Controller RAW (CCX) - Summary Gen
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: microsoft_windows_raw
+// Date: 18/June/2024
+
+/*
+Alert Suppression : 6h
+Suppression Fields : xdm.source.ipv4, xdm.target.user.username
+*/
+
+config case_sensitive = false
+| datamodel dataset = microsoft_windows_raw 
+| filter xdm.source.host.os_family = XDM_CONST.OS_FAMILY_WINDOWS 
+| filter xdm.event.id = "4624"
+| filter xdm.logon.type = "REMOTE_INTERACTIVE"
+
+// dest_priority and user_category field not found
+// filter dest_priority = "critical"
+// filter user_category != "domain admins" or user_category = "dont_expire_password"
+
+| replacenull xdm.source.ipv4 = "missing", xdm.target.user.username = "missing"
+| filter xdm.source.host.hostname contains "DC"
+| filter xdm.target.user.username not contains "priv."
+
+| comp count() as total_event, earliest(_time) as first_event_time, latest(_time) as last_event_time, values(xdm.observer.product) as product, values(xdm.observer.vendor) as vendor by xdm.source.host.hostname, xdm.source.ipv4, xdm.target.user.username, xdm.event.original_event_type  // dest_priority, user_category
+	Is_Enabled: True
+	Description: Rule 37
+	Alert_Name: MSCAP - Service Account or Non Domain Admin RDP Login to Domain Controller RAW (CCX) - Summary Gen
+	Alert_Category: LATERAL_MOVEMENT
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'sourceip': 'xdm.source.ipv4', 'sourcehost': 'xdm.source.host.hostname', 'targetuser': 'xdm.target.user.username', 'totalevents': 'total_event', 'lasteventtime': 'last_event_time', 'firsteventtime': 'first_event_time', 'originaleventtype': 'xdm.event.original_event_type'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Asia/Calcutta
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['xdm.target.user.username', 'xdm.source.ipv4']
+	Dataset: alerts
+	Mitre_Defs: {'TA0008 - Lateral Movement': ['T1021.001 - Remote Services: Remote Desktop Protocol']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Detect Attempted Exploitation of Microsoft CVE-2020-1472 Netlogon RAW (CCX) - Summary Gen:
+	Rule_Id: 56
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Detect Attempted Exploitation of Microsoft CVE-2020-1472 Netlogon RAW (CCX) - Summary Gen
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: microsoft_windows_raw
+// Date: 18/June/2024
+
+config case_sensitive = false
+| datamodel dataset = microsoft_windows_raw 
+| filter xdm.source.host.os_family = XDM_CONST.OS_FAMILY_WINDOWS 
+| filter xdm.event.id in ("5827", "5828", "5829", "5830", "5831") 
+
+// | filter name = "netlogon" // no mapping know for name field
+
+| replacenull xdm.source.ipv4 = "missing"
+
+| alter signature = if(xdm.event.id = "5827", "the netlogon service denied a vulnerable netlogon secure channel connection from a machine account.",
+    xdm.event.id = "5828", "the netlogon service denied a vulnerable netlogon secure channel connection using a trust account.",
+    xdm.event.id = "5829", "the netlogon service allowed a vulnerable netlogon secure channel connection.",
+    xdm.event.id = "5830", "the netlogon service allowed a vulnerable netlogon secure channel connection because the machine account is allowed in the domain controller: allow vulnerable netlogon secure channel connections group policy.",
+    xdm.event.id = "5831", "the netlogon service allowed a vulnerable netlogon secure channel connection because the trust account is allowed in the domain controller: allow vulnerable netlogon secure channel connections group policy.")
+
+| alter src_domain = json_extract_scalar(microsoft_windows_raw.event_data, "$.domain"), machine_sam_account_name = json_extract_scalar(microsoft_windows_raw.event_data, "$.machineSamAccountName"), account_type = json_extract_scalar(microsoft_windows_raw.event_data, "$.accountType"), os = json_extract_scalar(microsoft_windows_raw.event_data, "$.os"), os_build = json_extract_scalar(microsoft_windows_raw.event_data, "$.osBuild"),  os_service_pack = json_extract_scalar(microsoft_windows_raw.event_data, "$.osServicePack")
+
+| comp count() as total_events, earliest(_time) as first_event_time, latest(_time) as last_event_time, values(xdm.observer.vendor) as vendor, values(xdm.observer.product) as product, values(os) as extracted_os, values(os_build) as extracted_os_build, values(os_service_pack) as extracted_os_service_pack, values(src_domain) as extracted_src_domain, values(xdm.source.ipv4) as src, values(xdm.source.host.hostname) as host, values(machine_sam_account_name) as extracted_src by xdm.event.id, signature, xdm.event.original_event_type 
+
+// data fetch from event_data as per assumption but corect data path to be validated once we have data available for the event ids.
+
+	Is_Enabled: True
+	Description: Rule No  8 -  data source is not ready to test
+	Alert_Name: MSCAP - Detect Attempted Exploitation of Microsoft CVE-2020-1472 Netlogon RAW (CCX) - Summary Gen
+	Alert_Category: PRIVILEGE_ESCALATION
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'host': 'host', 'source': 'src', '_vendor': 'vendor', 'eventid': 'xdm.event.id', 'osbuild': 'extracted_os_build', '_product': 'product', 'signature': 'signature', 'extractedos': 'extracted_os', 'totalevents': 'total_events', 'lasteventtime': 'last_event_time', 'osservicepack': 'extracted_os_service_pack', 'agent_hostname': None, 'firsteventtime': 'first_event_time', 'action_local_ip': None, 'extractedsource': 'extracted_src', 'action_remote_ip': None, 'action_remote_port': None, 'agent_device_domain': None, 'actor_effective_username': None, 'actor_process_image_name': None, 'actor_process_image_path': None, 'actor_process_command_line': None, 'actor_process_image_sha256': None}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Asia/Calcutta
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['xdm.event.id', 'src', 'signature', 'host', 'extracted_src_domain', 'extracted_src', 'extracted_os', 'extracted_os_build', 'extracted_os_service_pack']
+	Dataset: alerts
+	Mitre_Defs: {'TA0005 - Defense Evasion': [], 'TA0004 - Privilege Escalation': []}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Common Abused Remote Access Windows Startup Items - Tenable RAW (CCX) - Summary Gen:
+	Rule_Id: 57
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Common Abused Remote Access Windows Startup Items - Tenable RAW (CCX) - Summary Gen
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: tenable_io_vulnerabilities_raw
+// Date: 18/June/2024
+
+/*
+Alert Suppression : 6h
+Suppression Fields : xdm.alert.name, src_ip, detection_output
+*/
+
+config case_sensitive = false
+| datamodel dataset = tenable_io_vulnerabilities_raw 
+
+| filter xdm.alert.name = "microsoft windows startup software enumeration"
+| filter xdm.event.description in ("*anydesk*", "*teamviewer*", "*logmein*", "*connectwise*", "*screenconnect*", "*mremoteng*", "*gotoassist*", "*zoho assist*", 
+"*beyondtrust remote*", "*realvnc*", "*vnc connect*", "*tightvnc*", "*ultravnc*", "*bomgar*", "*splashtop*", "*atera*", "*supremo*", "*awesun*")
+
+| alter detection_solution = json_extract_scalar(tenable_io_vulnerabilities_raw.plugin, "$.solution"), detection_family = json_extract_scalar(tenable_io_vulnerabilities_raw.plugin, "$.family")
+| alter ipv4 = json_extract_scalar(tenable_io_vulnerabilities_raw.asset, "$.ipv4"), ipv6 = json_extract_scalar(tenable_io_vulnerabilities_raw.asset, "$.ipv6")
+
+
+
+// macros logic
+| filter ipv4 not in ("bvmswhp01", "10.10.144.10", "btenwh01","bvmsppp01", "10.40.144.12", "btenpp01","bvmsndp01", "10.50.144.10", "btenb201","bnesswh01", "10.10.143.21", "btenwh02","btenmi01", "10.25.144.10")
+| filter ipv6 not in ("bvmswhp01", "10.10.144.10", "btenwh01","bvmsppp01", "10.40.144.12", "btenpp01","bvmsndp01", "10.50.144.10", "btenb201","bnesswh01", "10.10.143.21", "btenwh02","btenmi01", "10.25.144.10")
+
+
+
+//Filter 
+|filter ipv4 NOT IN ("10.64.180.131", "10.45.19.10") AND detection_solution != "*TightVNC*" //Filtering TightVNC from this detection
+|filter ipv4 NOT IN ("10.64.180.118", "10.64.180.201", "10.15.20.128", "10.25.22.32", "10.20.20.112", "10.64.180.163") //Filtering as per Splunk request.
+
+| alter src_ip = if(ipv4 in (null, ""), ipv6, ipv4)
+| comp count() as total_events, earliest(_time) as first_event_time, latest(_time) as last_event_time, values(xdm.target.host.hostname) as host, values(xdm.observer.vendor) as vendor, values(xdm.observer.product) as product, values(detection_family) as detection_family, values(xdm.target.host.os) as os, values(xdm.alert.description) as description, values(detection_solution) as detection_solution, values(xdm.alert.severity) as detetction_severity, values(xdm.target.host.fqdn) as host_fqdn, values(xdm.event.description) as detection_output by xdm.alert.name, src_ip
+	Is_Enabled: True
+	Description: Rule 40
+	Alert_Name: MSCAP - Common Abused Remote Access Windows Startup Items - Tenable RAW (CCX) - Summary Gen
+	Alert_Category: LATERAL_MOVEMENT
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'os': 'os', '_vendor': 'vendor', '_product': 'product', 'sourceip': 'src_ip', 'agent_fqdn': 'host_fqdn', 'alert_name': 'xdm.alert.name', 'description': 'description', 'totalevents': 'total_events', 'lasteventtime': 'last_event_time', 'agent_hostname': 'host', 'firsteventtime': 'first_event_time', 'detectionfamily': 'detection_family', 'detectionoutput': 'detection_output', 'detectionseverity': 'detetction_severity', 'detectionsolution': 'detection_solution'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Asia/Calcutta
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['xdm.alert.name', 'src_ip', 'detection_output']
+	Dataset: alerts
+	Mitre_Defs: {'TA0008 - Lateral Movement': ['T1021.005 - Remote Services: VNC'], 'TA0011 - Command and Control': ['T1219 - Remote Access Software']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Geographically Improbable Access ACC (CCX) - Summary Gen:
+	Rule_Id: 58
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Geographically Improbable Access ACC (CCX) - Summary Gen
+// Author: Deven Amode, damode@paloaltonetworks.com
+// Date: 19/June/2024
+
+datamodel dataset in (microsoft_windows_raw,msft_o365_azure_ad_raw)
+|filter xdm.event.outcome = XDM_CONST.OUTCOME_SUCCESS 
+|comp values(xdm.source.host.hostname) as host, values(_product) as vendor_product, values(_vendor) as vendor, values(xdm.target.ipv4) as dest, values(xdm.observer.product) as sourcetype by xdm.source.user.username, _time, xdm.source.ipv4//, authentication.signature span=1s 
+| iploc xdm.source.ipv4 loc_continent AS Continent, loc_country AS Country, loc_region AS Region, loc_city AS City, loc_latlon AS lon
+| comp count_distinct(lon) as location_count by xdm.source.user.username, xdm.source.ipv4
+| filter location_count > 1
+
+	Is_Enabled: True
+	Description: Rule 10
+	Alert_Name: MSCAP - Geographically Improbable Access ACC (CCX) - Summary Gen
+	Alert_Category: DISCOVERY
+	Alert_Domain: DOMAIN_SECURITY
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Australia/Sydney
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['xdm.source.ipv4', 'xdm.source.user.username']
+	Dataset: alerts
+	Mitre_Defs: {'TA0001 - Initial Access': ['T1078 - Valid Accounts', 'T1078.001 - Valid Accounts: Default Accounts', 'T1078.002 - Valid Accounts: Domain Accounts', 'T1078.003 - Valid Accounts: Local Accounts', 'T1078.004 - Valid Accounts: Cloud Accounts'], 'TA0042 - Resource Development': ['T1584 - Compromise Infrastructure', 'T1584.001 - Compromise Infrastructure: Domains', 'T1584.002 - Compromise Infrastructure: DNS Server', 'T1584.003 - Compromise Infrastructure: Virtual Private Server', 'T1584.004 - Compromise Infrastructure: Server', 'T1584.005 - Compromise Infrastructure: Botnet', 'T1584.006 - Compromise Infrastructure: Web Services']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: AUTO
+	Action: ALERTS
+
+RULE - MSCAP - High Risk URL Categories ACC (CCX) - Summary Gen:
+	Rule_Id: 59
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - High Risk URL Categories ACC (CCX) - Summary Gen
+/// Author: Deven Amode, damode@paloaltonetworks.com
+// Date: 06/June/2024
+
+dataset in  (panw_ngfw_traffic_raw,panw_ngfw_threat_raw,panw_ngfw_url_raw,panw_ngfw_tunnel_raw,panw_ngfw_filedata_raw,panw_ngfw_system_raw,panw_ngfw_globalprotect_raw,panw_ngfw_hipmatch_raw)
+
+| join (dataset=high_risk_url_category_list_by_vendor_lookup | fields url_category, vendor_name) as high_risk_url_category_list_by_vendor_lookup (high_risk_url_category_list_by_vendor_lookup.url_category = url_category) AND (high_risk_url_category_list_by_vendor_lookup.vendor_name = vendor_name)
+
+| filter if(url_category != null, true, false) = true
+
+| filter url_domain not in  ("checkip.dyndns.org", "*.icloud.com")
+| replacenull uri = "missing"
+| filter action = "alert"
+
+| filter url_category != "parked"
+| filter uri != "missing"
+
+
+| comp earliest(_time) as first_time, latest(_time) as last_time, values(url_category ) as url_Category, values(uri) as url, values(action) as action, values(dest_port) as dest_port, count() by users, source_ip, dest_ip, _log_type 
+	Is_Enabled: True
+	Description: Rule 2
+	Alert_Name: MSCAP - High Risk URL Categories ACC (CCX) - Summary Gen
+	Alert_Category: OTHER
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'user': 'users', 'sourceip': 'source_ip', 'urlcategory': 'url_Category', 'detectionurl': 'url', 'originalhost': 'source_ip', 'destinationip': 'dest_ip', 'fw_url_domain': 'url', 'lasteventtime': 'last_time', 'firsteventtime': 'first_time', 'destinationport': 'dest_port'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Australia/Sydney
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['first_time', 'last_time', 'url_Category', 'url', 'action', 'dest_port', 'users', 'source_ip', 'dest_ip', '_log_type']
+	Dataset: alerts
+	Mitre_Defs: {'TA0011 - Command and Control': ['T1071.001 - Application Layer Protocol: Web Protocols']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - O365 New Inbox Rule RAW (CCX) - Summary Gen:
+	Rule_Id: 60
+	Severity: SEV_010_INFO
+	Xql_Query: 
+// Title: MSCAP - O365 New Inbox Rule RAW (CCX) - Summary Gen
+// Author: Deven Amode, damode@paloaltonetworks.com
+// Date: 13/June/2024
+
+config case_sensitive = false
+| dataset = msft_o365_exchange_online_raw 
+| filter operation = "new-inboxrule" and  ResultStatus="true"
+| fields  ResultStatus as status, _time, UserId as user, Parameters,  operation as action, _reporting_device_name as orig_host, _collector_type,  ClientIP as src,_product,_vendor 
+	Is_Enabled: True
+	Description: Rule 60 - Downgraded to informational to only see this event when associated to other IOCs
+	Alert_Name: MSCAP - O365 New Inbox Rule RAW (CCX) - Summary Gen
+	Alert_Category: COLLECTION
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'_vendor': '_vendor', 'parameters': 'Parameters', 'description': 'Parameters', 'eventaction': 'action', 'originalraw': '_raw_log', 'originalhost': 'orig_host', 'sourcestatus': 'status', 'vendorproduct': '_product', 'agent_hostname': 'orig_host', 'action_local_ip': 'src', 'actor_effective_username': 'user'}
+	Execution_Mode: REAL_TIME
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['action', 'orig_host', 'src', 'status', 'user']
+	Dataset: alerts
+	Mitre_Defs: {'TA0009 - Collection': ['T1114.003 - Email Collection: Email Forwarding Rule']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Azure Modified Domain Federation Trust Settings RAW (CCX) - Summary Gen:
+	Rule_Id: 61
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Azure Modified Domain Federation Trust Settings RAW (CCX) - Summary Gen
+// Author: Deven Amode, damode@paloaltonetworks.com
+// Datasets: msft_azure_ad_audit_raw
+// Date: 11/June/2024
+
+config case_sensitive = false
+| dataset = msft_azure_ad_audit_raw 
+| filter activityDisplayName = "*set federation settings on domain*" and result = "success"
+
+| alter 
+    user = json_extract_scalar(initiatedBy, "$.user.userPrincipalName"),
+    src = json_extract_scalar(initiatedBy, "$.user.ipAddress"),
+    app = json_extract_scalar(targetResources, "$.0.displayName"),
+    user_type = json_extract_scalar(targetResources, "$.0.type")
+
+| fields  _time, app, user, user_type, activityDisplayName as signature, _collector_type , _vendor, _product
+	Is_Enabled: True
+	Description: Rule 67
+	Alert_Name: MSCAP - Azure Modified Domain Federation Trust Settings RAW (CCX) - Summary Gen
+	Alert_Category: PRIVILEGE_ESCALATION
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'app': 'app', 'usertype': 'user_type', 'signature': 'signature', 'actor_effective_username': 'user'}
+	Execution_Mode: REAL_TIME
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['user', 'app', 'signature', 'user_type', '_insert_time']
+	Dataset: alerts
+	Mitre_Defs: {'TA0004 - Privilege Escalation': ['T1134.003 - Access Token Manipulation: Make and Impersonate Token']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - O365 Add App Role Assignment Grant User RAW (CCX) - Summary Gen:
+	Rule_Id: 62
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - O365 Add App Role Assignment Grant User RAW (CCX) - Summary Gen
+// Author: Jorge Ramirez, jramirez@cybercx.com
+// Date: 30/August/2024
+
+
+config case_sensitive = false
+| dataset = msft_o365_azure_ad_raw
+
+| alter User_Actor = json_extract_scalar(Actor, "$.0.ID") 
+| alter App_Target_Name = json_extract_scalar(`Target` , "$.3.ID") 
+| alter App_Target_ID = json_extract_scalar(`Target`, "$.4.ID")
+| alter Assigned_User = json_extract_scalar(ModifiedProperties , "$.6.NewValue")
+
+| filter Workload="AzureActiveDirectory" AND Operation="Add app role assignment grant to user."
+
+| comp values(ResultStatus) as status, min(_time) as first_event_time, max(_time) as last_event_time, values(_vendor) as Vendor, values(_product ) as Product  by Actor, User_Actor, App_Target_Name , Assigned_User , Operation, App_Target_ID 
+	Is_Enabled: True
+	Description: Rule 34
+	Alert_Name: MSCAP - O365 Add App Role Assignment Grant User RAW (CCX) - Summary Gen
+	Alert_Category: PERSISTENCE
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'app': 'App_Target_Name', 'userid': 'User_Actor', 'actorid': 'User_Actor', '_product': 'Product', 'eventaction': 'Operation', 'applicationid': 'App_Target_ID', 'lasteventtime': 'last_event_time', 'vendorproduct': 'Vendor', 'appdisplayname': 'App_Target_Name', 'firsteventtime': 'first_event_time'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Australia/Sydney
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['status', 'first_event_time', 'last_event_time', 'Vendor', 'Product', 'Actor', 'User_Actor', 'App_Target_Name', 'Assigned_User']
+	Dataset: alerts
+	Mitre_Defs: {'TA0003 - Persistence': ['T1136 - Create Account', 'T1136.003 - Create Account: Cloud Account']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Geographically Improbable Access ACC (CCX) - Summary Gen:
+	Rule_Id: 63
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Geographically Improbable Access ACC (CCX) - Summary Gen
+// Author: Deven Amode, damode@paloaltonetworks.com
+// Date: 19/June/2024
+
+datamodel dataset in (microsoft_windows_raw,msft_o365_azure_ad_raw)
+|filter xdm.event.outcome = XDM_CONST.OUTCOME_SUCCESS 
+|comp values(xdm.source.host.hostname) as host, values(_product) as vendor_product, values(_vendor) as vendor, values(xdm.target.ipv4) as dest, values(xdm.observer.product) as sourcetype by xdm.source.user.username, _time, xdm.source.ipv4//, authentication.signature span=1s 
+| iploc xdm.source.ipv4 loc_continent AS Continent, loc_country AS Country, loc_region AS Region, loc_city AS City, loc_latlon AS lon
+| comp count_distinct(lon) as location_count , values(Country) as Countries by xdm.source.user.username, xdm.source.ipv4
+| filter location_count > 1
+
+	Is_Enabled: True
+	Description: Rule 10
+	Alert_Name: MSCAP - Geographically Improbable Access ACC (CCX) - Summary Gen
+	Alert_Category: COLLECTION
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'sourceip': 'xdm.source.ipv4', 'locationcount': 'location_count', 'action_country': 'Countries', 'actor_effective_username': 'xdm.source.user.username'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Australia/Sydney
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['xdm.source.user.username', 'xdm.source.ipv4', 'location_count']
+	Dataset: alerts
+	Mitre_Defs: {'TA0001 - Initial Access': ['T1078.001 - Valid Accounts: Default Accounts', 'T1078.002 - Valid Accounts: Domain Accounts', 'T1078.003 - Valid Accounts: Local Accounts', 'T1078.004 - Valid Accounts: Cloud Accounts'], 'TA0042 - Resource Development': ['T1584 - Compromise Infrastructure', 'T1584.001 - Compromise Infrastructure: Domains', 'T1584.002 - Compromise Infrastructure: DNS Server', 'T1584.003 - Compromise Infrastructure: Virtual Private Server', 'T1584.004 - Compromise Infrastructure: Server', 'T1584.005 - Compromise Infrastructure: Botnet', 'T1584.006 - Compromise Infrastructure: Web Services']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - Silverlight Fortnightly report:
+	Rule_Id: 64
+	Severity: SEV_020_LOW
+	Xql_Query: 
+// Title: Silverlight Fortnightly report
+// Description: Report for Joanna Field to review 
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: tenable_io_vulnerabilities_raw
+// Date: 25/June/2024
+
+config case_sensitive = false
+| datamodel dataset = tenable_io_vulnerabilities_raw 
+| filter xdm.alert.name = "*silverlight*"
+| filter xdm.source.host.fqdn not in ("", null)
+
+| alter state = tenable_io_vulnerabilities_raw.state, 
+        cvss3_base_score = json_extract_scalar(tenable_io_vulnerabilities_raw.plugin, "$.cvss_base_score")
+
+| filter state in ("OPEN", "REOPENED")
+| replacenull cvss3_base_score = "NULL"
+| alter pluginAndCVEState = format_string("%s CVSS3: %s %s", xdm.alert.name, cvss3_base_score, state)
+
+| fields tenable_io_vulnerabilities_raw.plugin, xdm.alert.name, xdm.source.host.fqdn, state, cvss3_base_score, pluginAndCVEState, *
+| comp count() as total_events, min(_time) as s_time, max(_time) as e_time, values(xdm.alert.severity) as severity, values(xdm.event.description) as output, values(xdm.alert.description) as description, values(pluginAndCVEState) as pluginAndCVEState, values(xdm.alert.name) as plugin_name, values(cvss3_base_score) as cvss3_score, values(state) as state by xdm.source.host.fqdn
+
+| fields pluginAndCVEState, cvss3_score, state, xdm.source.host.fqdn as asset_fqdn, s_time, e_time, severity
+	Is_Enabled: True
+	Description: Rule 75
+	Alert_Name: Silverlight Fortnightly report
+	Alert_Category: OTHER
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'state': 'state', 'cvestate': 'pluginAndCVEState', 'severity': 'severity', 'cvssscore': 'cvss3_score', 'lasteventtime': 'e_time', 'agent_hostname': 'asset_fqdn', 'firsteventtime': 's_time'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 7 days
+	Simple_Schedule: custom
+	Timezone: Asia/Calcutta
+	Crontab: 15 8 1,15 * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['pluginAndCVEState', 'cvss3_score', 'state', 'asset_fqdn', 's_time', 'e_time', 'severity']
+	Dataset: alerts
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSANA - Service Logic Monitor Added to Admin Group (CS0057691) (CCX) - Summary Gen:
+	Rule_Id: 65
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSANA - Service Logic Monitor Added to Admin Group (CS0057691) (CCX) - Summary Gen
+// Description: report when logic Monitor is added to an administrator work, as Logic Monitor should not have this capability
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: microsoft_windows_raw
+// Date: 25/June/2024
+
+/*
+Alert Suppression : 6h
+Suppression Fields : xdm.event.id, xdm.event.original_event_type, xdm.source.user.username, xdm.source.user.domain, xdm.target.user.username, xdm.target.user.domain, xdm.source.host.hostname
+*/
+
+config case_sensitive = false
+| datamodel dataset = microsoft_windows_raw  
+| filter xdm.source.host.os_family = XDM_CONST.OS_FAMILY_WINDOWS 
+| filter xdm.event.id = "4728"
+| filter xdm.target.user.username = "*admin*"
+
+| alter member_name = json_extract_scalar(microsoft_windows_raw.event_data, "$.MemberName")
+| filter member_name = "*logicmonitor*"
+
+// extract user from DN
+| alter membername = replace(json_extract_scalar(microsoft_windows_raw.event_data, "$.MemberName"), "\,", " ")
+| alter user = arrayindex(regextract(membername, "CN=([^,]+)"), 0)
+
+| comp count() as total_event, min(_time) as first_event_time, max(_time) as last_event_time, values(member_name) as member_name, values(user) as user by xdm.event.id, xdm.event.original_event_type, xdm.source.user.username, xdm.source.user.domain, xdm.target.user.username, xdm.target.user.domain, xdm.source.host.hostname
+	Is_Enabled: True
+	Description: Rule 77
+	Alert_Name: MSANA - Service Logic Monitor Added to Admin Group (CS0057691) (CCX) - Summary Gen
+	Alert_Category: PRIVILEGE_ESCALATION
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'eventid': 'xdm.event.id', 'membername': 'member_name', 'targetuser': 'xdm.target.user.username', 'totalevents': 'total_event', 'targetdomain': 'xdm.target.user.domain', 'usersdetails': 'user', 'lasteventtime': 'last_event_time', 'agent_hostname': 'xdm.source.host.hostname', 'firsteventtime': 'first_event_time', 'action_local_ip': None, 'action_remote_ip': None, 'originaleventtype': 'xdm.event.original_event_type', 'action_remote_port': None, 'agent_device_domain': 'xdm.target.user.domain', 'actor_effective_username': 'xdm.target.user.username', 'actor_process_image_name': None, 'actor_process_image_path': None, 'actor_process_command_line': None, 'actor_process_image_sha256': None}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Asia/Calcutta
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['xdm.event.id', 'xdm.event.original_event_type', 'xdm.source.user.domain', 'xdm.source.user.username', 'xdm.target.user.domain', 'xdm.target.user.username', 'xdm.source.host.hostname']
+	Dataset: alerts
+	Mitre_Defs: {'TA0003 - Persistence': [], 'TA0004 - Privilege Escalation': []}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - User Added or Removed From Privileged Group RAW (CCX) - Summary Gen:
+	Rule_Id: 66
+	Severity: SEV_020_LOW
+	Xql_Query: 
+// Title: MSCAP - User Added or Removed From Privileged Group RAW (CCX) - Summary Gen
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: microsoft_windows_raw
+// Date: 17/June/2024
+
+config case_sensitive = false
+| datamodel dataset = microsoft_windows_raw 
+| filter xdm.source.host.os_family = XDM_CONST.OS_FAMILY_WINDOWS 
+| filter xdm.event.id in ("4727", "4728", "4729", "4730", "4731", "4732", "4733", "4734", "4735", "4737", "4754", "4755", "4756", "4757", "4758", "4764")  
+
+| filter xdm.target.user.username not in ("", null)
+| filter xdm.target.user.domain != "Builtin"
+
+| filter xdm.event.id != "4735" and xdm.source.user.username != "*$"
+
+| alter membername = replace(json_extract_scalar(microsoft_windows_raw.event_data, "$.MemberName"), "\,", " ")
+
+| replacenull xdm.source.user.username = "missing"
+| filter xdm.source.user.username!="priv*"
+
+| comp count() as total_event, min(_time) as first_event_time, max(_time) as last_event_time, values(xdm.source.host.hostname) as host, values(xdm.observer.vendor) as vendor, values(xdm.observer.product) as product, values(xdm.target.user.username) as group_name, values(membername) as member_name, values(xdm.source.user.username) as user by xdm.event.id, xdm.event.original_event_type, xdm.event.description
+	Is_Enabled: True
+	Description: Rule 24
+	Alert_Name: MSCAP - User Added or Removed From Privileged Group RAW (CCX) - Summary Gen
+	Alert_Category: PERSISTENCE
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'host': 'host', '_vendor': 'vendor', 'eventid': 'xdm.event.id', '_product': 'product', 'groupname': 'group_name', 'membername': 'member_name', 'totalevents': 'total_event', 'lasteventtime': 'last_event_time', 'firsteventtime': 'first_event_time', 'originaleventtype': 'xdm.event.original_event_type', 'actor_effective_username': 'user'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Australia/Sydney
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['group_name', 'member_name', 'user', 'xdm.event.id', 'xdm.event.original_event_type', 'product']
+	Dataset: alerts
+	Mitre_Defs: {'TA0003 - Persistence': ['T1098.001 - Account Manipulation: Additional Cloud Credentials']}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - [OTML] Mimecast Auditing Events CHG0034292:
+	Rule_Id: 69
+	Severity: SEV_020_LOW
+	Xql_Query: 
+// Title: [OTML] Mimecast Auditing Events CHG0034292
+// Description: Report to OTML from audit policy changes in MimeCast sent to ICT-Enterprise-Systems@oktedi.com
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Date: 25/June/2024
+
+config case_sensitive = false 
+| datamodel dataset = mimecast_mimecast_raw
+| filter xdm.event.type  in ("*Adjustments", "*Adjustment", "*Log Entry")
+| alter 
+    //object_attrs = auditType ,
+    object =to_string(regextract(mimecast_mimecast_raw.eventInfo,"(?:Application|App):\s*([^,]+)")),
+    object_category = if(xdm.event.type contains "*user*","user", "instance"),
+    change_type = if(xdm.event.type contains "*user*","AAA", "filesystem"),
+    signature = if (xdm.event.type contains "*log*" , xdm.event.type, "virus"),
+    action = mimecast_mimecast_raw.action,
+    eventdescription = xdm.event.description 
+
+// Used both reason and eventInfo data to evaluate Action
+| alter action = if(action not in ("", null), action,
+                eventdescription contains "Wrong Password" or eventdescription contains "Account locked", "Failure",
+                eventdescription contains "White URL created", "Created",
+                eventdescription contains "Successful", "Success",
+                mimecast_mimecast_raw.eventInfo contains "unlocked", "Unlocked",
+                mimecast_mimecast_raw.eventInfo contains "locked", "Lockout",
+                mimecast_mimecast_raw.eventInfo contains "updated", "Updated",
+                mimecast_mimecast_raw.eventInfo contains "delete", "Deleted",
+                mimecast_mimecast_raw.eventInfo contains "cleare", "Cleared",
+                mimecast_mimecast_raw.eventInfo contains "create", "Created", 
+                mimecast_mimecast_raw.eventInfo not in ("", null), "Modified", null)
+
+|fields mimecast_mimecast_raw.eventInfo , _time, xdm.source.user.username, object as app, xdm.event.type, change_type, object_category, eventdescription, action
+| comp count() as total_events, min(_time) as firstEventTime , max(_time) as lastEventTime by xdm.source.user.username, app, eventdescription, action, xdm.event.type, change_type, object_category
+	Is_Enabled: True
+	Description: Rule 76
+	Alert_Name: [OTML] Mimecast Auditing Events CHG0034292
+	Alert_Category: OTHER
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'app': 'app', 'changetype': 'change_type', 'eventaction': 'action', 'totalevents': 'total_events', 'lasteventtime': 'lastEventTime', 'firsteventtime': 'firstEventTime', 'objectcategory': 'object_category', 'eventdescription': 'eventdescription', 'originaleventtype': 'xdm.event.type', 'actor_effective_username': 'xdm.source.user.username'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 3 days
+	Simple_Schedule: 10 minutes
+	Timezone: Australia/Brisbane
+	Crontab: */10 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 1 minutes
+	Suppression_Fields: ['total_events', 'firstEventTime', 'lastEventTime', 'app', 'eventdescription', 'action', 'change_type', 'object_category', 'xdm.source.user.username', 'xdm.event.type']
+	Dataset: alerts
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Thinkst Canary Incident Triggered - Graphical Login RAW (CCX) - Summary Gen:
+	Rule_Id: 70
+	Severity: SEV_050_CRITICAL
+	Xql_Query: 
+// Title: MSCAP - Thinkst Canary Incident Triggered - Graphical Login RAW (CCX) - Summary Gen
+// Description: Alerts on Thinkst Canary incidents related to graphical logins
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: microsoft_windows_raw
+// Date: 26/June/2024
+
+/*
+Alert Suppression : 6h
+Suppression Fields : summary, src_ip, dst_ip, user
+Fields Mapping:
+Local IP: src_ip
+Local Port: src_port
+Remote IP: dst_ip
+Remote Port: dst_port
+Username: user
+Alert Name: summary
+First Seen: first_event_time
+Last Seen: last_event_time
+Alert Type ID: alert_type
+*/
+
+config case_sensitive = false 
+| dataset = thinkst_canary_generic_alert_raw 
+| filter summary in ("RDP Login Attempt", "WinRM Login Attempt", "VNC Login Attempt")
+
+| alter 
+    src_ip = description -> src_host, 
+    src_port = description -> src_port, 
+    dst_ip = description -> dst_host, 
+    dst_port = description -> dst_port,
+    user = json_extract_scalar(description, "$.events.0.USERNAME"),
+    name = description -> name,
+    source_type = _alert_data -> alert_source,
+    alert_type = _alert_data -> alert_type,
+    host = description -> src_host_reverse
+
+| replacenull src_ip = "MISSING", dst_ip = "MISSING", user = "MISSING"
+
+| filter src_ip not in ("bvmswhp01", "10.10.144.10", "btenwh01", "bvmsppp01", "10.40.144.12", "btenpp01", "bvmsndp01", "10.50.144.10", "btenb201", "bnesswh01", "10.10.143.21", "btenwh02", "btenmi01", "10.25.144.10")
+
+| comp count() as total_events, earliest(_time) as first_event_time, latest(_time) as last_event_time, values(name) as name, values(source_type) as orig_sourcetype, values(alert_type) as alert_type, values(host) as orig_host, values(_vendor) as vendor, values(_product) as product, values(src_port) as src_port, values(dst_port) as dst_port by summary, src_ip, dst_ip, user 
+	Is_Enabled: True
+	Description: Rule 78
+	Alert_Name: MSCAP - Thinkst Canary Incident Triggered - Graphical Login RAW (CCX) - Summary Gen
+	Alert_Category: LATERAL_MOVEMENT
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'lastseen': 'last_event_time', 'firstseen': 'first_event_time', 'alert_name': 'summary', 'alerttypeid': 'alert_type', 'description': 'name', 'totalevents': 'total_events', 'lasteventtime': 'last_event_time', 'logsourcetype': 'orig_sourcetype', 'agent_hostname': 'orig_host', 'firsteventtime': 'first_event_time', 'action_local_ip': 'src_ip', 'action_remote_ip': 'dst_ip', 'action_local_port': 'src_port', 'action_remote_port': 'dst_port', 'actor_effective_username': 'user'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Asia/Calcutta
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['summary', 'user', 'src_ip', 'dst_ip']
+	Dataset: alerts
+	Mitre_Defs: {'TA0008 - Lateral Movement': []}
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Multi Vendor Detection - Attacked Internal IP ACC (CCX) - Summary Gen:
+	Rule_Id: 71
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Multi Vendor Detection - Attacked Internal IP ACC (CCX) - Summary Gen
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: panw_ngfw_threat_raw
+// Date: 27/June/2024
+
+/*
+Alert Suppression : 6h
+Suppression Fields : xdm.source.ipv4, xdm.target.ipv4
+*/
+
+config case_sensitive = false
+| datamodel dataset = panw_ngfw_threat_raw 
+
+| join (
+    dataset = high_risk_url_category_list_by_vendor_lookup 
+    | fields url_category, vendor_name
+) as high_risk_url high_risk_url.url_category = panw_ngfw_threat_raw.url_category 
+
+| filter incidr(xdm.source.ipv4, "10.0.0.0/8") = true or 
+        incidr(xdm.source.ipv4, "172.16.0.0/12") = true or 
+        incidr(xdm.source.ipv4, "192.168.0.0/16") = true or 
+        incidr(xdm.target.ipv4, "10.0.0.0/8") = true or 
+        incidr(xdm.target.ipv4, "172.16.0.0/12") = true or 
+        incidr(xdm.target.ipv4, "192.168.0.0/16") = true 
+
+| filter incidr6(xdm.source.ipv6, "fc00::/7") = true or
+        incidr6(xdm.target.ipv6, "fc00::/7") = true
+
+| replacenull panw_ngfw_threat_raw.severity = "missing", xdm.observer.action = "missing", xdm.target.file.sha256 = "missing", panw_ngfw_threat_raw.threat_category = "missing"
+
+
+| comp count(panw_ngfw_threat_raw.threat_name) as attack_count, count_distinct(panw_ngfw_threat_raw.threat_name) as attack_dc, values(_vendor) as vendor, values(_product) as product, values(panw_ngfw_threat_raw.threat_name) as attack, min(_time) as first_event_time, max(_time) as last_event_time, values(panw_ngfw_threat_raw.threat_category) as category, values(panw_ngfw_threat_raw.severity) as severity, values(xdm.target.port) as dest_port, values(xdm.observer.action) as action, values(xdm.target.file.sha256) as file_hash, values(panw_ngfw_threat_raw.users) as user, values(panw_ngfw_threat_raw.cloud_hostname) as cloud_hostname by xdm.source.ipv4, xdm.target.ipv4
+
+// | filter attack_dc >= 3  // as of now this condition is not satisfed. So do we have to filter for 3 or more attacks
+	Is_Enabled: True
+	Description: Rule 20
+	Alert_Name: MSCAP - Multi Vendor Detection - Attacked Internal IP ACC (CCX) - Summary Gen
+	Alert_Category: OTHER
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'user': 'user', 'attack': 'attack', '_vendor': 'vendor', '_product': 'product', 'filehash': 'file_hash', 'severity': 'severity', 'sourceip': 'xdm.source.ipv4', 'targetip': 'xdm.target.ipv4', 'alertaction': 'action', 'attackcount': 'attack_count', 'lasteventtime': 'last_event_time', 'alert_category': 'category', 'firsteventtime': 'first_event_time', 'destinationport': 'dest_port', 'distinctattackcount': 'attack_dc'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Asia/Calcutta
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['xdm.source.ipv4', 'xdm.target.ipv4']
+	Dataset: alerts
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - MSCAP - Microsoft Azure Security Center Tasks RAW (CCX) - Summary Gen:
+	Rule_Id: 76
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+// Title: MSCAP - Microsoft Azure Security Center Tasks RAW (CCX) - Summary Gen
+// Author: Sahil Sharma, ssharma7@paloaltonetworks.com
+// Datasets: msft_graph_security_alerts_raw
+// Date: 16/July/2024
+
+config case_sensitive = false
+| dataset = msft_graph_security_alerts_raw 
+
+| filter title not in ("Email messages containing malicious URL removed after delivery", 
+"activity from a password-spray associated ip address", "activity from a tor ip address", "activity from an anonymous proxy", 
+"admin triggered user compromise investigation", "dlp-high volume of content detected australia financial data", 
+ "failed exact data match upload", "form blocked due to potential phishing attempt", 
+"form flagged and confirmed as phishing", "messages containing malicious entity not removed after delivery", 
+"potential nation-state activity", "powerbi administrative activity", "ransomware activity", "suspicious connector activity", 
+"suspicious email deletion activity", "suspicious email sending patterns detected", 
+"suspicious inbox manipulation", "suspicious tenant sending patterns observed", 
+"tenant restricted from sending email", "tenant restricted from sending unprovisioned email", "unusual volume of external file sharing", 
+ "user restricted from sharing forms and collecting responses", "Email reported by user as malware or phish", "Email reported by user as junk", "Email reported by user as not junk", "Email messages containing malicious file removed after delivery​") 
+
+
+| alter userPrincipalName1 = json_extract_scalar(evidence, "$.0.primaryAddress"), 
+        userPrincipalName2 = json_extract_scalar(evidence, "$.0.userAccount.userPrincipalName"), 
+        accountName = json_extract_scalar(evidence, "$.0.userAccount.accountName")
+
+| alter userPrincipalName = coalesce(userPrincipalName1, userPrincipalName2)
+
+| comp count() as total_event, earliest(createdDateTime) as first_event_time, latest(createdDateTime) as last_event_time, values(createdDateTime) as detection_time, values(detectorId) as detection_id, values(alertWebUrl) as alert_web_url, values(id) as alertId, values(incidentId) as incidentId, values(incidentWebUrl) as incident_web_url, values(category) as category, values(mitreTechniques) as mitreTechniques, values(description) as description, values(detectionSource) as orig_sourcetype, values(status) as detection_status, values(severity) as severity, values(_vendor) as vendor, values(_product) as product,  values(accountName) as accountName by title, userPrincipalName , evidence 
+
+| fields total_event, first_event_time, last_event_time, detection_time, accountName, userPrincipalName, title as signature, description, evidence , detection_status, detection_id, alertId, alert_web_url, incidentId, incident_web_url, category, mitreTechniques, orig_sourcetype, severity, vendor, product 
+	Is_Enabled: True
+	Description: Rule 50
+	Alert_Name: MSCAP - Microsoft Azure Security Center Tasks RAW (CCX) - Summary Gen
+	Alert_Category: OTHER
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'creationtime': 'detection_time', 'detectionurl': 'alert_web_url', 'lasteventtime': 'last_event_time', 'additionaldata': 'evidence', 'detectiontitle': 'signature', 'firsteventtime': 'first_event_time', 'eventdescription': 'description'}
+	Execution_Mode: SCHEDULED
+	Search_Window: 24 minutes
+	Simple_Schedule: 20 minutes
+	Timezone: Australia/Sydney
+	Crontab: */20 * * * *
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['signature']
+	Dataset: alerts
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - A potentially malicious URL click was detected:
+	Rule_Id: 77
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+dataset = msft_graph_security_alerts_raw
+|filter title contains "A potentially malicious URL click was detected"
+	Is_Enabled: True
+	Description: Defender for O365 Alert - Rule 79
+	Alert_Name: A potentially malicious URL click was detected
+	Alert_Category: OTHER
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'actorid': 'actorDisplayName', 'comment': 'comments', 'severity': 'severity', 'threatname': 'threatDisplayName', 'description': 'description', 'detectionid': 'detectorId', 'resourceurl': 'alertWebUrl', 'incidentlink': 'incidentWebUrl', 'sourcestatus': 'status', 'lasteventtime': 'lastActivityDateTime', 'detectiontitle': 'title', 'firsteventtime': 'firstActivityDateTime', 'eventdescription': 'evidence', 'threatfamilyname': 'threatFamilyName', 'policyrecommendation': 'recommendedActions'}
+	Execution_Mode: REAL_TIME
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['actorDisplayName', 'detectionSource', 'alertWebUrl', 'incidentId', 'detectorId', 'tenantId', 'classification', 'id', '_id', '_id', 'id', 'tenantId', 'detectorId', 'incidentId', 'alertPolicyId', 'incidentWebUrl']
+	Dataset: alerts
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+
+RULE - A user clicked through to a potentially malicious URL:
+	Rule_Id: 78
+	Severity: SEV_030_MEDIUM
+	Xql_Query: 
+dataset = msft_graph_security_alerts_raw
+|filter title contains "A user clicked through to a potentially malicious URL"
+	Is_Enabled: True
+	Description: Defender for O365 Alert - Rule 80
+	Alert_Name: A user clicked through to a potentially malicious URL
+	Alert_Category: OTHER
+	Alert_Domain: DOMAIN_SECURITY
+	Alert_Fields: {'actorid': 'actorDisplayName', 'comment': 'comments', 'severity': 'severity', 'threatname': 'threatDisplayName', 'description': 'description', 'detectionid': 'detectorId', 'resourceurl': 'alertWebUrl', 'incidentlink': 'incidentWebUrl', 'sourcestatus': 'status', 'lasteventtime': 'lastActivityDateTime', 'detectiontitle': 'title', 'firsteventtime': 'firstActivityDateTime', 'eventdescription': 'evidence', 'threatfamilyname': 'threatFamilyName', 'policyrecommendation': 'recommendedActions'}
+	Execution_Mode: REAL_TIME
+	Suppression_Enabled: True
+	Suppression_Duration: 6 hours
+	Suppression_Fields: ['_id', 'tenantId', 'detectorId', 'incidentId', 'alertPolicyId', 'incidentWebUrl']
+	Dataset: alerts
+	Drilldown_Query_Timeframe: ALERT
+	Mapping_Strategy: CUSTOM
+	Action: ALERTS
+

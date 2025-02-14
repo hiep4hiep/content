@@ -1,0 +1,121 @@
+id: b4bc3920-0d8a-4ff4-8148-c15bf56a202f
+version: 29
+vcShouldKeepItemLegacyProdMachine: false
+name: EQ - Proactive Threat Hunting Job
+starttaskid: "0"
+tasks:
+  "0":
+    id: "0"
+    taskid: bcf07d4b-3a32-4451-8324-4cc2c20902ba
+    type: start
+    task:
+      id: bcf07d4b-3a32-4451-8324-4cc2c20902ba
+      version: -1
+      name: ""
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "1"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 450,
+          "y": 60
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "1":
+    id: "1"
+    taskid: e08be205-334c-4f8b-8b86-6fa25e135ee2
+    type: playbook
+    task:
+      id: e08be205-334c-4f8b-8b86-6fa25e135ee2
+      version: -1
+      name: EQ - Proactive Threat Hunting
+      playbookName: EQ - Proactive Threat Hunting
+      type: playbook
+      iscommand: false
+      brand: ""
+    scriptarguments:
+      report:
+        simple: ${playbookQuery}
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 60
+      max: 100
+      forEach: true
+    view: |-
+      {
+        "position": {
+          "x": 450,
+          "y": 200
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: |-
+  {
+    "linkLabelsPosition": {},
+    "paper": {
+      "dimensions": {
+        "height": 235,
+        "width": 380,
+        "x": 450,
+        "y": 60
+      }
+    }
+  }
+inputs:
+- key: ""
+  value: {}
+  required: false
+  description: "\n\nvalue:\"The silent heist: cybercriminals use information stealer
+    malware to compromise corporate networks\" sourcetimestamp:>=\"2024-09-01T00:00:00
+    +1000\" sourceInstances:Dev_Cloud_RSS_ASD_Advisories\n\nvalue:\"Iranian cyber
+    actors’ brute force and credential access activity compromises critical infrastructure\"\n\ntype:Report
+    sourceBrands:\"RSS Feed\" sourcetimestamp:>=\"2024-09-01T00:00:00 +1000\" \n\nWidespread
+    outages relating to CrowdStrike software update"
+  playbookInputQuery:
+    query: type:Report sourceBrands:"RSS Feed" sourceInstances:*ASD_Advisories -tags:FeedProcessed
+    queryEntity: indicators
+    results: null
+    daterange:
+      fromdate: 0001-01-01T00:00:00Z
+      todate: 0001-01-01T00:00:00Z
+      period:
+        by: ""
+        byto: ""
+        byfrom: ""
+        tovalue: null
+        fromvalue: null
+        field: ""
+      fromdatelicenseval: 0001-01-01T00:00:00Z
+    runFromLastJobTime: true
+inputSections:
+- inputs: []
+  name: General (Inputs group)
+  description: Generic group for inputs
+outputSections:
+- outputs: []
+  name: General (Outputs group)
+  description: Generic group for outputs
+outputs: []
+quiet: true
+dirtyInputs: true

@@ -1,0 +1,3 @@
+comp values(log_timestamp) as log_timestamp,values(server_name) as server_name,values(ProductId) as ProductId,values(Component) as Component,values(ProductInstance) as ProductInstance,values(LogText) as LogText,values(Type) as Type,values(Catalog) as Catalog,values(MsgKey) as MsgKey,values(log_level) as log_level,values(username) as username
+
+|alter log_timestamp = arrayindex(log_timestamp,0),server_name = arrayindex(server_name,0),ProductId = arrayindex(ProductId,0),Component = arrayindex(Component,0),ProductInstance = arrayindex(ProductInstance,0),LogText = arrayindex(LogText,0),Type = arrayindex(Type,0),Catalog = arrayindex(Catalog,0),MsgKey = arrayindex(MsgKey,0),log_level = arrayindex(log_level,0),username = arrayindex(username,0)

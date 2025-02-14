@@ -1,0 +1,7 @@
+[INGEST:vendor="amp", product="edw", target_dataset="amp_edw_raw", no_hit = keep]
+alter _time = if(EXTENDED_TIMESTAMP!=null, EXTENDED_TIMESTAMP , _insert_time ),
+     // original_timestamp = EXTENDED_TIMESTAMP, 
+      PROTOCOL = arrayindex(regextract(COMMENT_TEXT, "PROTOCOL=(\w+)"), 0),
+      PORT = to_number(arrayindex(regextract(COMMENT_TEXT, "PORT=(\d+)"), 0)),
+      action = if((ACTION_NAME="LOGON" and PRIV_USED="CREATE SESSION"), "success", (ACTION_NAME="LOGON" and PRIV_USED = null), "failure") 
+;

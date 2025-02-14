@@ -1,0 +1,7 @@
+alter
+    log_timestamp = parse_timestamp("%Y-%m-%d %H:%M:%S",arrayindex(regextract(_raw_log,"(\d{4}-\d{2}-\d{2} \d{2}\:\d{2}\:\d{2}),\d{3}\s\|"),0))
+| alter
+    _time = if(log_timestamp != null, log_timestamp, _insert_time),
+    log_level = arrayindex(split(_raw_log ,"||"),1),
+    class = arrayindex(regextract(_raw_log,"Class=([^|]+)"),0),
+    status = arrayindex(split(_raw_log ,"||"),3);

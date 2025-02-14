@@ -1,0 +1,60 @@
+commonfields:
+  id: 96253e03-26d6-48cb-850d-065494a913eb
+  version: 2
+vcShouldKeepItemLegacyProdMachine: false
+name: GetAllIndicators
+script: |+
+  class Client(BaseClient):
+      def send_to_xsiam(self, events):
+          json_str = json.dumps(events)[1:-1].replace('}, {', '}\n{')
+          response = self._http_request('POST', '/logs/v1/event', data=json_str)
+          return response
+
+  def push_xsiam(data):
+       # Prepare XSIAM connection
+      xsiam_url = demisto.args().get('xsiam_url')
+      xsiam_api_key = demisto.args().get('xsiam_api_key')
+
+      xsiam_headers = {
+          'Content-Type': 'text/plain',
+          'Authorization': f'{xsiam_api_key}'
+          }
+
+      xsiam_client = Client(base_url=xsiam_url, headers=xsiam_headers)
+      return xsiam_client.send_to_xsiam(data)
+
+
+  if __name__ in ('__main__', '__builtin__', 'builtins'):
+      data = demisto.args().get('indicators')
+
+      for ioc in data:
+          ioc.pop("sortValues", None)
+          ioc.pop("canvases", None)
+          ioc.pop("insightCache", None)
+          ioc.pop("primaryTerm", None)
+          ioc.pop("comments", None)
+          ioc.pop("moduleToFeedMap", None)
+          ioc.pop("cacheVersn", None)
+          ioc.pop("latestComments", None)
+
+      return_results(push_xsiam(data))
+
+
+type: python
+tags: []
+enabled: true
+args:
+- name: indicators
+  isArray: true
+- name: xsiam_url
+  defaultValue: https://api-ampcyber.xdr.au.paloaltonetworks.com
+- name: xsiam_api_key
+  secret: true
+scripttarget: 0
+subtype: python3
+pswd: ""
+runonce: false
+dockerimage: demisto/python3:3.11.10.111526
+runas: DBotWeakRole
+engineinfo: {}
+mainengineinfo: {}

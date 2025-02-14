@@ -1,0 +1,386 @@
+id: 2937f14e-f686-44e6-8780-286fcd9009c6
+version: 26
+vcShouldKeepItemLegacyProdMachine: false
+name: EQ - MDE Hunt and return table
+starttaskid: "0"
+tasks:
+  "0":
+    id: "0"
+    taskid: 32b98aba-ade1-408e-8f45-a2874ccdf18c
+    type: start
+    task:
+      id: 32b98aba-ade1-408e-8f45-a2874ccdf18c
+      version: -1
+      name: ""
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "8"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 50
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "1":
+    id: "1"
+    taskid: 30303eb1-dbde-4fb0-86ee-41ec5062d20e
+    type: regular
+    task:
+      id: 30303eb1-dbde-4fb0-86ee-41ec5062d20e
+      version: -1
+      name: MDE - IOC Hunting
+      description: 'Allows you to run programmatic queries like in Microsoft Defender
+        ATP Portal (https://securitycenter.windows.com/hunting). Limitations: You
+        can only run a query on data from the last 30 days. The results include a
+        maximum of 10,000 rows. The number of executions is limited (up to 15 calls
+        per minute, 15 minutes of running time every hour and 4 hours of running time
+        a day).'
+      tags:
+      - mde
+      script: '|||microsoft-atp-advanced-hunting'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "2"
+    scriptarguments:
+      query:
+        simple: ${inputs.mde_query}
+      retry-count:
+        simple: "2"
+      timeout:
+        simple: "60"
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 370
+        }
+      }
+    note: true
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 2
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "2":
+    id: "2"
+    taskid: 70433af5-81cc-404b-869f-5269a6d1e87c
+    type: condition
+    task:
+      id: 70433af5-81cc-404b-869f-5269a6d1e87c
+      version: -1
+      name: If any result?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "5"
+      "yes":
+      - "3"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isExists
+          left:
+            value:
+              simple: MicrosoftATP.Hunt.Result
+            iscontext: true
+          right:
+            value: {}
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 545
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "3":
+    id: "3"
+    taskid: ff8a9445-229a-4a39-88f5-c9a737e7a861
+    type: regular
+    task:
+      id: ff8a9445-229a-4a39-88f5-c9a737e7a861
+      version: -1
+      name: Convert to Markdown
+      description: Accepts a json object and returns a markdown.
+      scriptName: JsonToTable
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "4"
+    scriptarguments:
+      extend-context:
+        simple: mdtable=.
+      title:
+        simple: ${inputs.search_name}
+      value:
+        simple: ${MicrosoftATP.Hunt.Result}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 162.5,
+          "y": 720
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "4":
+    id: "4"
+    taskid: 98db78d1-46c2-4854-86e2-b017d53ef423
+    type: regular
+    task:
+      id: 98db78d1-46c2-4854-86e2-b017d53ef423
+      version: -1
+      name: Convert to HTML
+      description: Converts a given array to an HTML table
+      scriptName: ConvertTableToHTML
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "5"
+    scriptarguments:
+      table:
+        simple: ${MicrosoftATP.Hunt.Result}
+      title:
+        simple: ${inputs.search_name}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 162.5,
+          "y": 895
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "5":
+    id: "5"
+    taskid: 6bf67f29-f982-48a7-8a92-d7c55eea02de
+    type: title
+    task:
+      id: 6bf67f29-f982-48a7-8a92-d7c55eea02de
+      version: -1
+      name: Done
+      type: title
+      iscommand: false
+      brand: ""
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 162.5,
+          "y": 1070
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "6":
+    id: "6"
+    taskid: a971b467-8fb2-4f59-83f0-af3ad509268c
+    type: regular
+    task:
+      id: a971b467-8fb2-4f59-83f0-af3ad509268c
+      version: -1
+      name: Wait for MDE to run
+      description: Sleep for X seconds.
+      scriptName: Sleep
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "7"
+    scriptarguments:
+      seconds:
+        simple: "300"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 592.5,
+          "y": 720
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "7":
+    id: "7"
+    taskid: bf8fdb15-6f2c-4574-83b3-183f67c6a411
+    type: regular
+    task:
+      id: bf8fdb15-6f2c-4574-83b3-183f67c6a411
+      version: -1
+      name: Clean up MDE tasks
+      description: commands.local.cmd.task.complete
+      script: Builtin|||taskComplete
+      type: regular
+      iscommand: true
+      brand: Builtin
+    nexttasks:
+      '#none#':
+      - "5"
+    scriptarguments:
+      allowSkipped:
+        simple: "No"
+      id:
+        simple: mde
+      parentPlaybookID:
+        simple: ${currentPlaybookID}
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 592.5,
+          "y": 895
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 2
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "8":
+    id: "8"
+    taskid: 61018c1c-06cf-4c29-8f89-6cb548117d50
+    type: regular
+    task:
+      id: 61018c1c-06cf-4c29-8f89-6cb548117d50
+      version: -1
+      name: Delete Context
+      description: |-
+        Delete field from context.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: DeleteContext
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "1"
+    scriptarguments:
+      all:
+        simple: "yes"
+      subplaybook:
+        simple: "yes"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 195
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 2
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: |-
+  {
+    "linkLabelsPosition": {},
+    "paper": {
+      "dimensions": {
+        "height": 1085,
+        "width": 922.5,
+        "x": 50,
+        "y": 50
+      }
+    }
+  }
+inputs:
+- key: mde_query
+  value: {}
+  required: false
+  description: ""
+  playbookInputQuery: null
+- key: search_name
+  value: {}
+  required: false
+  description: ""
+  playbookInputQuery: null
+inputSections:
+- inputs:
+  - mde_query
+  - search_name
+  name: General (Inputs group)
+  description: Generic group for inputs
+outputSections:
+- outputs:
+  - HTMLTable
+  - MicrosoftATP.Hunt.Result
+  name: General (Outputs group)
+  description: Generic group for outputs
+outputs:
+- contextPath: HTMLTable
+  description: The HTML table we created from the array
+- contextPath: MicrosoftATP.Hunt.Result
+  description: The query results.
+quiet: true
+dirtyInputs: true

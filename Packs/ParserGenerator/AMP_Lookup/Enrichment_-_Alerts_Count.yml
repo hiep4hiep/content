@@ -1,0 +1,463 @@
+id: ccbad8e5-43ef-48eb-8d7b-aac2d4a4b889
+version: 21
+vcShouldKeepItemLegacyProdMachine: false
+name: Enrichment - Alerts Count
+description: This playbook enriches the incident details with the realted Notables
+  count based on Username,accountid,hostname etc.
+tags:
+- Enrichment
+- latest
+starttaskid: "0"
+tasks:
+  "0":
+    id: "0"
+    taskid: fa45fc9c-e37d-4302-86c3-380cf87a667e
+    type: start
+    task:
+      id: fa45fc9c-e37d-4302-86c3-380cf87a667e
+      version: -1
+      name: ""
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "6"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 65
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "1":
+    id: "1"
+    taskid: 818a3ef4-07ce-4019-8f93-5a6d7d96bbc4
+    type: regular
+    task:
+      id: 818a3ef4-07ce-4019-8f93-5a6d7d96bbc4
+      version: -1
+      name: Search Alerts for same user
+      description: "Searches Cortex XSIAM Alerts and returnrs the most relevant fields.
+        Default search range is the last 30 days, if you want to change this, use
+        the fromDate argument. \n\nReturns the id, name, type, severity, status, owner,
+        and created/closed times to context.  You can add additional fields using
+        the add_field_to_context argument.\n\nThis automation runs using the default
+        Limited User role, unless you explicitly change the permissions.  Based on
+        the SearchAlertsV2 from the Common Scripts pack, but more efficient."
+      scriptName: SearchAlertsSummary
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "2"
+    scriptarguments:
+      query:
+        simple: username:${alert.username}  -name:"${alert.name}"
+      searchresultslabel:
+        simple: username_search
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 480,
+          "y": 400
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "2":
+    id: "2"
+    taskid: 6a71fe56-90be-46aa-84b7-9a8b95ef9dd9
+    type: regular
+    task:
+      id: 6a71fe56-90be-46aa-84b7-9a8b95ef9dd9
+      version: -1
+      name: Set Context
+      scriptName: SetContext
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "7"
+    scriptarguments:
+      key:
+        simple: user_notable
+      value:
+        complex:
+          root: foundIncidents
+          filters:
+          - - operator: isEqualString
+              left:
+                value:
+                  simple: foundIncidents.searchResultsLabel
+                iscontext: true
+              right:
+                value:
+                  simple: username_search
+          accessor: id
+          transformers:
+          - operator: count
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 480,
+          "y": 575
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "3":
+    id: "3"
+    taskid: 46a133c5-0b57-4c9d-82ec-54cb38a9ba97
+    type: regular
+    task:
+      id: 46a133c5-0b57-4c9d-82ec-54cb38a9ba97
+      version: -1
+      name: Search Alert for same AWS account
+      description: "Searches Cortex XSIAM Alerts and returnrs the most relevant fields.
+        Default search range is the last 30 days, if you want to change this, use
+        the fromDate argument. \n\nReturns the id, name, type, severity, status, owner,
+        and created/closed times to context.  You can add additional fields using
+        the add_field_to_context argument.\n\nThis automation runs using the default
+        Limited User role, unless you explicitly change the permissions.  Based on
+        the SearchAlertsV2 from the Common Scripts pack, but more efficient."
+      scriptName: SearchAlertsSummary
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "4"
+    scriptarguments:
+      query:
+        simple: awsaccountid:"${alert.awsaccountid}"  -name:"${alert.name}"
+      searchresultslabel:
+        simple: accountid_search
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 480,
+          "y": 925
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "4":
+    id: "4"
+    taskid: 46e619bf-b842-4e98-8f5f-57045a2deb91
+    type: regular
+    task:
+      id: 46e619bf-b842-4e98-8f5f-57045a2deb91
+      version: -1
+      name: Set Context
+      scriptName: SetContext
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "10"
+    scriptarguments:
+      key:
+        simple: account_notable
+      value:
+        complex:
+          root: foundIncidents
+          filters:
+          - - operator: isEqualString
+              left:
+                value:
+                  simple: foundIncidents.searchResultsLabel
+                iscontext: true
+              right:
+                value:
+                  simple: accountid_search
+          accessor: id
+          transformers:
+          - operator: count
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 480,
+          "y": 1100
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "5":
+    id: "5"
+    taskid: 4f4b0b5d-7ad7-4436-84dd-9d63e4d3ad32
+    type: regular
+    task:
+      id: 4f4b0b5d-7ad7-4436-84dd-9d63e4d3ad32
+      version: -1
+      name: DeleteContext
+      description: |-
+        Delete field from context.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: DeleteContext
+      type: regular
+      iscommand: false
+      brand: ""
+    scriptarguments:
+      key:
+        simple: PaloAltoNetworksXQL
+      subplaybook:
+        simple: "yes"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 695,
+          "y": 50
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "6":
+    id: "6"
+    taskid: c671d4c8-fde7-40fd-846e-69435b0311d2
+    type: condition
+    task:
+      id: c671d4c8-fde7-40fd-846e-69435b0311d2
+      version: -1
+      name: If username is available
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "8"
+      "yes":
+      - "1"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isNotEmpty
+          left:
+            value:
+              simple: alert.username
+            iscontext: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 225
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "7":
+    id: "7"
+    taskid: 11741cae-4cf8-4757-8dce-c2bfb1101252
+    type: condition
+    task:
+      id: 11741cae-4cf8-4757-8dce-c2bfb1101252
+      version: -1
+      name: If account id is available
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "9"
+      "yes":
+      - "3"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isNotEmpty
+          left:
+            value:
+              simple: alert.awsaccountid
+            iscontext: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 750
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "8":
+    id: "8"
+    taskid: 6f900e79-5ff0-46a3-8ad2-5ca10fff5e5a
+    type: regular
+    task:
+      id: 6f900e79-5ff0-46a3-8ad2-5ca10fff5e5a
+      version: -1
+      name: Set Context
+      scriptName: SetContext
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "7"
+    scriptarguments:
+      key:
+        simple: user_notable
+      value:
+        simple: No username available to enrich
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 575
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "9":
+    id: "9"
+    taskid: e1540aa1-2c5c-48c8-8f15-e927ce64f7a1
+    type: regular
+    task:
+      id: e1540aa1-2c5c-48c8-8f15-e927ce64f7a1
+      version: -1
+      name: Set Context
+      scriptName: SetContext
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "10"
+    scriptarguments:
+      key:
+        simple: account_notable
+      value:
+        simple: No account available to enrich
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 1100
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "10":
+    id: "10"
+    taskid: 4a32f0ab-f862-4527-8b78-463351cdfccc
+    type: title
+    task:
+      id: 4a32f0ab-f862-4527-8b78-463351cdfccc
+      version: -1
+      name: Done
+      type: title
+      iscommand: false
+      brand: ""
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 1275
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: |-
+  {
+    "linkLabelsPosition": {},
+    "paper": {
+      "dimensions": {
+        "height": 1290,
+        "width": 1025,
+        "x": 50,
+        "y": 50
+      }
+    }
+  }
+inputs: []
+outputs:
+- contextPath: user_notable
+  description: The results of the Splunk search. The results are a JSON array, in
+    which each item is a Splunk event.
+- contextPath: account_notable
+  description: The results of the Splunk search. The results are a JSON array, in
+    which each item is a Splunk event.
+dirtyInputs: true

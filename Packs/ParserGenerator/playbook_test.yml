@@ -1,0 +1,232 @@
+id: 11f45040-e248-407e-8aeb-8994785a5e9a
+version: 21
+vcShouldKeepItemLegacyProdMachine: false
+name: AMP - Update Critical Assets Lookup Table
+starttaskid: "0"
+tasks:
+  "0":
+    id: "0"
+    taskid: 4ad4fc18-e94f-452c-8107-1fe7f8e7bfae
+    type: start
+    task:
+      id: 4ad4fc18-e94f-452c-8107-1fe7f8e7bfae
+      version: -1
+      name: ""
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "1"
+      - "8"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 50
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "1":
+    id: "1"
+    taskid: 587b7769-4a50-436e-86c7-c0fced9c3a44
+    type: regular
+    task:
+      id: 587b7769-4a50-436e-86c7-c0fced9c3a44
+      version: -1
+      name: Download the Critical Asset CSV
+      description: Generate critical assets csv
+      script: '|||snow-generate-critical-assets'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "2"
+    scriptarguments:
+      retry-count:
+        simple: "3"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 195
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "2":
+    id: "2"
+    taskid: 20983964-bf05-4d12-89a7-820e9dea96ae
+    type: regular
+    task:
+      id: 20983964-bf05-4d12-89a7-820e9dea96ae
+      version: -1
+      name: Convert CSV to JSON
+      description: This script will parse a CSV file and place the unique IPs, Domains
+        and Hashes into the context.
+      scriptName: ParseCSV
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "6"
+    scriptarguments:
+      entryID:
+        simple: ${lastCompletedTaskEntries}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 370
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "6":
+    id: "6"
+    taskid: dc67f527-f883-4916-8d5d-ba2274482400
+    type: regular
+    task:
+      id: dc67f527-f883-4916-8d5d-ba2274482400
+      version: -1
+      name: Send to XSIAM
+      scriptName: UpdateLookUpTable
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "7"
+    scriptarguments:
+      current_data:
+        simple: ${Current}
+      data:
+        simple: ${ParseCSV.ParsedCSV}
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 550
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "7":
+    id: "7"
+    taskid: a6e9ea5b-80a6-48e9-8a07-21a9f52dc033
+    type: regular
+    task:
+      id: a6e9ea5b-80a6-48e9-8a07-21a9f52dc033
+      version: -1
+      name: Close
+      description: commands.local.cmd.close.inv
+      script: Builtin|||closeInvestigation
+      type: regular
+      iscommand: true
+      brand: Builtin
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 720
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "8":
+    id: "8"
+    taskid: fea342e4-a973-429e-8f24-b074561f7e59
+    type: regular
+    task:
+      id: fea342e4-a973-429e-8f24-b074561f7e59
+      version: -1
+      name: Get Current Lookup content
+      description: send HTTP POST request.
+      script: '|||core-api-post'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "6"
+    scriptarguments:
+      body:
+        simple: |-
+          {
+              "request": {
+                  "limit": 1000,
+                  "dataset_name": "critical_hosts_lookup"
+              }
+          }
+      extend-context:
+        simple: Current=response.reply.data
+      uri:
+        simple: /public_api/v1/xql/lookups/get_data
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 840,
+          "y": 195
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: |-
+  {
+    "linkLabelsPosition": {},
+    "paper": {
+      "dimensions": {
+        "height": 765,
+        "width": 955,
+        "x": 265,
+        "y": 50
+      }
+    }
+  }
+inputs: []
+outputs: []

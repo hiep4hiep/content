@@ -1,0 +1,18 @@
+{
+    "name": "EWS MSAL",
+    "description": "EWS Integration using MSAL for authentication",
+    "support": "developer",
+    "currentVersion": "1.0.0",
+    "author": "Hiep Nguyen",
+    "url": "",
+    "email": "hnguyen@paloaltonetworks.com",
+    "categories": [
+        "Messaging"
+    ],
+    "tags": [
+        "msal"
+    ],
+    "useCases": [],
+    "keywords": [],
+    "githubUser": []
+}

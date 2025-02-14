@@ -1,0 +1,98 @@
+category: Utilities
+commonfields:
+  id: ZencosEventCollector
+  version: -1
+configuration:
+- additionalinfo: The FQDN/IP of the Zencos server to connect
+  display: Zencos Server URL (e.g https://rla.rla.zencos.com)
+  name: zencos_url
+  required: true
+  type: 12
+  section: Connect
+- additionalinfo: Client Id for OAuth 2.0
+  display: Client Id (for OAuth 2.0)
+  hidden: false
+  name: client_id
+  required: true
+  type: 0
+  section: Connect
+- additionalinfo: Client Secret for OAuth 2.0
+  display: Client Secret (for OAuth 2.0)
+  hidden: false
+  name: client_secret
+  required: false
+  type: 4
+  section: Connect
+- additionalinfo: User Name for OAuth 2.0
+  display: User Name
+  hidden: false
+  name: username
+  required: true
+  type: 0
+  section: Connect
+- additionalinfo: Password for OAuth 2.0
+  display: Password
+  hidden: false
+  name: password
+  required: false
+  type: 4
+  section: Connect
+- display: XSIAM HTTP Collector URL (e.g. 'https://api-abc-xsiam.xdr.au.paloaltonetworks.com')
+  name: xsiam_url
+  type: 0
+  required: true
+  section: Connect
+- display: XSIAM HTTP Collector API Key
+  name: xsiam_api_key
+  required: true
+  type: 4
+  section: Connect
+- additionalinfo: Environment
+  display: Environment
+  hidden: false
+  name: environment
+  required: false
+  type: 0
+  section: Connect
+- display: Trust any certificate (not secure)
+  name: insecure
+  required: false
+  type: 8
+- display: Use system proxy settings
+  name: proxy
+  required: false
+  type: 8
+description: '[Enter a comprehensive, yet concise, description of what the integration does, what use cases it is designed for, etc.]'
+display: 'ZencosEventCollector'
+name: ZencosEventCollector
+script:
+  commands:
+  - arguments:
+    - auto: PREDEFINED
+      defaultValue: 'False'
+      description: Set this argument to True in orfer to create events, otherwise the command will only display them.
+      isArray: false
+      name: should_push_events
+      predefined:
+      - 'True'
+      - 'False'
+      required: true
+    - description: Get events since this time, format YYYY-MM-DDTHH:ii:ss.
+      isArray: false
+      name: since_datetime
+      required: false
+    deprecated: false
+    description: Manual command to fetch events and display them.
+    execution: false
+    name: zencos-get-events
+  runonce: false
+  isfetchevents: true
+  subtype: python3
+  script: '-'
+  type: python
+  dockerimage: demisto/python3:3.10.7.35188
+marketplaces:
+- marketplacev2
+fromversion: '0'
+tests:
+- No tests (auto formatted)

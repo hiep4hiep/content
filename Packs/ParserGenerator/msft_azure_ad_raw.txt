@@ -1,0 +1,24 @@
+
+[INGEST: vendor=msft, product=azure_ad, target_dataset=msft_azure_ad_raw, no_hit=keep]
+alter
+  deviceDetail_browser = deviceDetail -> browser,
+  deviceDetail_deviceId = deviceDetail -> deviceId,
+  deviceDetail_displayName = deviceDetail -> displayName,
+  deviceDetail_isCompliant = deviceDetail -> isCompliant,
+  deviceDetail_isManaged = deviceDetail -> isManaged,
+  deviceDetail_operatingSystem = deviceDetail -> operatingSystem,
+  deviceDetail_trustType = deviceDetail -> trustType,
+  location_city = location -> city,
+  location_countryOrRegion = location -> countryOrRegion,
+  location_geoCoordinates = location -> geoCoordinates{},
+  location_geoCoordinates_latitude = location_geoCoordinates -> latitude,
+  location_geoCoordinates_longitude = location_geoCoordinates -> longitude,
+  location_state = location -> state,
+  privateLinkDetails_policyId = privateLinkDetails -> policyId,
+  privateLinkDetails_policyName = privateLinkDetails -> policyName,
+  privateLinkDetails_policyTenantId = privateLinkDetails -> policyTenantId,
+  privateLinkDetails_resourceId = privateLinkDetails -> resourceId,
+  status_additionalDetails = status -> additionalDetails,
+  status_errorCode = status -> errorCode,
+  status_failureReason = status -> failureReason
+;

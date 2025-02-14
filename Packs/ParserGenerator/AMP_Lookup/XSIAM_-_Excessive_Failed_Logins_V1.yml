@@ -1,0 +1,2751 @@
+id: 4f0e71db-40a4-4383-8b3a-394f4fa7888a
+version: 139
+vcShouldKeepItemLegacyProdMachine: false
+name: XSIAM - Excessive Failed Logins V1
+description: Splunk Notable to detect  and investigate excessive failed login attempts
+tags:
+- latest
+- version 1
+starttaskid: "0"
+tasks:
+  "0":
+    id: "0"
+    taskid: e9a80b29-e337-4a99-8833-5d7bc0a86fa6
+    type: start
+    task:
+      id: e9a80b29-e337-4a99-8833-5d7bc0a86fa6
+      version: -1
+      name: ""
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "120"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3060,
+          "y": 65
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "7":
+    id: "7"
+    taskid: 667b6c74-fa42-4144-8096-d02a37dbde91
+    type: title
+    task:
+      id: 667b6c74-fa42-4144-8096-d02a37dbde91
+      version: -1
+      name: Done
+      type: title
+      iscommand: false
+      brand: ""
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 2845,
+          "y": 6465
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "12":
+    id: "12"
+    taskid: a6706ce3-880f-401f-8d47-20a006fa28d5
+    type: title
+    task:
+      id: a6706ce3-880f-401f-8d47-20a006fa28d5
+      version: -1
+      name: Data Collection
+      description: "Retrieves detailed information about a user account. The user
+        can be specified by name, email address, or as an Active Directory Distinguished
+        Name (DN). If no filter is specified, all users are returned.\n\nAutomation:
+        ad-get-user (Active Directory Query v2) \nImportant Fields:  Account Status,
+        Dept, Last login time, Manager\n\n"
+      type: title
+      iscommand: false
+      brand: Active Directory Query v2
+    nexttasks:
+      '#none#':
+      - "100"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 2845,
+          "y": 3885
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "13":
+    id: "13"
+    taskid: 2bed21e7-60de-41ab-8ff4-ada2fa60b8bd
+    type: collection
+    task:
+      id: 2bed21e7-60de-41ab-8ff4-ada2fa60b8bd
+      version: -1
+      name: Send Data Collection to User
+      description: |
+        Retrieves detailed information about a user account. The user can be specified by name, email address, or as an Active Directory Distinguished Name (DN). If no filter is specified, all users are returned.
+
+        Hi USER
+
+        We noticed this activity on your account (maybe include time and location), please confirm if this was expected.
+
+        Retries: 2/3 every 15 minutes?
+      type: collection
+      iscommand: false
+      brand: Active Directory Query v2
+    nexttasks:
+      '#none#':
+      - "14"
+    scriptarguments:
+      using:
+        simple: Mail Sender (New)_instance_1
+    separatecontext: false
+    sla:
+      minutes: 0
+      hours: 4
+      days: 0
+      weeks: 0
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3172.5,
+          "y": 4745
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    message:
+      to:
+        simple: ${Account.Email.Address}
+      subject:
+        simple: Confirm Activity on Account
+      body:
+        simple: |-
+          Hi ${Account.DisplayName},
+
+          Please note that there were multiple login attempts for your account and we suspect that your account may be compromised. Please fill in the form to confirm this activity.
+      methods: []
+      format: ""
+      bcc: null
+      cc:
+        simple: cdc_cdar@amp.com.au,au.nationalmsdeliverysecurityamp@global.ntt
+      timings:
+        retriescount: 3
+        retriesinterval: 60
+        completeafterreplies: 1
+        completeafterv2: true
+        completeaftersla: true
+    form:
+      questions:
+      - id: "0"
+        label: ""
+        labelarg:
+          simple: Are you aware of the attempted login on your account at ${ConvertUTC}?
+        required: true
+        gridcolumns: []
+        defaultrows: []
+        type: singleSelect
+        options: []
+        optionsarg:
+        - {}
+        - simple: "Yes"
+        - simple: "No"
+        fieldassociated: ""
+        placeholder: ""
+        tooltip: ""
+        readonly: false
+      title: Excessive Failed Login Form
+      description: ""
+      sender: Your SOC team
+      expired: false
+      totalanswers: 0
+    formDisplay:
+      headerbackgroundcolor: ""
+      headerfontcolor: ""
+      sender: Cyber Defence Centre
+      bodybackgroundcolor: ""
+      bodyfontcolor: ""
+      submitbuttonbackgroundcolor: ""
+      submitbuttonfontcolor: ""
+      submittext: ""
+      isexternalrtl: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "14":
+    id: "14"
+    taskid: f48ed7d6-f3b0-45a4-82f3-3e95f6871201
+    type: condition
+    task:
+      id: f48ed7d6-f3b0-45a4-82f3-3e95f6871201
+      version: -1
+      name: Response back from user?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "99"
+      "yes":
+      - "29"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isExists
+          left:
+            value:
+              simple: Excessive Failed Login Form.Answers.0
+            iscontext: true
+          right:
+            value: {}
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 2957.5,
+          "y": 4920
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "19":
+    id: "19"
+    taskid: c5b986ee-1a54-465c-8084-8a7266a8edc4
+    type: condition
+    task:
+      id: c5b986ee-1a54-465c-8084-8a7266a8edc4
+      version: -1
+      name: Is the logon type NOT 4 OR 5 OR 8 OR 9 OR 10
+      description: 'Field to check: EventCode'
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "12"
+      "yes":
+      - "74"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isNotEqualString
+          left:
+            value:
+              simple: alert.logontype
+            iscontext: true
+          right:
+            value:
+              simple: BATCH
+      - - operator: isNotEqualString
+          left:
+            value:
+              simple: alert.logontype
+            iscontext: true
+          right:
+            value:
+              simple: SERVICE
+      - - operator: isNotEqualString
+          left:
+            value:
+              simple: alert.logontype
+            iscontext: true
+          right:
+            value:
+              simple: CLEARTEXT
+      - - operator: isNotEqualString
+          left:
+            value:
+              simple: alert.logontype
+            iscontext: true
+          right:
+            value:
+              simple: CREDENTIALS
+      - - operator: isNotEqualString
+          left:
+            value:
+              simple: alert.logontype
+            iscontext: true
+          right:
+            value:
+              simple: INTERACTIVE
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3060,
+          "y": 2325
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "29":
+    id: "29"
+    taskid: 34768a56-4068-4c57-8283-1444974589f0
+    type: condition
+    task:
+      id: 34768a56-4068-4c57-8283-1444974589f0
+      version: -1
+      name: Expected Activity?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "35"
+      "yes":
+      - "34"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: Confirm Activity on Account.Answers.name
+            iscontext: true
+          right:
+            value:
+              simple: "yes"
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3285,
+          "y": 5795
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "33":
+    id: "33"
+    taskid: 9886a3a6-f8dd-4e41-8f32-c4dc519c30e1
+    type: condition
+    task:
+      id: 9886a3a6-f8dd-4e41-8f32-c4dc519c30e1
+      version: -1
+      name: Expected Activity?
+      description: What happens if activity was expected?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "35"
+      "yes":
+      - "34"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: Confirm Activity on Account.Answers.0
+            iscontext: true
+          right:
+            value:
+              simple: "yes"
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 2732.5,
+          "y": 5795
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "34":
+    id: "34"
+    taskid: 53b32c21-a89c-49dd-8388-978a0ab2923c
+    type: title
+    task:
+      id: 53b32c21-a89c-49dd-8388-978a0ab2923c
+      version: -1
+      name: Manual Investigation - Log Ticket
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "106"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3275,
+          "y": 5970
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "35":
+    id: "35"
+    taskid: 6d93b02a-02d7-437f-8f6f-3fd6d3b7e3af
+    type: title
+    task:
+      id: 6d93b02a-02d7-437f-8f6f-3fd6d3b7e3af
+      version: -1
+      name: Compromised Account - Log Ticket
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "84"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 2630,
+          "y": 5970
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "39":
+    id: "39"
+    taskid: 0452f923-1af9-418d-88d8-4382796298e8
+    type: collection
+    task:
+      id: 0452f923-1af9-418d-88d8-4382796298e8
+      version: -1
+      name: Send Data Collection to User's Manager
+      description: |
+        Retrieves detailed information about a user account. The user can be specified by name, email address, or as an Active Directory Distinguished Name (DN). If no filter is specified, all users are returned.
+
+        Hi USER
+
+        We noticed this activity on your account (maybe include time and location), please confirm if this was expected.
+
+        Retries: 2/3 every 15 minutes?
+      type: collection
+      iscommand: false
+      brand: Active Directory Query v2
+    nexttasks:
+      '#none#':
+      - "33"
+    scriptarguments:
+      using:
+        simple: Mail Sender (New)_instance_1
+    separatecontext: false
+    sla:
+      minutes: 0
+      hours: 4
+      days: 0
+      weeks: 0
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 2517.5,
+          "y": 5620
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    message:
+      to:
+        simple: ${Account.Email.Address}
+      subject:
+        simple: Confirm Activity on Account
+      body:
+        simple: |-
+          Hi,
+
+          Please note that there were multiple login attempts on ${Account.DisplayName.[0]'s account and we suspect that their account may be compromised. Please confirm this activity with them and fill in the form.
+      methods: []
+      format: ""
+      bcc: null
+      cc:
+        simple: cdc_cdar@amp.com.au,au.nationalmsdeliverysecurityamp@global.ntt
+      timings:
+        retriescount: 3
+        retriesinterval: 60
+        completeafterreplies: 1
+        completeafterv2: true
+        completeaftersla: true
+    form:
+      questions:
+      - id: "0"
+        label: ""
+        labelarg:
+          simple: Please confirm if the user is aware of the attempted login on their
+            account on ${ConvertUTC}?
+        required: true
+        gridcolumns: []
+        defaultrows: []
+        type: singleSelect
+        options: []
+        optionsarg:
+        - {}
+        - simple: "Yes"
+        - simple: "No"
+        fieldassociated: ""
+        placeholder: ""
+        tooltip: ""
+        readonly: false
+      title: Confirm Activity on Account
+      description: ""
+      sender: Your SOC team
+      expired: false
+      totalanswers: 0
+    formDisplay:
+      headerbackgroundcolor: ""
+      headerfontcolor: ""
+      sender: Cyber Defence Centre
+      bodybackgroundcolor: ""
+      bodyfontcolor: ""
+      submitbuttonbackgroundcolor: ""
+      submitbuttonfontcolor: ""
+      submittext: ""
+      isexternalrtl: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "42":
+    id: "42"
+    taskid: 91bba7fe-feb9-4a9a-8b51-a3f34a25e701
+    type: condition
+    task:
+      id: 91bba7fe-feb9-4a9a-8b51-a3f34a25e701
+      version: -1
+      name: Was Password Reset in the last 48 hours and No Successful Login in last
+        36?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "142"
+      "yes":
+      - "58"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isAfter
+          left:
+            value:
+              complex:
+                root: ActiveDirectory.Users
+                accessor: pwdLastSet
+                transformers:
+                - operator: FirstArrayElement
+                - operator: DateStringToISOFormat
+                  args:
+                    add_utc_timezone: {}
+                    dayfirst: {}
+                    fuzzy: {}
+                    yearfirst: {}
+            iscontext: true
+          right:
+            value:
+              complex:
+                root: DateArithmetic
+            iscontext: true
+      - - operator: isBefore
+          left:
+            value:
+              complex:
+                root: ActiveDirectory.Users
+                accessor: lastLogon
+                transformers:
+                - operator: FirstArrayElement
+                - operator: DateStringToISOFormat
+                  args:
+                    add_utc_timezone: {}
+                    dayfirst: {}
+                    fuzzy: {}
+                    yearfirst: {}
+            iscontext: true
+          right:
+            value:
+              simple: DateArithmetic
+            iscontext: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3172.5,
+          "y": 2995
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "46":
+    id: "46"
+    taskid: cb48e8d8-21d0-437d-8d44-160c146639c8
+    type: regular
+    task:
+      id: cb48e8d8-21d0-437d-8d44-160c146639c8
+      version: -1
+      name: Set Correlation ID
+      description: Set a value in context under the key you entered.
+      scriptName: Set
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "130"
+    scriptarguments:
+      key:
+        simple: correlationid
+      value:
+        simple: xsiam13-${alert.username}-${alert.hostname}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3060,
+          "y": 1975
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "48":
+    id: "48"
+    taskid: bd9798cc-5bff-4999-8da2-2d7ccc821e10
+    type: regular
+    task:
+      id: bd9798cc-5bff-4999-8da2-2d7ccc821e10
+      version: -1
+      name: Set Failed Logins
+      description: |-
+        Set a value in context under the key you entered. If no value is entered, the script doesn't do anything.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: SetAndHandleEmpty
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "135"
+    scriptarguments:
+      key:
+        simple: XQLFailure
+      value:
+        complex:
+          root: PaloAltoNetworksXQL.GenericQuery
+          filters:
+          - - operator: isEqualString
+              left:
+                value:
+                  simple: PaloAltoNetworksXQL.GenericQuery.query_name
+                iscontext: true
+              right:
+                value:
+                  simple: FailedLogins
+          accessor: results
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3275,
+          "y": 1275
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "52":
+    id: "52"
+    taskid: 8556ff22-0549-401a-8fe4-9670a3cf02b3
+    type: condition
+    task:
+      id: 8556ff22-0549-401a-8fe4-9670a3cf02b3
+      version: -1
+      name: Successful Logins After First Failure AND No Similar Incident?
+      description: |-
+        Count how many successful logins there were after the failed login.
+
+        Is this the second triage?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "12"
+      "yes":
+      - "58"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isBefore
+          left:
+            value:
+              complex:
+                root: PaloAltoNetworksXQL.GenericQuery
+                filters:
+                - - operator: isEqualString
+                    left:
+                      value:
+                        simple: PaloAltoNetworksXQL.GenericQuery.query_name
+                      iscontext: true
+                    right:
+                      value:
+                        simple: SuccessfulLogins
+                accessor: results._time
+            iscontext: true
+          right:
+            value:
+              complex:
+                root: PaloAltoNetworksXQL.GenericQuery
+                filters:
+                - - operator: isEqualString
+                    left:
+                      value:
+                        simple: PaloAltoNetworksXQL.GenericQuery.query_name
+                      iscontext: true
+                    right:
+                      value:
+                        simple: FailedLogins
+                accessor: results._time
+            iscontext: true
+      - - operator: isNotExists
+          left:
+            value:
+              simple: foundIncidents
+            iscontext: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3172.5,
+          "y": 3695
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "53":
+    id: "53"
+    taskid: 195d05a1-3386-4d1b-83ee-110f7984a042
+    type: regular
+    task:
+      id: 195d05a1-3386-4d1b-83ee-110f7984a042
+      version: -1
+      name: Find Similar Alert
+      description: |-
+        Searches Demisto alerts. A summarized version of this scrips is avilable with the summarizedversion argument.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: SearchAlertsV2
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "75"
+    scriptarguments:
+      query:
+        simple: ${SearchAlertQuery}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3060,
+          "y": 3345
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "56":
+    id: "56"
+    taskid: 6ac2f64a-6cec-4e78-8a1a-302c749cda4e
+    type: title
+    task:
+      id: 6ac2f64a-6cec-4e78-8a1a-302c749cda4e
+      version: -1
+      name: Done
+      type: title
+      iscommand: false
+      brand: ""
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3387.5,
+          "y": 4060
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "58":
+    id: "58"
+    taskid: b3b4ed71-82af-4c66-8cb0-5d467fc1c2eb
+    type: regular
+    task:
+      id: b3b4ed71-82af-4c66-8cb0-5d467fc1c2eb
+      version: -1
+      name: Close XSIAM Investigation
+      description: commands.local.cmd.close.inv
+      script: Builtin|||closeInvestigation
+      type: regular
+      iscommand: true
+      brand: Builtin
+    nexttasks:
+      '#none#':
+      - "56"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3387.5,
+          "y": 3870
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "61":
+    id: "61"
+    taskid: fc4fea86-e66c-4cad-83bc-ac9fe6913387
+    type: regular
+    task:
+      id: fc4fea86-e66c-4cad-83bc-ac9fe6913387
+      version: -1
+      name: close XSIAM investigation
+      description: commands.local.cmd.close.inv
+      script: Builtin|||closeInvestigation
+      type: regular
+      iscommand: true
+      brand: Builtin
+    nexttasks:
+      '#none#':
+      - "7"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 2845,
+          "y": 6290
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "70":
+    id: "70"
+    taskid: 242cbc45-24e2-4ac7-83ef-5bb9d2d74797
+    type: regular
+    task:
+      id: 242cbc45-24e2-4ac7-83ef-5bb9d2d74797
+      version: -1
+      name: Calculate X hours
+      description: Apply basic arithmetics against a date
+      scriptName: DateArithmetic
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "42"
+    scriptarguments:
+      date:
+        simple: ${alert.created}
+      operator:
+        simple: subtraction
+      operator_value:
+        simple: ${inputs.lastpwdreset_lookback}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 2957.5,
+          "y": 2820
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "71":
+    id: "71"
+    taskid: 00726a15-35bc-43d0-80b5-e9ae3672d207
+    type: regular
+    task:
+      id: 00726a15-35bc-43d0-80b5-e9ae3672d207
+      version: -1
+      name: Calculate Y hours
+      description: Apply basic arithmetics against a date
+      scriptName: DateArithmetic
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "42"
+    scriptarguments:
+      date:
+        simple: ${alert.created}
+      operator:
+        simple: subtraction
+      operator_value:
+        simple: ${inputs.lastsignin_lookback}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3387.5,
+          "y": 2820
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "72":
+    id: "72"
+    taskid: e1ff6e51-5aa1-4316-801b-3f224d8dab5d
+    type: title
+    task:
+      id: e1ff6e51-5aa1-4316-801b-3f224d8dab5d
+      version: -1
+      name: Triage
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "116"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3060,
+          "y": 415
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "73":
+    id: "73"
+    taskid: 265e4539-76d5-4ff3-8d02-b73e5fc90551
+    type: condition
+    task:
+      id: 265e4539-76d5-4ff3-8d02-b73e5fc90551
+      version: -1
+      name: User Found?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "35"
+      "yes":
+      - "127"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isExists
+          left:
+            value:
+              simple: ActiveDirectory
+            iscontext: true
+          right:
+            value: {}
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 2845,
+          "y": 4220
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "74":
+    id: "74"
+    taskid: 90aa5502-f227-4f57-8819-b446a57978a3
+    type: title
+    task:
+      id: 90aa5502-f227-4f57-8819-b446a57978a3
+      version: -1
+      name: Password Reset/Sign In Information
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "101"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3172.5,
+          "y": 2500
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "75":
+    id: "75"
+    taskid: c5c2db0e-5b6d-4a4c-8471-692f1865436e
+    type: condition
+    task:
+      id: c5c2db0e-5b6d-4a4c-8471-692f1865436e
+      version: -1
+      name: Logins Defined?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "12"
+      "yes":
+      - "52"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isExists
+          left:
+            value:
+              simple: foundIncidents
+            iscontext: true
+          right:
+            value: {}
+      - - operator: isNotEmpty
+          left:
+            value:
+              simple: foundIncidents
+            iscontext: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3060,
+          "y": 3520
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "84":
+    id: "84"
+    taskid: 1a9ddbf4-46fe-4062-8e2a-f8bb9ecf2390
+    type: playbook
+    task:
+      id: 1a9ddbf4-46fe-4062-8e2a-f8bb9ecf2390
+      version: -1
+      name: ServiceNow De-duplication & Log Ticket
+      description: Log a ticket in ServiceNow and de-duplicate where appropriate
+      playbookName: ServiceNow - Log Ticket
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "61"
+    scriptarguments:
+      ContactType:
+        simple: Event
+      InstanceName:
+        simple: SNOW - Dev - ampaudev.service-now.com
+      TicketBodyIsWorkNote:
+        simple: "false"
+      assignmentgroup:
+        complex:
+          root: ServiceNow.Group
+          accessor: Name
+          transformers:
+          - operator: uniq
+      caller:
+        simple: ${ServiceNow.User.ID}
+      category:
+        simple: Security
+      configuration_item:
+        complex:
+          root: ServiceNow.Record
+          accessor: ID
+          transformers:
+          - operator: SetIfEmpty
+            args:
+              applyIfEmpty:
+                value:
+                  simple: "true"
+              defaultValue: {}
+      correlationdisplay:
+        simple: ${correlationid}
+      correlationid:
+        simple: ${correlationid}
+      description:
+        simple: ${alert.details}
+      impact:
+        simple: "2"
+      shortdescription:
+        simple: ${alert.details}
+      subcategory:
+        simple: Technical Attack / Unauthorised Access
+      ticketbody:
+        simple: |-
+          <p>[code]</p>
+          <p>Hi,</p>
+          <p>Please note that an account may have been compromised. See details below:</p>
+          <p>&nbsp;</p>
+          <p><strong>Date/Time of Breach: ${alert.created}</strong></p>
+          <p><strong>Description:</strong> ${alert.details}</p>
+          <p><strong>User:</strong> ${alert.username}</p>
+          <p><strong>Destination:</strong> ${alert.dest}</p>
+          <p><strong>Host:</strong> ${alert.hostname}</p>
+          <p><strong>Source IP:</strong> ${alert.sourceip}</p>
+          <p><strong>Event ID:</strong> ${alert.eventid}</p>
+          <p><strong>Event Type:</strong> ${alert.originaleventtype}</p>
+          <p>&nbsp;</p>
+          <hr />
+          <p><strong>Login Attempts</strong></p>
+          <p>&nbsp;</p>
+          </hr>
+          ${FailedJSONToHTML}
+          <p>&nbsp;</p>
+          ${SuccessJSONToHTML}
+          <p>[/code]</p>
+      ticketbodyupdate:
+        simple: |-
+          <p>[code]</p>
+          <p>Hi,</p>
+          <p>Please note that an account may have been compromised. See details below:</p>
+          <p>&nbsp;</p>
+
+          <p><strong>Date/Time of Breach: ${alert.created}</strong></p>
+          <p><strong>Description:</strong> ${alert.details}</p>
+          <p><strong>User:</strong> ${alert.username}</p>
+          <p><strong>Destination:</strong> ${alert.dest}</p>
+          <p><strong>Host:</strong> ${alert.hostname}</p>
+          <p><strong>Source IP:</strong> ${alert.sourceip}</p>
+          <p><strong>Event ID:</strong> ${alert.eventid}</p>
+          <p><strong>Event Type:</strong> ${alert.originaleventtype}</p>
+          <p>&nbsp;</p>
+          <hr />
+          <p><strong>Login Attempts</strong></p>
+          <p>&nbsp;</p>
+          </hr>
+          ${FailedJSONToHTML}
+          <p>&nbsp;</p>
+          ${SuccessJSONToHTML}
+          <p>[/code]</p>
+      tickettype:
+        simple: incident
+      urgency:
+        simple: "2"
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 100
+    view: |-
+      {
+        "position": {
+          "x": 2630,
+          "y": 6115
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "99":
+    id: "99"
+    taskid: 1d3abaeb-ab5d-440d-8b59-769e0e906cf6
+    type: playbook
+    task:
+      id: 1d3abaeb-ab5d-440d-8b59-769e0e906cf6
+      version: -1
+      name: Active Directory - Search for User Manager
+      description: Search for a user in Azure Active Directory (AAD) and Active Directory
+        (AD) giving preference to AAD.
+      playbookName: Active Directory - Search for User
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "132"
+    scriptarguments:
+      account_name:
+        complex:
+          root: Account
+          accessor: Manager
+          transformers:
+          - operator: RegexExtractAll
+            args:
+              error_if_no_match: {}
+              ignore_case: {}
+              multi_line: {}
+              period_matches_newline: {}
+              regex:
+                value:
+                  simple: CN=[A-Z]+
+              unpack_matches: {}
+          - operator: substring
+            args:
+              from:
+                value:
+                  simple: "3"
+              to:
+                value:
+                  simple: "9"
+      attributes:
+        simple: givenName
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 100
+    view: |-
+      {
+        "position": {
+          "x": 2732.5,
+          "y": 5095
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "100":
+    id: "100"
+    taskid: 702296a1-ea82-4451-85ff-e71d6974db3e
+    type: playbook
+    task:
+      id: 702296a1-ea82-4451-85ff-e71d6974db3e
+      version: -1
+      name: Active Directory - Search for User
+      description: Search for a user in Azure Active Directory (AAD) and Active Directory
+        (AD) giving preference to AAD.
+      playbookName: Active Directory - Search for User
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "73"
+    scriptarguments:
+      account_name:
+        simple: ${alert.username}
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 100
+    view: |-
+      {
+        "position": {
+          "x": 2845,
+          "y": 4045
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "101":
+    id: "101"
+    taskid: df1d8183-2f93-4353-8a49-9761b27b1267
+    type: playbook
+    task:
+      id: df1d8183-2f93-4353-8a49-9761b27b1267
+      version: -1
+      name: Active Directory - Search for User
+      description: Search for a user in Azure Active Directory (AAD) and Active Directory
+        (AD) giving preference to AAD.
+      playbookName: Active Directory - Search for User
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "70"
+      - "71"
+    scriptarguments:
+      account_name:
+        complex:
+          root: alert
+          accessor: username
+          transformers:
+          - operator: FirstArrayElement
+      attributes:
+        simple: UserPrincipalName,LastLogon,PwdLastSet,givenName
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 100
+    view: |-
+      {
+        "position": {
+          "x": 3172.5,
+          "y": 2645
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "106":
+    id: "106"
+    taskid: 6b9a964e-069d-4662-8f7d-6bf75a9625a1
+    type: playbook
+    task:
+      id: 6b9a964e-069d-4662-8f7d-6bf75a9625a1
+      version: -1
+      name: ServiceNow De-duplication & Log Ticket
+      description: Log a ticket in ServiceNow and de-duplicate where appropriate
+      playbookName: ServiceNow - Log Ticket
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "61"
+    scriptarguments:
+      ContactType:
+        simple: Event
+      InstanceName:
+        simple: SNOW - Dev - ampaudev.service-now.com
+      TicketBodyIsWorkNote:
+        simple: "false"
+      assignmentgroup:
+        complex:
+          root: ServiceNow.Group
+          accessor: Name
+          transformers:
+          - operator: uniq
+      caller:
+        simple: ${ServiceNow.User.ID}
+      category:
+        simple: Security
+      configuration_item:
+        complex:
+          root: ServiceNow.Record
+          accessor: ID
+          transformers:
+          - operator: SetIfEmpty
+            args:
+              applyIfEmpty:
+                value:
+                  simple: "true"
+              defaultValue: {}
+      correlationdisplay:
+        simple: ${correlationid}
+      correlationid:
+        simple: ${correlationid}
+      description:
+        simple: ${alert.details}
+      impact:
+        simple: "2"
+      shortdescription:
+        simple: ${alert.description}
+      subcategory:
+        simple: Technical Attack / Unauthorised Access
+      ticketbody:
+        simple: |-
+          <p>[code]</p>
+          <p>Hi,</p>
+          <p>Please note that an account may have been compromised.  Our investigation found this to be a false positive case. Please investigate further.  See details below:</p>
+          <p>&nbsp;</p>
+          <p><strong>Date/Time of Breach: ${alert.created}</strong></p>
+          <p><strong>Description:</strong> ${alert.details}</p>
+          <p><strong>User:</strong> ${alert.username.[0]}</p>
+          <p><strong>Host:</strong> ${alert.hostname}</p>
+          <p><strong>Source IP:</strong> ${alert.sourceip}</p>
+          <p><strong>Event ID:</strong> ${alert.eventid}</p>
+          <p><strong>Logon Type:</strong> ${alert.logontype}</p>
+          <p>&nbsp;</p>
+          <hr />
+          <p><strong>Login Attempts</strong></p>
+          <p>&nbsp;</p>
+          </hr>
+          ${FailedJSONToHTML}
+          <p>&nbsp;</p>
+          ${SuccessJSONToHTML}
+          <p>[/code]</p>
+      ticketbodyupdate:
+        simple: |-
+          <p>[code]</p>
+          <p>Alert Seen Again for the user ${alert.username}</p>
+          <p>Please note that an account may have been compromised.  Our investigation found this to be a false positive case. Please investigate further.  See details below:</p>
+          <p>&nbsp;</p>
+          <p><strong>Date/Time of Breach: ${alert.created}</strong></p>
+          <p><strong>Description:</strong> ${alert.details}</p>
+          <p><strong>User:</strong> ${alert.username.[0]}</p>
+          <p><strong>Host:</strong> ${alert.hostname}</p>
+          <p><strong>Source IP:</strong> ${alert.sourceip}</p>
+          <p><strong>Event ID:</strong> ${alert.eventid}</p>
+          <p><strong>Logon Type:</strong> ${alert.logontype}</p>
+          <p>&nbsp;</p>
+          <hr />
+          <p><strong>Login Attempts</strong></p>
+          <p>&nbsp;</p>
+          </hr>
+          ${FailedJSONToHTML}
+          <p>&nbsp;</p>
+          ${SuccessJSONToHTML}
+          <p>[/code]</p>
+      tickettype:
+        simple: incident
+      urgency:
+        simple: "2"
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 100
+    view: |-
+      {
+        "position": {
+          "x": 3275,
+          "y": 6115
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "116":
+    id: "116"
+    taskid: 36b145ba-fac5-40b2-852a-d106bade12e7
+    type: regular
+    task:
+      id: 36b145ba-fac5-40b2-852a-d106bade12e7
+      version: -1
+      name: Set Default Table
+      description: Set a value in context under the key you entered.
+      scriptName: Set
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "117"
+      - "143"
+    scriptarguments:
+      key:
+        simple: DefaultTable
+      stringify:
+        simple: "true"
+      value:
+        simple: '{"Logins":{"Successful & Unsuccessful Logins": "No results to show."}}'
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3060,
+          "y": 575
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "117":
+    id: "117"
+    taskid: 1f6a66b1-4d8c-4d79-8da9-a0aa37333266
+    type: regular
+    task:
+      id: 1f6a66b1-4d8c-4d79-8da9-a0aa37333266
+      version: -1
+      name: Format
+      description: Set a value in context under the key you entered.
+      scriptName: Set
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "123"
+    scriptarguments:
+      key:
+        simple: FinalJSON
+      value:
+        complex:
+          root: ${DefaultTable}
+          transformers:
+          - operator: ParseJSON
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 2760,
+          "y": 750
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "120":
+    id: "120"
+    taskid: ff8bff27-e58e-4a7e-8e38-e4d78e5976ae
+    type: regular
+    task:
+      id: ff8bff27-e58e-4a7e-8e38-e4d78e5976ae
+      version: -1
+      name: Delete Context
+      description: |-
+        Delete field from context.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: DeleteContext
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "72"
+    scriptarguments:
+      all:
+        simple: "yes"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3060,
+          "y": 225
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "121":
+    id: "121"
+    taskid: 13729b36-da7b-4073-83ef-55a6d9f9d73e
+    type: regular
+    task:
+      id: 13729b36-da7b-4073-83ef-55a6d9f9d73e
+      version: -1
+      name: Retrieve Failed Logins
+      description: |-
+        Execute an XQL query and retrieve results of an executed XQL query API. The command will be executed every 10 seconds until results are retrieved or until a timeout error is raised.
+        When more than 1000 results are retrieved, the command will return a compressed gzipped JSON format file,
+        unless the argument 'parse_result_file_to_context' is set to true and then the results will be extracted to the context.
+      script: '|||xdr-xql-generic-query'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "48"
+    scriptarguments:
+      query:
+        simple: "datamodel dataset = microsoft_windows_raw \n| filter  xdm.event.id
+          = \"4625\" and xdm.target.user.username = \"${alert.username.[0]}\"\n| alter
+          days_dif = timestamp_diff(current_time(), _time, \"DAY\")\n| filter days_dif
+          < 7\n| fields _time, days_dif, xdm.event.outcome as action, xdm.source.user.username
+          as user, xdm.source.host.hostname as src, xdm.source.ipv4 as src_ip, xdm.target.host.hostname
+          as dest, xdm.source.process.name as Caller_Process_Name, xdm.logon.type
+          as logon_type, xdm.event.id as eventcode , xdm.event.original_event_type
+          as event_type, xdm.target.user.username, xdm.event.outcome, xdm.event.outcome_reason,
+          xdm.target.process.name, xdm.target.application.name as appname, xdm.observer.product
+          as source_type\n| sort desc _time\n| limit 5"
+      query_name:
+        simple: FailedLogins
+      retry-count:
+        simple: "3"
+      retry-interval:
+        simple: "3"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3275,
+          "y": 1100
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "122":
+    id: "122"
+    taskid: 3049080a-5cfa-4f87-8787-e329a5f47e49
+    type: regular
+    task:
+      id: 3049080a-5cfa-4f87-8787-e329a5f47e49
+      version: -1
+      name: Retrieve Successful Logins
+      description: |-
+        Execute an XQL query and retrieve results of an executed XQL query API. The command will be executed every 10 seconds until results are retrieved or until a timeout error is raised.
+        When more than 1000 results are retrieved, the command will return a compressed gzipped JSON format file,
+        unless the argument 'parse_result_file_to_context' is set to true and then the results will be extracted to the context.
+      script: '|||xdr-xql-generic-query'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "124"
+    scriptarguments:
+      query:
+        simple: "config timeframe = 7d\n| datamodel dataset = microsoft_windows_raw
+          \n| filter xdm.event.id = \"4624\" and xdm.target.user.username = \"${alert.username.[0]}\"\n|
+          alter days_dif = timestamp_diff(current_time(), _time, \"DAY\")\n| filter
+          days_dif < 7\n| fields _time, days_dif, xdm.event.outcome as action, xdm.source.user.username
+          as user, xdm.source.host.hostname as src, xdm.source.ipv4 as src_ip, xdm.target.host.hostname
+          as dest, xdm.source.process.name as Caller_Process_Name, xdm.logon.type
+          as logon_type, xdm.event.id as eventcode , xdm.event.original_event_type
+          as event_type, xdm.target.user.username, xdm.event.outcome, xdm.event.outcome_reason,
+          xdm.target.process.name, xdm.target.application.name as appname, xdm.observer.product
+          as source_type\n| sort desc _time\n| limit 5"
+      query_name:
+        simple: SuccessfulLogins
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 2845,
+          "y": 1100
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "123":
+    id: "123"
+    taskid: c1e341ea-754f-4274-833d-7d525a2c253c
+    type: regular
+    task:
+      id: c1e341ea-754f-4274-833d-7d525a2c253c
+      version: -1
+      name: |
+        SetAlert
+      description: commands.local.cmd.set.alert.status
+      script: Builtin|||setAlertStatus
+      type: regular
+      iscommand: true
+      brand: Builtin
+    nexttasks:
+      '#none#':
+      - "122"
+      - "121"
+    scriptarguments:
+      status:
+        simple: Under Investigation
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3060,
+          "y": 925
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "124":
+    id: "124"
+    taskid: 1c55e579-c1d8-4766-84e6-242f75e8e1fb
+    type: regular
+    task:
+      id: 1c55e579-c1d8-4766-84e6-242f75e8e1fb
+      version: -1
+      name: Set Successful Logins
+      description: |-
+        Set a value in context under the key you entered. If no value is entered, the script doesn't do anything.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: SetAndHandleEmpty
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "136"
+    scriptarguments:
+      key:
+        simple: XQLSuccess
+      value:
+        complex:
+          root: PaloAltoNetworksXQL.GenericQuery
+          filters:
+          - - operator: isEqualString
+              left:
+                value:
+                  simple: PaloAltoNetworksXQL.GenericQuery.query_name
+                iscontext: true
+              right:
+                value:
+                  simple: SuccessfulLogins
+          accessor: results
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 2845,
+          "y": 1275
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "127":
+    id: "127"
+    taskid: c7e04cd1-8691-4ce4-87a6-b1c0c811a738
+    type: regular
+    task:
+      id: c7e04cd1-8691-4ce4-87a6-b1c0c811a738
+      version: -1
+      name: Prepare Logo HTML
+      description: Set a value in context under the key you entered.
+      scriptName: Set
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "128"
+    scriptarguments:
+      key:
+        simple: logo
+      value:
+        simple: <img width="400" height="87" src="data:image/png;base64,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"
+          />
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 2957.5,
+          "y": 4395
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "128":
+    id: "128"
+    taskid: 7bc73f2c-a0c7-4228-8e66-35fb22e7c302
+    type: regular
+    task:
+      id: 7bc73f2c-a0c7-4228-8e66-35fb22e7c302
+      version: -1
+      name: Prepare Data collection message body
+      description: |-
+        Set a value in context under the key you entered. If no value is entered, the script doesn't do anything.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: SetAndHandleEmpty
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "129"
+      - "13"
+    scriptarguments:
+      key:
+        simple: DataCollectionBody
+      value:
+        simple: "<p>Hi ${subplaybook-101.ActiveDirectory.Users.givenName.[0]},</p>\n\n<p>We
+          have recently identified multiple login attempts on your account that raise
+          security concerns. </p>\n<p> To verify your account activity and take necessary
+          steps to protect your information, please confirm if the observed behaviour
+          aligns with your expected activity. </p>\n<p>Please click the link below
+          to confirm: </p>\n<a href=${DataCollectionURL.url}>View observed behaviour</a>\n</p>\n<p>
+          For any questions or concerns, please do not hesitate to reach out to the
+          Cyber Defence Centre at : \n<a href= \"mailto=cdc_cdar@amp.com.au\">cdc_cdar@amp.com.au</a></p>\n<p>Please
+          visit our <a href=\"https://ampau.service-now.com/ampsp?id=sc_category&sys_id=27c8ce364f086e408baa46501310c7cd\">ServiceNow
+          Catalogue </a> for standard Cyber Security requests, or log a ticket to
+          report an <a href=\"https://ampau.service-now.com/ampsp?id=sc_cat_item&sys_id=7ed3638e1bdbf4100cf3ecac274bcbf2\">incident.</a>
+          </p>\n<p> Thank you for your prompt attention to this matter.</p>\n<strong>Cyber
+          Defence Centre</strong><br>\nQuay Quarter Tower, 50 Bridge Street, Sydney
+          NSW 2000<br>\n${logo}\n<br>"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 2957.5,
+          "y": 4570
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "129":
+    id: "129"
+    taskid: 8de777d7-7c6d-4fe6-83ca-a77ba76718d0
+    type: regular
+    task:
+      id: 8de777d7-7c6d-4fe6-83ca-a77ba76718d0
+      version: -1
+      name: Send custom Data Collection email
+      description: Send an email.
+      script: Mail Sender (New)|||send-mail
+      type: regular
+      iscommand: true
+      brand: Mail Sender (New)
+    nexttasks:
+      '#none#':
+      - "14"
+    scriptarguments:
+      cc:
+        simple: john_h_lee@amp.com.au
+      htmlBody:
+        complex:
+          root: DataCollectionBody
+          transformers:
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith: {}
+              toReplace:
+                value:
+                  simple: '['
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith: {}
+              toReplace:
+                value:
+                  simple: ']'
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith: {}
+              toReplace:
+                value:
+                  simple: \"
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith: {}
+              toReplace:
+                value:
+                  simple: '"'
+      subject:
+        simple: 'Urgent: Suspicious Activity Detected on Your Account'
+      to:
+        simple: lakhvinder_singh@amp.com.au
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 2517.5,
+          "y": 4745
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "130":
+    id: "130"
+    taskid: 377f9df8-3f6f-4901-88f9-f5870a31fb88
+    type: regular
+    task:
+      id: 377f9df8-3f6f-4901-88f9-f5870a31fb88
+      version: -1
+      name: Get Data Collection URL
+      description: |-
+        Generates the URL for a Data Collection Task into Context.  Can be used to get the url for tasks send via Email, Slack, or even if you select "By Task Only".
+
+        To generate links for specific users, add an array of users in the users argument.
+      scriptName: GetDataCollectionLink
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "19"
+    scriptarguments:
+      task_id:
+        simple: "13"
+      users:
+        simple: ${lists.MAIL_SENDER_ADDRESS}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3060,
+          "y": 2150
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "132":
+    id: "132"
+    taskid: 3744b06d-1241-49ad-8998-7d7bb0f592f0
+    type: regular
+    task:
+      id: 3744b06d-1241-49ad-8998-7d7bb0f592f0
+      version: -1
+      name: Get Data Collection URL
+      description: |-
+        Generates the URL for a Data Collection Task into Context.  Can be used to get the url for tasks send via Email, Slack, or even if you select "By Task Only".
+
+        To generate links for specific users, add an array of users in the users argument.
+      scriptName: GetDataCollectionLink
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "134"
+    scriptarguments:
+      task_id:
+        simple: "39"
+      users:
+        simple: ${lists.MAIL_SENDER_ADDRESS}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 2732.5,
+          "y": 5270
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "133":
+    id: "133"
+    taskid: 85305d4d-d2dc-4b5c-84e8-54d57058648f
+    type: regular
+    task:
+      id: 85305d4d-d2dc-4b5c-84e8-54d57058648f
+      version: -1
+      name: Send custom Data Collection email
+      description: Send an email.
+      script: Mail Sender (New)|||send-mail
+      type: regular
+      iscommand: true
+      brand: Mail Sender (New)
+    nexttasks:
+      '#none#':
+      - "33"
+    scriptarguments:
+      cc:
+        simple: john_h_lee@amp.com.au
+      htmlBody:
+        complex:
+          root: DataCollectionBodyManager
+          transformers:
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith: {}
+              toReplace:
+                value:
+                  simple: '['
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith: {}
+              toReplace:
+                value:
+                  simple: ']'
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith: {}
+              toReplace:
+                value:
+                  simple: \"
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith: {}
+              toReplace:
+                value:
+                  simple: '"'
+      subject:
+        simple: 'Urgent: Suspicious Activity Detected on ${subplaybook-101.ActiveDirectory.Users.givenName.[0]}''s
+          Account '
+      to:
+        simple: lakhvinder_singh@amp.com.au
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 2947.5,
+          "y": 5620
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "134":
+    id: "134"
+    taskid: 3524bc42-93e7-4278-8002-35dd4d5803f8
+    type: regular
+    task:
+      id: 3524bc42-93e7-4278-8002-35dd4d5803f8
+      version: -1
+      name: Prepare Data collection message body
+      description: |-
+        Set a value in context under the key you entered. If no value is entered, the script doesn't do anything.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: SetAndHandleEmpty
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "39"
+      - "133"
+    scriptarguments:
+      key:
+        simple: DataCollectionBodyManager
+      value:
+        simple: "<p>Dear ${subplaybook-99.Account.givenName.[0]},</p>\n\n<p>Please
+          be advised that we have detected multiple unusual login attempts on  ${subplaybook-101.ActiveDirectory.Users.givenName.[0]}'s
+          account account, indicating a potential security risk. </p>\n<p> To investigate
+          this matter further, please confirm with  ${subplaybook-101.ActiveDirectory.Users.givenName.[0]}
+          if the recent account activity aligns with their expected usage.</p>\n<p>Please
+          review the detailed activity log here: </p>\n<a href=${DataCollectionURL.url}>Observed
+          Behaviour</a>\n</p>\n<p> For any questions or concerns, please do not hesitate
+          to reach out to the Cyber Defence Centre at : \n<a href= \"mailto=cdc_cdar@amp.com.au\">cdc_cdar@amp.com.au</a></p>\n<p>Please
+          visit our <a href=\"https://ampau.service-now.com/ampsp?id=sc_category&sys_id=27c8ce364f086e408baa46501310c7cd\">ServiceNow
+          Catalogue </a> for standard Cyber Security requests, or log a ticket to
+          report an <a href=\"https://ampau.service-now.com/ampsp?id=sc_cat_item&sys_id=7ed3638e1bdbf4100cf3ecac274bcbf2\">incident.</a>
+          </p>\n<p> Thank you for your prompt attention to this matter.</p>\n<strong>Cyber
+          Defence Centre</strong><br>\nQuay Quarter Tower, 50 Bridge Street, Sydney
+          NSW 2000<br>\n${logo}\n<br>"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 2732.5,
+          "y": 5445
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "135":
+    id: "135"
+    taskid: 25eb0017-7964-4ebb-8af2-9ead8ae7651c
+    type: regular
+    task:
+      id: 25eb0017-7964-4ebb-8af2-9ead8ae7651c
+      version: -1
+      name: Failed Logins to HTML
+      description: |-
+        Convert a simple JSON object to HTML table.
+
+        Conditional format example
+        [
+            {
+                "type": "standard",
+                "key": "PositiveDetections",
+                "operator": ">",
+                "operand": 1,
+                "background-color": "red",
+                "color": "white"
+            },
+            {
+                "type": "standard",
+                "key": "PositiveDetections",
+                "operator": "<",
+                "operand": 1,
+                 "background-color": "blue",
+                "color": "green"
+            },
+            {
+                "type": "range",
+                "key": "EntityB",
+                "range": "0,32",
+                "color": "white",
+                "background-color": "blue"
+            },
+            {
+                "type": "standard",
+                "key": "EntityB",
+                "operator": "==",
+                "operand": 34,
+                "color": "white",
+                "background-color": "black"
+            },
+            {
+                "type": "standard",
+                "key": "EntityAType",
+                "operator": "==",
+                "operand": "IP",
+                "background-color": "blue",
+                "color": "green"
+            }
+        ]
+      scriptName: JSONToHTMLTableV3
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "137"
+    scriptarguments:
+      keys:
+        simple: _time,source_type
+      output_key:
+        simple: FailedJSONToHTML
+      table_heading:
+        simple: Failed Login Attempts
+      value:
+        complex:
+          root: PaloAltoNetworksXQL.GenericQuery
+          filters:
+          - - operator: isEqualString
+              left:
+                value:
+                  simple: PaloAltoNetworksXQL.GenericQuery.query_name
+                iscontext: true
+              right:
+                value:
+                  simple: FailedLogins
+          - - operator: isNotEmpty
+              left:
+                value:
+                  simple: PaloAltoNetworksXQL.GenericQuery.results
+                iscontext: true
+          accessor: results
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3275,
+          "y": 1450
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "136":
+    id: "136"
+    taskid: e375c54e-fa51-4678-80f5-844e3bd55387
+    type: regular
+    task:
+      id: e375c54e-fa51-4678-80f5-844e3bd55387
+      version: -1
+      name: Successful Logins to HTML
+      description: |-
+        Convert a simple JSON object to HTML table.
+
+        Conditional format example
+        [
+            {
+                "type": "standard",
+                "key": "PositiveDetections",
+                "operator": ">",
+                "operand": 1,
+                "background-color": "red",
+                "color": "white"
+            },
+            {
+                "type": "standard",
+                "key": "PositiveDetections",
+                "operator": "<",
+                "operand": 1,
+                 "background-color": "blue",
+                "color": "green"
+            },
+            {
+                "type": "range",
+                "key": "EntityB",
+                "range": "0,32",
+                "color": "white",
+                "background-color": "blue"
+            },
+            {
+                "type": "standard",
+                "key": "EntityB",
+                "operator": "==",
+                "operand": 34,
+                "color": "white",
+                "background-color": "black"
+            },
+            {
+                "type": "standard",
+                "key": "EntityAType",
+                "operator": "==",
+                "operand": "IP",
+                "background-color": "blue",
+                "color": "green"
+            }
+        ]
+      scriptName: JSONToHTMLTableV3
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "137"
+    scriptarguments:
+      keys:
+        simple: _time,source_type
+      output_key:
+        simple: SuccessJSONToHTML
+      table_heading:
+        simple: Successful Login Attempts
+      value:
+        complex:
+          root: PaloAltoNetworksXQL.GenericQuery
+          filters:
+          - - operator: isEqualString
+              left:
+                value:
+                  simple: PaloAltoNetworksXQL.GenericQuery.query_name
+                iscontext: true
+              right:
+                value:
+                  simple: SuccessfulLogins
+          - - operator: isNotEmpty
+              left:
+                value:
+                  simple: PaloAltoNetworksXQL.GenericQuery.results
+                iscontext: true
+          accessor: results
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 2845,
+          "y": 1450
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "137":
+    id: "137"
+    taskid: c1527250-f2ce-4657-8e28-88440a65d61b
+    type: regular
+    task:
+      id: c1527250-f2ce-4657-8e28-88440a65d61b
+      version: -1
+      name: Extract hostname
+      description: |-
+        Set a value in context under the key you entered. If no value is entered, the script doesn't do anything.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: SetAndHandleEmpty
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "139"
+      - "138"
+    scriptarguments:
+      key:
+        simple: ExtractedHostname
+      value:
+        complex:
+          root: alert
+          accessor: hostname
+          transformers:
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith: {}
+              toReplace:
+                value:
+                  simple: '['
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith: {}
+              toReplace:
+                value:
+                  simple: ']'
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith: {}
+              toReplace:
+                value:
+                  simple: '"'
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3060,
+          "y": 1625
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "138":
+    id: "138"
+    taskid: ccdb3b61-1455-4c77-8ae0-c5c2dc4134dc
+    type: playbook
+    task:
+      id: ccdb3b61-1455-4c77-8ae0-c5c2dc4134dc
+      version: -1
+      name: ServiceNow - Get Caller
+      playbookName: ServiceNow - Get Caller
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "46"
+    scriptarguments:
+      user_name:
+        simple: ${lists.SERVICENOW_CALLER_NAME}
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 100
+    view: |-
+      {
+        "position": {
+          "x": 3275,
+          "y": 1800
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "139":
+    id: "139"
+    taskid: 57aa5a29-6379-4987-857c-f7a0d40015b1
+    type: playbook
+    task:
+      id: 57aa5a29-6379-4987-857c-f7a0d40015b1
+      version: -1
+      name: ServiceNow - Get Configuration Item v2
+      description: Search for a configuration item in ServiceNow
+      playbookName: ServiceNow - Get Configuration Item v2
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "46"
+    scriptarguments:
+      query:
+        simple: name=${ExtractedHostname}
+      query_user:
+        simple: "no"
+      table_name:
+        simple: cmdb_ci
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 100
+    view: |-
+      {
+        "position": {
+          "x": 2845,
+          "y": 1800
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "142":
+    id: "142"
+    taskid: ef915a98-c2f4-4e4d-8074-4f0f0d66660e
+    type: regular
+    task:
+      id: ef915a98-c2f4-4e4d-8074-4f0f0d66660e
+      version: -1
+      name: Build Search Alert Query
+      scriptName: BuildSearchAlertQuery
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "53"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3060,
+          "y": 3170
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "143":
+    id: "143"
+    taskid: e255711e-2ac9-4ee3-8cac-9e6cf0b432e1
+    type: regular
+    task:
+      id: e255711e-2ac9-4ee3-8cac-9e6cf0b432e1
+      version: -1
+      name: ConverUTCtoAEST
+      description: |-
+        Set a value in context under the key you entered. If no value is entered, the script doesn't do anything.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: SetAndHandleEmpty
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "123"
+    scriptarguments:
+      key:
+        simple: ConvertUTC
+      value:
+        complex:
+          root: alert
+          accessor: created
+          transformers:
+          - operator: ConvertTimezoneFromUTC
+            args:
+              format:
+                value:
+                  simple: '%Y-%m-%dT%H:%M:%SZ'
+              timezone:
+                value:
+                  simple: Australia/Sydney
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith:
+                value:
+                  simple: ' '
+              toReplace:
+                value:
+                  simple: T
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith: {}
+              toReplace:
+                value:
+                  simple: Z
+          - operator: toString
+            args:
+              format:
+                value:
+                  simple: 02 Jan 06 15:04:02
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 3275,
+          "y": 750
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: |-
+  {
+    "linkLabelsPosition": {
+      "14_99_#default#": 0.9,
+      "29_34_yes": 0.21,
+      "29_35_#default#": 0.27,
+      "33_35_#default#": 0.53,
+      "52_12_#default#": 0.25,
+      "73_127_yes": 0.61,
+      "73_35_#default#": 0.51,
+      "75_12_#default#": 0.35
+    },
+    "paper": {
+      "dimensions": {
+        "height": 6465,
+        "width": 1250,
+        "x": 2517.5,
+        "y": 65
+      }
+    }
+  }
+inputs:
+- key: lastpwdreset_lookback
+  value:
+    simple: "129600"
+  required: false
+  description: ""
+  playbookInputQuery: null
+- key: lastsignin_lookback
+  value:
+    simple: "172800"
+  required: false
+  description: ""
+  playbookInputQuery: null
+outputs: []
+dirtyInputs: true

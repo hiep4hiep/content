@@ -1,0 +1,19 @@
+alter
+    log_timestamp = parse_timestamp("%d %b %Y %H:%M:%S",arrayindex(regextract(_raw_log,"(\d{2} \w{3} \d{4} \d{2}\:\d{2}\:\d{2}),\d{3}\s\|"),0))
+| alter
+    _time = if(log_timestamp != null, log_timestamp, _insert_time),
+    log_level = arrayindex(regextract(trim(arrayindex(split(_raw_log,"||"),1)),"\[(.+)\]"),0),
+    web_container = arrayindex(regextract(_raw_log,"WebContainer \: ([^|\s]+)"),0),
+    source_ip = arrayindex(regextract(_raw_log,"SOURCE_IP=([^|\s]+)"),0),
+    class = arrayindex(regextract(_raw_log,"Class=([^|\s]+)"),0),
+    tam_id = arrayindex(regextract(_raw_log,"tam-id\: ([^|\s]+)"),0),
+    session_id = arrayindex(regextract(_raw_log,"session-id\: ([^|\s]+)"),0),
+    x_request_id = arrayindex(regextract(_raw_log,"X-Request-ID\: ([^|\s]+)"),0),
+    signature = trim(arrayindex(split(_raw_log,"||"),8)),               
+    user = arrayindex(regextract(_raw_log,"for\:\s(.+?)\s"),0), 
+    user2 = arrayindex(regextract(_raw_log,"uid:\s(.*?)\s"),0), 
+    description = arrayindex(regextract(_raw_log,"Description \: ([^|\s]+)"),0),
+    device_id = arrayindex(regextract(_raw_log,"DeviceId \: ([^|\s]+)"),0)
+| alter
+     action = if(passwordReset="true", "modified"),
+     status = if(passwordReset="true", "modified")

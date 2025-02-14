@@ -1,0 +1,3 @@
+comp values(log_timestamp) as log_timestamp,values(log_level) as log_level,values(class) as class,values(status) as status
+
+|alter log_timestamp = arrayindex(log_timestamp,0),log_level = arrayindex(log_level,0),class = arrayindex(class,0),status = arrayindex(status,0)

@@ -1,0 +1,47 @@
+Field Name	Parse statement	Description	Sample value from Log
+array	split(_raw_log,"\",\"")	
+allfields	regexcapture(_raw_log,"\"(?P<UserAuditId>.*?)\"\,\"(?P<UserID>.*?)\"\,\"(?P<AuditType>.*?)\"\,\"(?P<IPAddress>.*?)\"\,\"(?P<Success>.*?)\"\,\"(?P<EffectiveDate>.*?)\"\,\"(?P<Message>.*?)\"\,\"(?P<ClientInformation>.*?)\"\,\"(?P<UserTokenId>.*?)\"\,\"(?P<SecurityTokenGUID>.*?)\"\,\"(?P<NorthDeviceToken>.*?)\"\,\"(?P<DeviceInformation>.*?)\"")	
+AuditType	coalesce(arrayindex(array,2),allfields -> AuditType)	
+ClientInformation	arrayindex(array,7)	
+EffectiveDate	arrayindex(array,5)	
+IPAddress	arrayindex(array,3)	
+Message	arrayindex(array,6)	
+NorthDeviceToken	arrayindex(array,10)	
+Success	arrayindex(array,4)	
+UserAuditId	arrayindex(array,0)	
+UserAuditId	replace(UserAuditId,"\"","")	
+DeviceInformation	allfields -> DeviceInformation	
+DeviceInformation	replace(DeviceInformation,"\"","")	
+UserID	arrayindex(array,1)	
+app	if(host contains "AMPWMPASP01V", "north", host contains "AMPWMPASPF01V", "north-nonprod", 1=1, "north"),	
+date	arrayindex(array,5)	
+date_zone	"Local"	
+reason	arrayindex(array,6)	
+result	arrayindex(array,6)	
+result_id	arrayindex(array,4)	
+signature	arrayindex(array,2)	
+src	IPAddress	
+src_ip	IPAddress	
+src_user	arrayindex(array,1)	
+src_user_name	arrayindex(array,1)	
+user	arrayindex(array,1)	
+vendor_product	"north	
+date_round_to_second	arrayindex(split(date,"."),0	
+date_hour	extract_time(parse_timestamp("%Y-%m-%d %H:%M:%S",date_round_to_second,"Australia/Sydney"),"HOUR")	
+date_mday	extract_time(parse_timestamp("%Y-%m-%d %H:%M:%S",date_round_to_second,"Australia/Sydney"),"DAY")	
+date_minute	extract_time(parse_timestamp("%Y-%m-%d %H:%M:%S",date_round_to_second,"Australia/Sydney"),"MINUTE")	
+date_month	extract_time(parse_timestamp("%Y-%m-%d %H:%M:%S",date_round_to_second,"Australia/Sydney"),"MONTH")	
+date_second	extract_time(parse_timestamp("%Y-%m-%d %H:%M:%S",date_round_to_second,"Australia/Sydney"),"SECOND")	
+date_wday	extract_time(parse_timestamp("%Y-%m-%d %H:%M:%S",date_round_to_second,"Australia/Sydney"),"DAYOFYEAR")	
+date_year	extract_time(parse_timestamp("%Y-%m-%d %H:%M:%S",date_round_to_second,"Australia/Sydney"),"YEAR"	
+action	if(Success="Y" AND AuditType="XSS", "allowed", Success="N" AND AuditType="XSS", "blocked", AuditType="ADV2FACAM", "updated", AuditType="ADV2FACCP", "updated", AuditType="CUSTOM", "updated", AuditType="PASSRESET", "modified", Success="Y", "success", Success="N", "failure", 1=1, "error"),	
+reason	Message	
+dest	if(IPAddress contains "10.", "10.168.177.42", 1=1, "3.104.85.133")	
+status	if(Success = "Y","success","failure"),	
+tag_action	if(Success = "Y","success","failure"),	
+change_type	if(AuditType = "PASSRESET","Password",""),	
+command	if(AuditType = "PASSRESET","PASSRESET","")	
+cvcv	arrayindex(regextract(ClientInformation , "cvcv=(\d+)"),0)	
+smf	arrayindex(regextract(ClientInformation , "smf=(\d+)"),0),	
+UserAgent	if(UserAgent!=null, UserAgent, ClientInformation)	
+UserHostAddress	if(ClientInformation contains "UserHostAddress",arrayindex(regextract(ClientInformation , "UserHostAddress: (\d+.\d+.\d+.\d+)"),0),"")	

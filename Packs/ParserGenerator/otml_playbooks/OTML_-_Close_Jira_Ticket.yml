@@ -1,0 +1,232 @@
+id: 8469d818-d592-4058-84ad-c5d3c06f01e2
+version: 10
+vcShouldKeepItemLegacyProdMachine: false
+name: OTML - Close Jira Ticket
+starttaskid: "0"
+tasks:
+  "0":
+    id: "0"
+    taskid: 6fe04e4e-d613-4e08-8cdc-ee4542c4de48
+    type: start
+    task:
+      id: 6fe04e4e-d613-4e08-8cdc-ee4542c4de48
+      version: -1
+      name: ""
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "2"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 50
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "1":
+    id: "1"
+    taskid: 24a5a1e1-0e4c-454b-8a26-bb5d519e1bfd
+    type: regular
+    task:
+      id: 24a5a1e1-0e4c-454b-8a26-bb5d519e1bfd
+      version: -1
+      name: Search Jira Ticket
+      description: Queries Jira issues.
+      script: '|||jira-issue-query'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "3"
+    scriptarguments:
+      query:
+        simple: description ~ "${incident_id}"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 370
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "2":
+    id: "2"
+    taskid: a89be086-f113-40a6-863a-028942e653f0
+    type: regular
+    task:
+      id: a89be086-f113-40a6-863a-028942e653f0
+      version: -1
+      name: Get Incident ID
+      description: Set a value in context under the key you entered.
+      scriptName: Set
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "1"
+    scriptarguments:
+      key:
+        simple: incident_id
+      value:
+        complex:
+          root: alert
+          accessor: parentXDRIncident
+          transformers:
+          - operator: split
+            args:
+              delimiter:
+                value:
+                  simple: '-'
+          - operator: LastArrayElement
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 195
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "3":
+    id: "3"
+    taskid: a5e935f1-cbed-4414-86d0-b6dc012f1cae
+    type: regular
+    task:
+      id: a5e935f1-cbed-4414-86d0-b6dc012f1cae
+      version: -1
+      name: Close Jira Ticket
+      description: Modifies an issue in Jira. If the status or transition fields are
+        given, then the other supplied fields should appear on the transition screen.
+      script: '|||jira-edit-issue'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#error#':
+      - "5"
+      '#none#':
+      - "4"
+    scriptarguments:
+      issue_id:
+        simple: ${Ticket.Id}
+      labels:
+        simple: XSIAM_Closed_Ticket
+      status:
+        simple: Closed
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: errorPath
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 545
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "4":
+    id: "4"
+    taskid: c1c675f2-4d1c-46e1-840a-a1b3e95b8aa6
+    type: title
+    task:
+      id: c1c675f2-4d1c-46e1-840a-a1b3e95b8aa6
+      version: -1
+      name: End
+      description: commands.local.cmd.close.inv
+      type: title
+      iscommand: false
+      brand: Builtin
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 865
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "5":
+    id: "5"
+    taskid: 20caab1e-87b3-4852-839a-241d7f6a7ba7
+    type: title
+    task:
+      id: 20caab1e-87b3-4852-839a-241d7f6a7ba7
+      version: -1
+      name: On Error
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "4"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 162.5,
+          "y": 720
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: |-
+  {
+    "linkLabelsPosition": {},
+    "paper": {
+      "dimensions": {
+        "height": 880,
+        "width": 492.5,
+        "x": 50,
+        "y": 50
+      }
+    }
+  }
+inputs: []
+outputs: []
+quiet: true

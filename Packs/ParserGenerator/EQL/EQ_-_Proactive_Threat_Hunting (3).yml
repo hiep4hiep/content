@@ -1,0 +1,1796 @@
+id: 2893d7e8-11bb-4894-8800-2c9f97164068
+version: 154
+vcShouldKeepItemLegacyProdMachine: false
+name: EQ - Proactive Threat Hunting
+starttaskid: "0"
+tasks:
+  "0":
+    id: "0"
+    taskid: ff335ee2-d49f-43f2-87e7-0fa637d60a4f
+    type: start
+    task:
+      id: ff335ee2-d49f-43f2-87e7-0fa637d60a4f
+      version: -1
+      name: ""
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "58"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 377.5,
+          "y": 50
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "2":
+    id: "2"
+    taskid: 549d00c2-638d-4d77-8826-4d34bfc9a54c
+    type: regular
+    task:
+      id: 549d00c2-638d-4d77-8826-4d34bfc9a54c
+      version: -1
+      name: Send Email Notification about Report Processing Completion
+      description: commands.server.mail.sendmail
+      script: mail-sender|||send-mail
+      type: regular
+      iscommand: true
+      brand: mail-sender
+    nexttasks:
+      '#none#':
+      - "3"
+    scriptarguments:
+      body:
+        simple: |-
+          Report:
+          ${inputs.report.CustomFields.publications.link}
+
+          IOC List:
+          ${IOCTable}
+      subject:
+        simple: No IOC Hit - ${inputs.report.CustomFields.publications.link}
+      to:
+        simple: sean.mcclintock@energyq.com.au
+      using:
+        simple: Built-in Mail Sender
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 172.5,
+          "y": 4830
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "3":
+    id: "3"
+    taskid: 2dac84a9-67a6-4190-882c-489f67a7789d
+    type: title
+    task:
+      id: 2dac84a9-67a6-4190-882c-489f67a7789d
+      version: -1
+      name: End
+      type: title
+      iscommand: false
+      brand: ""
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 60,
+          "y": 5005
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "6":
+    id: "6"
+    taskid: 9cb7ab94-1c9d-4b18-867a-0da52475a358
+    type: regular
+    task:
+      id: 9cb7ab94-1c9d-4b18-867a-0da52475a358
+      version: -1
+      name: Get the Content of Publication link
+      description: Sends a HTTP request with advanced capabilities
+      scriptName: HttpV2
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#error#':
+      - "3"
+      '#none#':
+      - "11"
+    scriptarguments:
+      filename:
+        simple: http-file
+      method:
+        simple: GET
+      url:
+        simple: ${inputs.report.CustomFields.publications.link}
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: errorPath
+    view: |-
+      {
+        "position": {
+          "x": 377.5,
+          "y": 690
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "7":
+    id: "7"
+    taskid: eaeb9749-f900-4329-8e28-e8a20783ba9d
+    type: regular
+    task:
+      id: eaeb9749-f900-4329-8e28-e8a20783ba9d
+      version: -1
+      name: Extract Indicator from Publication Link
+      description: commands.local.cmd.extract.indicators
+      script: Builtin|||extractIndicators
+      type: regular
+      iscommand: true
+      brand: Builtin
+    nexttasks:
+      '#none#':
+      - "74"
+    scriptarguments:
+      text:
+        simple: ${HttpRequest.Response.Body}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 1215
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 2
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "11":
+    id: "11"
+    taskid: 1e2bb4f6-280d-467e-8ba2-c50b1545b754
+    type: regular
+    task:
+      id: 1e2bb4f6-280d-467e-8ba2-c50b1545b754
+      version: -1
+      name: Extract the Stix URL from HTML body
+      scriptName: ExtractStixURLfromHTMLbody
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "13"
+      - "46"
+    scriptarguments:
+      htmlBody:
+        simple: ${HttpRequest.Response.Body}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 490,
+          "y": 865
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "13":
+    id: "13"
+    taskid: 89a47722-ee11-4498-8f96-6a68b9819bf2
+    type: condition
+    task:
+      id: 89a47722-ee11-4498-8f96-6a68b9819bf2
+      version: -1
+      name: Check if STIX File found
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "7"
+      "yes":
+      - "16"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isNotEmpty
+          left:
+            value:
+              simple: stixURLs
+            iscontext: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 1040
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "16":
+    id: "16"
+    taskid: 081a0576-074d-45b6-8e4b-e6b059d57cc4
+    type: playbook
+    task:
+      id: 081a0576-074d-45b6-8e4b-e6b059d57cc4
+      version: -1
+      name: EQ - Extract Indicators from STIX URL
+      playbookName: EQ - Extract Indicators from STIX URL
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "74"
+    scriptarguments:
+      Stix_URL:
+        simple: ${stixURLs}
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 100
+      forEach: true
+    view: |-
+      {
+        "position": {
+          "x": 480,
+          "y": 1215
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "22":
+    id: "22"
+    taskid: 709c06ae-3118-4e8a-8fe5-feb0ae6834ae
+    type: title
+    task:
+      id: 709c06ae-3118-4e8a-8fe5-feb0ae6834ae
+      version: -1
+      name: Information Extracted from Publication Link
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "6"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 377.5,
+          "y": 545
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "24":
+    id: "24"
+    taskid: bf92aabc-bab7-4e7d-8dc4-0cace1599009
+    type: regular
+    task:
+      id: bf92aabc-bab7-4e7d-8dc4-0cace1599009
+      version: -1
+      name: 'Enrich Domain '
+      description: commands.local.cmd.enrich.indicators
+      script: Builtin|||enrichIndicators
+      type: regular
+      iscommand: true
+      brand: Builtin
+    nexttasks:
+      '#none#':
+      - "75"
+    scriptarguments:
+      indicatorsValues:
+        simple: ${ExtractedIndicators.Domain}
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 1565
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "30":
+    id: "30"
+    taskid: 414ece22-b335-4101-8ac9-13111dc03c79
+    type: title
+    task:
+      id: 414ece22-b335-4101-8ac9-13111dc03c79
+      version: -1
+      name: Threat Hunting Automation
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "59"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 490,
+          "y": 2790
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "31":
+    id: "31"
+    taskid: d6237454-a3d0-41c6-89de-25a74f17e4b9
+    type: playbook
+    task:
+      id: d6237454-a3d0-41c6-89de-25a74f17e4b9
+      version: -1
+      name: EQ - Threat Hunting - Generic
+      description: "This playbook enables threat hunting for IOCs in your enterprise.
+        It currently supports the following integrations: \n- Splunk\n- Qradar\n-
+        Pan-os \n- Cortex Data Lake \n- Autofocus\n- Microsoft 365 Defender"
+      playbookName: EQ - Threat Hunting - Generic
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "32"
+    scriptarguments:
+      Domain:
+        complex:
+          root: ExtractedIndicators.Domain
+          filters:
+          - - operator: isExists
+              left:
+                value:
+                  simple: ExtractedIndicators.Domain
+                iscontext: true
+          transformers:
+          - operator: ArrayToCSV
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith:
+                value:
+                  simple: '","'
+              toReplace:
+                value:
+                  simple: ','
+          - operator: concat
+            args:
+              prefix:
+                value:
+                  simple: '"'
+              suffix:
+                value:
+                  simple: '"'
+      IPAddress:
+        complex:
+          root: ExtractedIndicators.IP
+          filters:
+          - - operator: isExists
+              left:
+                value:
+                  simple: ExtractedIndicators.IP
+                iscontext: true
+          transformers:
+          - operator: ArrayToCSV
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith:
+                value:
+                  simple: '","'
+              toReplace:
+                value:
+                  simple: ','
+          - operator: concat
+            args:
+              prefix:
+                value:
+                  simple: '"'
+              suffix:
+                value:
+                  simple: '"'
+      InternalRange:
+        complex:
+          root: lists
+          accessor: PrivateIPs
+          transformers:
+          - operator: RegexExtractAll
+            args:
+              error_if_no_match: {}
+              ignore_case: {}
+              multi_line: {}
+              period_matches_newline: {}
+              regex:
+                value:
+                  simple: (\b(?:\d{1,3}\.){3}\d{1,3}\b/\d{1,2})
+              unpack_matches: {}
+          - operator: join
+            args:
+              separator:
+                value:
+                  simple: ','
+      MD5:
+        complex:
+          root: ExtractedIndicators.File
+          filters:
+          - - operator: stringHasLength
+              left:
+                value:
+                  simple: ExtractedIndicators.File
+                iscontext: true
+              right:
+                value:
+                  simple: "32"
+          transformers:
+          - operator: ArrayToCSV
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith:
+                value:
+                  simple: '","'
+              toReplace:
+                value:
+                  simple: ','
+          - operator: concat
+            args:
+              prefix:
+                value:
+                  simple: '"'
+              suffix:
+                value:
+                  simple: '"'
+      SHA1:
+        complex:
+          root: ExtractedIndicators.File
+          filters:
+          - - operator: stringHasLength
+              left:
+                value:
+                  simple: ExtractedIndicators.File
+                iscontext: true
+              right:
+                value:
+                  simple: "40"
+          transformers:
+          - operator: ArrayToCSV
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith:
+                value:
+                  simple: '","'
+              toReplace:
+                value:
+                  simple: ','
+          - operator: concat
+            args:
+              prefix:
+                value:
+                  simple: '"'
+              suffix:
+                value:
+                  simple: '"'
+      SHA256:
+        complex:
+          root: ExtractedIndicators.File
+          filters:
+          - - operator: stringHasLength
+              left:
+                value:
+                  simple: ExtractedIndicators.File
+                iscontext: true
+              right:
+                value:
+                  simple: "64"
+          transformers:
+          - operator: ArrayToCSV
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith:
+                value:
+                  simple: '","'
+              toReplace:
+                value:
+                  simple: ','
+          - operator: concat
+            args:
+              prefix:
+                value:
+                  simple: '"'
+              suffix:
+                value:
+                  simple: '"'
+      SplunkEarliestTime:
+        simple: -7d@d
+      SplunkLatestTime:
+        simple: now
+      URL:
+        complex:
+          root: ExtractedIndicators.URL
+          filters:
+          - - operator: isExists
+              left:
+                value:
+                  simple: ExtractedIndicators.URL
+                iscontext: true
+          transformers:
+          - operator: ArrayToCSV
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith:
+                value:
+                  simple: '","'
+              toReplace:
+                value:
+                  simple: ','
+          - operator: concat
+            args:
+              prefix:
+                value:
+                  simple: '"'
+              suffix:
+                value:
+                  simple: '"'
+    separatecontext: true
+    continueonerrortype: ""
+    loop:
+      iscommand: false
+      exitCondition: ""
+      wait: 1
+      max: 100
+    view: |-
+      {
+        "position": {
+          "x": 602.5,
+          "y": 3110
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "32":
+    id: "32"
+    taskid: 48ccae46-5c5d-4fcf-8366-6f756f438f80
+    type: condition
+    task:
+      id: 48ccae46-5c5d-4fcf-8366-6f756f438f80
+      version: -1
+      name: Check if IOCs Hit
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "33"
+      "yes":
+      - "34"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isNotEmpty
+          left:
+            value:
+              simple: Splunk.Result
+            iscontext: true
+        - operator: isNotEmpty
+          left:
+            value:
+              simple: MicrosoftATP.Hunt.Result
+            iscontext: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 602.5,
+          "y": 3285
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "33":
+    id: "33"
+    taskid: 27e50e37-1f10-44f9-804b-220eb680ae0d
+    type: title
+    task:
+      id: 27e50e37-1f10-44f9-804b-220eb680ae0d
+      version: -1
+      name: No Hit Actions
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "72"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 172.5,
+          "y": 3795
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "34":
+    id: "34"
+    taskid: 305088c0-ebcd-4af7-8584-7c6186c32bc3
+    type: title
+    task:
+      id: 305088c0-ebcd-4af7-8584-7c6186c32bc3
+      version: -1
+      name: IOC Hit Actions
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "71"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 817.5,
+          "y": 3460
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "37":
+    id: "37"
+    taskid: ceef6917-3347-4428-8535-e65416f17a6a
+    type: regular
+    task:
+      id: ceef6917-3347-4428-8535-e65416f17a6a
+      version: -1
+      name: Add Tags for EDL Export
+      description: commands.local.cmd.set.indicator
+      script: Builtin|||setIndicator
+      type: regular
+      iscommand: true
+      brand: Builtin
+    nexttasks:
+      '#none#':
+      - "69"
+    scriptarguments:
+      tags:
+        simple: EDL
+      value:
+        simple: ${inputs.report.value}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 817.5,
+          "y": 3780
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "43":
+    id: "43"
+    taskid: 80338f4d-54af-40f6-875a-821b0a664a13
+    type: regular
+    task:
+      id: 80338f4d-54af-40f6-875a-821b0a664a13
+      version: -1
+      name: Send Email Notification about Report Processing Completion
+      description: commands.server.mail.sendmail
+      script: mail-sender|||send-mail
+      type: regular
+      iscommand: true
+      brand: mail-sender
+    nexttasks:
+      '#none#':
+      - "3"
+    scriptarguments:
+      htmlBody:
+        simple: |-
+          <h2>Report:</h2>
+          ${inputs.report.CustomFields.publications.link}
+          <br>
+          <h2>IOC Hit Incident link:</h2>
+          ${demistoUrls.server}/Custom/caseinfoid/${CreatedIncidentID}
+      subject:
+        simple: IOC Hit - Report - ${inputs.report.value}
+      to:
+        simple: cyberoperations@energyq.com.au
+      using:
+        simple: Built-in Mail Sender
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 817.5,
+          "y": 4830
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "44":
+    id: "44"
+    taskid: 3d83c9db-8d89-4d41-8b72-fa5eaa217270
+    type: regular
+    task:
+      id: 3d83c9db-8d89-4d41-8b72-fa5eaa217270
+      version: -1
+      name: Set tags to Report Indicator Processed
+      description: commands.local.cmd.set.indicator
+      script: Builtin|||setIndicator
+      type: regular
+      iscommand: true
+      brand: Builtin
+    nexttasks:
+      '#none#':
+      - "43"
+    scriptarguments:
+      tags:
+        simple: FeedProcessed
+      value:
+        simple: ${inputs.report.value}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 817.5,
+          "y": 4655
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "46":
+    id: "46"
+    taskid: c7cb1ab1-4da1-48be-82f8-b1b0fad9a603
+    type: regular
+    task:
+      id: c7cb1ab1-4da1-48be-82f8-b1b0fad9a603
+      version: -1
+      name: Extract Command Line
+      description: Extracts regex data from the provided text. The script support
+        groups and looping.
+      scriptName: MatchRegexV2
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "30"
+    scriptarguments:
+      contextKey:
+        simple: command_line
+      data:
+        simple: ${HttpRequest.Response.Body}
+      regex:
+        simple: (?:cmd|powershell|wscript|cscript)\.exe\s*.*?(?:$|\.\s|$")
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 817.5,
+          "y": 2615
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "47":
+    id: "47"
+    taskid: a50c585a-71ff-437e-8670-0e8529fc0803
+    type: regular
+    task:
+      id: a50c585a-71ff-437e-8670-0e8529fc0803
+      version: -1
+      name: Create XSOAR Incident
+      description: commands.local.cmd.create.inc
+      script: Builtin|||createNewIncident
+      type: regular
+      iscommand: true
+      brand: Builtin
+    nexttasks:
+      '#none#':
+      - "66"
+    scriptarguments:
+      customqueryresults:
+        simple: |-
+          Splunk Results:
+          ${Splunk.Result}
+
+          MDE Results:
+          ${MicrosoftATP.Hunt.Result}
+      details:
+        simple: |-
+          List of Indicator in the report ${inputs.report.value}:
+
+          ${ExtractedIndicators}
+      name:
+        simple: 'Threat Hunting - IOC Hit - Report: ${inputs.report.value}'
+      renderedhtml:
+        simple: ${HTMLResult}
+      type:
+        simple: Threat Hunting
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 817.5,
+          "y": 4305
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "49":
+    id: "49"
+    taskid: 49361696-9875-42b6-8556-02da1f677791
+    type: regular
+    task:
+      id: 49361696-9875-42b6-8556-02da1f677791
+      version: -1
+      name: Set tags to Report Indicator Processed
+      description: commands.local.cmd.set.indicator
+      script: Builtin|||setIndicator
+      type: regular
+      iscommand: true
+      brand: Builtin
+    nexttasks:
+      '#none#':
+      - "3"
+    scriptarguments:
+      tags:
+        simple: FeedProcessed
+      value:
+        simple: ${inputs.report.value}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 172.5,
+          "y": 4655
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "57":
+    id: "57"
+    taskid: d550629e-b14e-4cdb-8a69-5f023947a6cc
+    type: regular
+    task:
+      id: d550629e-b14e-4cdb-8a69-5f023947a6cc
+      version: -1
+      name: Print info
+      description: Prints text to war room (Markdown supported)
+      scriptName: Print
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "22"
+    scriptarguments:
+      value:
+        simple: 'Now process: ${inputs.report.value}'
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 377.5,
+          "y": 370
+        }
+      }
+    note: true
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 2
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "58":
+    id: "58"
+    taskid: 8a4126b8-794b-44e3-8622-ac21968d6938
+    type: regular
+    task:
+      id: 8a4126b8-794b-44e3-8622-ac21968d6938
+      version: -1
+      name: Delete Context
+      description: |-
+        Delete field from context.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: DeleteContext
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "57"
+    scriptarguments:
+      all:
+        simple: "yes"
+      subplaybook:
+        simple: "yes"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 377.5,
+          "y": 195
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 2
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "59":
+    id: "59"
+    taskid: 97d27d74-edbb-4ddd-8d1b-dbd2f64de6e9
+    type: condition
+    task:
+      id: 97d27d74-edbb-4ddd-8d1b-dbd2f64de6e9
+      version: -1
+      name: If there is any indicator to hunt
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "3"
+      "yes":
+      - "31"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isNotEmpty
+          left:
+            value:
+              simple: ExtractedIndicators
+            iscontext: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 490,
+          "y": 2935
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "62":
+    id: "62"
+    taskid: a7251e43-63f0-4049-87af-9b9f706e78ad
+    type: regular
+    task:
+      id: a7251e43-63f0-4049-87af-9b9f706e78ad
+      version: -1
+      name: 'Enrich File '
+      description: commands.local.cmd.enrich.indicators
+      script: Builtin|||enrichIndicators
+      type: regular
+      iscommand: true
+      brand: Builtin
+    nexttasks:
+      '#none#':
+      - "76"
+    scriptarguments:
+      indicatorsValues:
+        simple: ${ExtractedIndicators.File}
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 1915
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "63":
+    id: "63"
+    taskid: a85e8a55-27c3-45d5-82ef-fbb1efd4b887
+    type: regular
+    task:
+      id: a85e8a55-27c3-45d5-82ef-fbb1efd4b887
+      version: -1
+      name: 'Enrich URL '
+      description: commands.local.cmd.enrich.indicators
+      script: Builtin|||enrichIndicators
+      type: regular
+      iscommand: true
+      brand: Builtin
+    nexttasks:
+      '#none#':
+      - "77"
+    scriptarguments:
+      indicatorsValues:
+        simple: ${ExtractedIndicators.URL}
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 2265
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "64":
+    id: "64"
+    taskid: 65d79b98-bb32-49b7-8d2c-6095a58395bc
+    type: regular
+    task:
+      id: 65d79b98-bb32-49b7-8d2c-6095a58395bc
+      version: -1
+      name: 'Enrich IP '
+      description: commands.local.cmd.enrich.indicators
+      script: Builtin|||enrichIndicators
+      type: regular
+      iscommand: true
+      brand: Builtin
+    nexttasks:
+      '#none#':
+      - "30"
+    scriptarguments:
+      indicatorsValues:
+        simple: ${ExtractedIndicators.IP}
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 2615
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "65":
+    id: "65"
+    taskid: 38baf6d5-275b-4e1c-83e5-f62980546bc1
+    type: regular
+    task:
+      id: 38baf6d5-275b-4e1c-83e5-f62980546bc1
+      version: -1
+      name: Create XSOAR Incident
+      description: commands.local.cmd.create.inc
+      script: Builtin|||createNewIncident
+      type: regular
+      iscommand: true
+      brand: Builtin
+    nexttasks:
+      '#none#':
+      - "67"
+    scriptarguments:
+      details:
+        simple: |-
+          List of Indicator in the report ${inputs.report.value}:
+
+          ${ExtractedIndicators}
+      name:
+        simple: 'Threat Hunting - No IOC Hit - Report: ${inputs.report.value}'
+      renderedhtml:
+        simple: |-
+          IOC In the report:
+          ${IOCTable}
+      type:
+        simple: Threat Hunting
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 172.5,
+          "y": 4130
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "66":
+    id: "66"
+    taskid: 28e17166-26cb-472a-8d2b-7f1fc843bfbd
+    type: regular
+    task:
+      id: 28e17166-26cb-472a-8d2b-7f1fc843bfbd
+      version: -1
+      name: Link Incident
+      description: commands.local.cmd.linkIncidents
+      script: Builtin|||linkIncidents
+      type: regular
+      iscommand: true
+      brand: Builtin
+    nexttasks:
+      '#none#':
+      - "44"
+    scriptarguments:
+      incidentId:
+        simple: ${incident.id}
+      linkedIncidentIDs:
+        simple: ${CreatedIncidentID}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 817.5,
+          "y": 4480
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "67":
+    id: "67"
+    taskid: 83e8a929-0aee-4f0e-82a2-39b7fb39cee7
+    type: regular
+    task:
+      id: 83e8a929-0aee-4f0e-82a2-39b7fb39cee7
+      version: -1
+      name: Link Incident
+      description: commands.local.cmd.linkIncidents
+      script: Builtin|||linkIncidents
+      type: regular
+      iscommand: true
+      brand: Builtin
+    nexttasks:
+      '#none#':
+      - "73"
+    scriptarguments:
+      incidentId:
+        simple: ${incident.id}
+      linkedIncidentIDs:
+        simple: ${CreatedIncidentID}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 172.5,
+          "y": 4305
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "68":
+    id: "68"
+    taskid: 92fd3dd9-7004-4588-8823-9bdf0ceb9d07
+    type: regular
+    task:
+      id: 92fd3dd9-7004-4588-8823-9bdf0ceb9d07
+      version: -1
+      name: HTML Result
+      description: |-
+        Set a value in context under the key you entered. If no value is entered, the script doesn't do anything.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: SetAndHandleEmpty
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "47"
+    scriptarguments:
+      key:
+        simple: HTMLResult
+      value:
+        complex:
+          root: HTMLTable
+          transformers:
+          - operator: join
+            args:
+              separator:
+                value:
+                  simple: <br>
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 1032.5,
+          "y": 4130
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "69":
+    id: "69"
+    taskid: 5862ac19-b504-4d04-81e2-69e541c958d2
+    type: condition
+    task:
+      id: 5862ac19-b504-4d04-81e2-69e541c958d2
+      version: -1
+      name: If multiple result
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "70"
+      "yes":
+      - "68"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isExists
+          left:
+            value:
+              simple: HTMLTable.[0]
+            iscontext: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 817.5,
+          "y": 3955
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "70":
+    id: "70"
+    taskid: accd80c2-f5f9-4bdf-8ec9-a92e4e46c1d0
+    type: regular
+    task:
+      id: accd80c2-f5f9-4bdf-8ec9-a92e4e46c1d0
+      version: -1
+      name: HTML Result
+      description: |-
+        Set a value in context under the key you entered. If no value is entered, the script doesn't do anything.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: SetAndHandleEmpty
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "47"
+    scriptarguments:
+      key:
+        simple: HTMLResult
+      value:
+        simple: ${HTMLTable}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 602.5,
+          "y": 4130
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "71":
+    id: "71"
+    taskid: 6d21935b-6a19-4c53-818e-356c5f494626
+    type: regular
+    task:
+      id: 6d21935b-6a19-4c53-818e-356c5f494626
+      version: -1
+      name: Generate IOC Table
+      description: Converts a given array to an HTML table
+      scriptName: ConvertTableToHTML
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "37"
+    scriptarguments:
+      context_key:
+        simple: IOCTable
+      table:
+        simple: ${ExtractedIndicators}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 817.5,
+          "y": 3605
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "72":
+    id: "72"
+    taskid: 7252345b-03df-4c55-8ec0-fbe49d2febfc
+    type: regular
+    task:
+      id: 7252345b-03df-4c55-8ec0-fbe49d2febfc
+      version: -1
+      name: Generate IOC Table
+      description: Converts a given array to an HTML table
+      scriptName: ConvertTableToHTML
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "65"
+    scriptarguments:
+      context_key:
+        simple: IOCTable
+      table:
+        simple: ${ExtractedIndicators}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 172.5,
+          "y": 3955
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "73":
+    id: "73"
+    taskid: be354cb1-1305-4d7e-8acc-e44e9a3840d4
+    type: regular
+    task:
+      id: be354cb1-1305-4d7e-8acc-e44e9a3840d4
+      version: -1
+      name: Close Incident
+      description: commands.local.cmd.close.inv
+      script: Builtin|||closeInvestigation
+      type: regular
+      iscommand: true
+      brand: Builtin
+    nexttasks:
+      '#none#':
+      - "49"
+    scriptarguments:
+      id:
+        simple: ${CreatedIncidentID}
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 172.5,
+          "y": 4480
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "74":
+    id: "74"
+    taskid: f50dec71-c942-4a64-85b8-93b34419cb6f
+    type: regular
+    task:
+      id: f50dec71-c942-4a64-85b8-93b34419cb6f
+      version: -1
+      name: Create Indicator
+      description: Create indicators to the Threat Intel database only if they are
+        not registered. All submitted indicators will be associated with the parent
+        incident. When using the script with many indicators, or when the Threat Intel
+        Management database is highly populated, this script may have low performance
+        issue.
+      scriptName: CreateNewIndicatorsOnly
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "24"
+    scriptarguments:
+      indicator_values:
+        simple: ${ExtractedIndicators.Domain}
+      type:
+        simple: Domain
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 1390
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 2
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "75":
+    id: "75"
+    taskid: 2731b3dd-2402-4da5-899a-ba897f141164
+    type: regular
+    task:
+      id: 2731b3dd-2402-4da5-899a-ba897f141164
+      version: -1
+      name: Create Indicator
+      description: Create indicators to the Threat Intel database only if they are
+        not registered. All submitted indicators will be associated with the parent
+        incident. When using the script with many indicators, or when the Threat Intel
+        Management database is highly populated, this script may have low performance
+        issue.
+      scriptName: CreateNewIndicatorsOnly
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "62"
+    scriptarguments:
+      indicator_values:
+        simple: ${ExtractedIndicators.File}
+      type:
+        simple: File
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 1740
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 2
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "76":
+    id: "76"
+    taskid: bebad4f7-7899-474b-84d3-6d79cba1b40c
+    type: regular
+    task:
+      id: bebad4f7-7899-474b-84d3-6d79cba1b40c
+      version: -1
+      name: Create Indicator
+      description: Create indicators to the Threat Intel database only if they are
+        not registered. All submitted indicators will be associated with the parent
+        incident. When using the script with many indicators, or when the Threat Intel
+        Management database is highly populated, this script may have low performance
+        issue.
+      scriptName: CreateNewIndicatorsOnly
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "63"
+    scriptarguments:
+      indicator_values:
+        simple: ${ExtractedIndicators.URL}
+      type:
+        simple: URL
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 2090
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 2
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "77":
+    id: "77"
+    taskid: 94585d97-0248-48d2-8b5d-1c2628e30f3c
+    type: regular
+    task:
+      id: 94585d97-0248-48d2-8b5d-1c2628e30f3c
+      version: -1
+      name: Create Indicator
+      description: Create indicators to the Threat Intel database only if they are
+        not registered. All submitted indicators will be associated with the parent
+        incident. When using the script with many indicators, or when the Threat Intel
+        Management database is highly populated, this script may have low performance
+        issue.
+      scriptName: CreateNewIndicatorsOnly
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "64"
+    scriptarguments:
+      indicator_values:
+        simple: ${ExtractedIndicators.IP}
+      type:
+        simple: IP
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 2440
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 2
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: |-
+  {
+    "linkLabelsPosition": {
+      "13_16_yes": 0.35
+    },
+    "paper": {
+      "dimensions": {
+        "height": 5020,
+        "width": 1362.5,
+        "x": 50,
+        "y": 50
+      }
+    }
+  }
+inputs:
+- key: report
+  value: {}
+  required: false
+  description: ""
+  playbookInputQuery: null
+- key: ""
+  value: {}
+  required: false
+  description: ""
+  playbookInputQuery:
+    query: 'value:"Threat Hunting - IOC Hit - Report: Iranian cyber actors’ brute
+      force and credential access activity compromises critical infrastructure"'
+    queryEntity: indicators
+    results: null
+    daterange:
+      fromdate: 0001-01-01T00:00:00Z
+      todate: 0001-01-01T00:00:00Z
+      period:
+        by: ""
+        byto: ""
+        byfrom: ""
+        tovalue: null
+        fromvalue: null
+        field: ""
+      fromdatelicenseval: 0001-01-01T00:00:00Z
+    runFromLastJobTime: false
+inputSections:
+- inputs:
+  - report
+  name: General (Inputs group)
+  description: Generic group for inputs
+outputSections:
+- outputs: []
+  name: General (Outputs group)
+  description: Generic group for outputs
+outputs: []
+dirtyInputs: true

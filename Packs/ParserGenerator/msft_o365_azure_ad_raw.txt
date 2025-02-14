@@ -1,0 +1,29 @@
+
+[INGEST: vendor=msft, product=o365_azure_ad, target_dataset=msft_o365_azure_ad_raw, no_hit=keep]
+| alter Actor_0 = arrayindex(arrayfilter(json_extract_array(to_json_string(Actor),"$"),"@element" contains "0"),0) -> ID
+| alter Actor_5 = arrayindex(arrayfilter(json_extract_array(to_json_string(Actor),"$"),"@element" contains "5"),0) -> ID
+| alter Target_0 = arrayindex(arrayfilter(json_extract_array(to_json_string(Target),"$"),"@element" contains "0"),0) -> ID
+| alter DeviceProperties_Id = arrayindex(arrayfilter(json_extract_array(to_json_string(DeviceProperties),"$"),"@element" contains "Id"),0) -> Value
+| alter DeviceProperties_DisplayName = arrayindex(arrayfilter(json_extract_array(to_json_string(DeviceProperties),"$"),"@element" contains "DisplayName"),0) -> Value
+| alter DeviceProperties_OS = arrayindex(arrayfilter(json_extract_array(to_json_string(DeviceProperties),"$"),"@element" contains "OS"),0) -> Value
+| alter DeviceProperties_BrowserType = arrayindex(arrayfilter(json_extract_array(to_json_string(DeviceProperties),"$"),"@element" contains "BrowserType"),0) -> Value
+| alter DeviceProperties_IsCompliant = arrayindex(arrayfilter(json_extract_array(to_json_string(DeviceProperties),"$"),"@element" contains "IsCompliant"),0) -> Value
+| alter DeviceProperties_IsCompliantAndManaged = arrayindex(arrayfilter(json_extract_array(to_json_string(DeviceProperties),"$"),"@element" contains "IsCompliantAndManaged"),0) -> Value
+| alter DeviceProperties_TrustType = arrayindex(arrayfilter(json_extract_array(to_json_string(DeviceProperties),"$"),"@element" contains "TrustType"),0) -> Value
+| alter DeviceProperties_SessionId = arrayindex(arrayfilter(json_extract_array(to_json_string(DeviceProperties),"$"),"@element" contains "SessionId"),0) -> Value
+| alter ExtendedProperties_ResultStatusDetail = arrayindex(arrayfilter(json_extract_array(to_json_string(ExtendedProperties),"$"),"@element" contains "ResultStatusDetail"),0) -> Value
+| alter ExtendedProperties_UserAgent = arrayindex(arrayfilter(json_extract_array(to_json_string(ExtendedProperties),"$"),"@element" contains "UserAgent"),0) -> Value
+| alter ExtendedProperties_UserAuthenticationMethod = arrayindex(arrayfilter(json_extract_array(to_json_string(ExtendedProperties),"$"),"@element" contains "UserAuthenticationMethod"),0) -> Value
+| alter ExtendedProperties_RequestType = arrayindex(arrayfilter(json_extract_array(to_json_string(ExtendedProperties),"$"),"@element" contains "RequestType"),0) -> Value
+| alter ExtendedProperties_KeepMeSignedIn = arrayindex(arrayfilter(json_extract_array(to_json_string(ExtendedProperties),"$"),"@element" contains "KeepMeSignedIn"),0) -> Value
+| alter Actor_1 = arrayindex(arrayfilter(json_extract_array(to_json_string(Actor),"$"),"@element" contains "1"),0) -> ID
+| alter Actor_2 = arrayindex(arrayfilter(json_extract_array(to_json_string(Actor),"$"),"@element" contains "2"),0) -> ID
+| alter Target_2 = arrayindex(arrayfilter(json_extract_array(to_json_string(Target),"$"),"@element" contains "2"),0) -> ID
+| alter Target_1 = arrayindex(arrayfilter(json_extract_array(to_json_string(Target),"$"),"@element" contains "1"),0) -> ID
+| alter Target_4 = arrayindex(arrayfilter(json_extract_array(to_json_string(Target),"$"),"@element" contains "4"),0) -> ID
+| alter ExtendedProperties_additionalDetails = arrayindex(arrayfilter(json_extract_array(to_json_string(ExtendedProperties),"$"),"@element" contains "additionalDetails"),0) -> Value
+| alter ExtendedProperties_extendedAuditEventCategory = arrayindex(arrayfilter(json_extract_array(to_json_string(ExtendedProperties),"$"),"@element" contains "extendedAuditEventCategory"),0) -> Value
+| alter Actor_3 = arrayindex(arrayfilter(json_extract_array(to_json_string(Actor),"$"),"@element" contains "3"),0) -> ID
+| alter Target_5 = arrayindex(arrayfilter(json_extract_array(to_json_string(Target),"$"),"@element" contains "5"),0) -> ID
+| alter Target_3 = arrayindex(arrayfilter(json_extract_array(to_json_string(Target),"$"),"@element" contains "3"),0) -> ID
+

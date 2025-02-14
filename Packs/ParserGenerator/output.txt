@@ -1,0 +1,47 @@
+
+alter
+    event_year = format_timestamp("%Y", _insert_time)
+| alter    
+    log_timestamp = parse_timestamp("%Y %b %d %H:%M:%S",concat(event_year," ",arrayindex(regextract(_raw_log,"(\w{3}\ \d{2}\ \d{2}\:\d{2}\:\d{2})"),0)),"Australia/Sydney")
+| alter
+    _time = if(log_timestamp != null, log_timestamp, _insert_time),
+    cefHostName = arrayindex(split(_raw_log," "),3),
+    cefVersion = arrayindex(regextract(_raw_log,"CEF: (\d)"),0),
+    cefDeviceVendor = arrayindex(split(_raw_log,"|"),1),
+    cefDeviceProduct = arrayindex(split(_raw_log,"|"),2),
+    cefDeviceVersion = arrayindex(split(_raw_log,"|"),3),
+    cefDeviceEventClassId = arrayindex(split(_raw_log,"|"),4),
+    cefName = arrayindex(split(_raw_log,"|"),5),
+    cefSeverity = arrayindex(split(_raw_log,"|"),6),
+
+
+   rule_uid = arrayindex(regextract(_raw_log,"rule_uid=([^\s=]+)"),0),
+   dst = arrayindex(regextract(_raw_log,"dst=([^\s=]+)"),0),
+   act = arrayindex(regextract(_raw_log,"act=([^\s=]+)"),0),
+   product = arrayindex(regextract(_raw_log,"product=(.+) service_id="),0),
+   log_delay = arrayindex(regextract(_raw_log,"log_delay=([^\s=]+)"),0),
+   rt = arrayindex(regextract(_raw_log,"rt=([^\s=]+)"),0),
+   logid = arrayindex(regextract(_raw_log,"logid=([^\s=]+)"),0),
+   originsicname = arrayindex(regextract(_raw_log,"originsicname=([^\s=]+)"),0),
+   deviceDirection = arrayindex(regextract(_raw_log,"deviceDirection=([^\s=]+)"),0),
+   conn_direction = arrayindex(regextract(_raw_log,"conn_direction=([^\s=]+)"),0),
+   sequencenum = arrayindex(regextract(_raw_log,"sequencenum=([^\s=]+)"),0),
+   layer_uuid = arrayindex(regextract(_raw_log,"layer_uuid=([^\s=]+)"),0),
+   cs2 = arrayindex(regextract(_raw_log,"cs2=([^\s=]+)"),0),
+   loguid = arrayindex(regextract(_raw_log,"loguid=([^\s=]+)"),0),
+   rule_action = arrayindex(regextract(_raw_log,"rule_action=([^\s=]+)"),0),
+   parent_rule = arrayindex(regextract(_raw_log,"parent_rule=([^\s=]+)"),0),
+   cs2Label = arrayindex(regextract(_raw_log,"cs2Label=([^\s=]+)"),0),
+   match_id = arrayindex(regextract(_raw_log,"match_id=([^\s=]+)"),0),
+   version = arrayindex(regextract(_raw_log,"version=([^\s=]+)"),0),
+   service_id = arrayindex(regextract(_raw_log,"service_id=([^\s=]+)"),0),
+   msg = arrayindex(regextract(_raw_log,"msg=(.+) rt="),0),
+   ifname = arrayindex(regextract(_raw_log,"ifname=([^\s=]+)"),0),
+   origin = arrayindex(regextract(_raw_log,"origin=([^\s=]+)"),0),
+   proto = arrayindex(regextract(_raw_log,"proto=([^\s=]+)"),0),
+   inzone = arrayindex(regextract(_raw_log,"inzone=([^\s=]+)"),0),
+   spt = arrayindex(regextract(_raw_log,"spt=([^\s=]+)"),0),
+   src = arrayindex(regextract(_raw_log,"src=([^\s=]+)"),0),
+   outzone = arrayindex(regextract(_raw_log,"outzone=([^\s=]+)"),0),
+   dpt = arrayindex(regextract(_raw_log,"dpt=([^\s=]+)"),0),
+   layer_name = arrayindex(regextract(_raw_log,"layer_name=([^\s=]+)"),0),

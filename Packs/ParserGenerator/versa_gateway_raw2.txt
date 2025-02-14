@@ -1,0 +1,28 @@
+
+filter _raw_log contains "dnsfTunnelLog"
+| call common_field_versa_gateway
+| alter 
+
+  applianceName = arrayindex(regextract(_raw_log,"applianceName=([^,]+)"),0),
+  tenantName = arrayindex(regextract(_raw_log,"tenantName=([^,]+)"),0),
+  flowId = arrayindex(regextract(_raw_log,"flowId=([^,]+)"),0),
+  flowCookie = arrayindex(regextract(_raw_log,"flowCookie=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  vsnId = arrayindex(regextract(_raw_log,"vsnId=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  dnsfProfileName = arrayindex(regextract(_raw_log,"dnsfProfileName=([^,]+)"),0),
+  dnsfAction = arrayindex(regextract(_raw_log,"dnsfAction=([^,]+)"),0),
+  dnsfDetectedDomain = arrayindex(regextract(_raw_log,"dnsfDetectedDomain=([^,]+)"),0),
+  dnsfDetectionType = arrayindex(regextract(_raw_log,"dnsfDetectionType=([^,]+)"),0),
+  dnsfDetectionReason = arrayindex(regextract(_raw_log,"dnsfDetectionReason=([^,]+)"),0),
+  dnsfDetectionTime = arrayindex(regextract(_raw_log,"dnsfDetectionTime=([^,]+)"),0),
+  dnsfTunnelClientIp = arrayindex(regextract(_raw_log,"dnsfTunnelClientIp=([^,]+)"),0),
+  sourceIPv4Address = arrayindex(regextract(_raw_log,"sourceIPv4Address=([^,]+)"),0),
+  destinationIPv4Address = arrayindex(regextract(_raw_log,"destinationIPv4Address=([^,]+)"),0),
+  sourceTransportPort = arrayindex(regextract(_raw_log,"sourceTransportPort=([^,]+)"),0),
+  destinationTransportPort = arrayindex(regextract(_raw_log,"destinationTransportPort=([^,]+)"),0),
+  protocolIdentifier = arrayindex(regextract(_raw_log,"protocolIdentifier=([^,]+)"),0),
+  fromUser = arrayindex(regextract(_raw_log,"fromUser=([^,]+)"),0),
+  threatSeverity = arrayindex(regextract(_raw_log,"threatSeverity=([^,]+)"),0),
+  threatType = arrayindex(regextract(_raw_log,"threatType=([^,]+)"),0),
+  dnsfSinkHoleIp = arrayindex(regextract(_raw_log,"dnsfSinkHoleIp=([^,]+)"),0),

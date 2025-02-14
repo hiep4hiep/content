@@ -1,0 +1,24 @@
+Field Name	Parse statement	Description	Sample value from Log
+Level	to_json_string(_raw_log) -> Level	
+dd_service	to_json_string(_raw_log) -> Properties.dd_service	
+dd_version	to_json_string(_raw_log) -> Properties.dd_version	
+dd_env	to_json_string(_raw_log) -> Properties.dd_env	
+Method	to_json_string(_raw_log) -> Properties.Method	
+HttpMethod	to_json_string(_raw_log) ->Properties.HttpMethod	
+Duration	to_json_string(_raw_log) -> Properties.Duration	
+HttpPath	to_json_string(_raw_log) ->Properties.HttpPath	
+HttpStatusCode	to_json_string(_raw_log) -> Properties.HttpStatusCode	
+MessageBody	to_json_string(_raw_log) ->Properties.MessageBody	
+MessageBodyType	to_json_string(_raw_log) ->Properties.MessageBodyType	
+Uri	to_json_string(_raw_log) ->Properties.Uri	
+LogEntryCorrelationId	to_json_string(_raw_log) ->Properties.LogEntryCorrelationI	
+message_json	to_json_string(replace(MessageBody,"\\"","\"")	
+expiry_date	arrayindex(regextract(_raw_log ,"ExpiryDate\\\\\\\":\\\\\\\"(.*?)\\\\\\\""),0)	
+login_date	arrayindex(regextract(_raw_log ,"LoginDate\\\\\\\":\\\\\\\"(.*?)\\\\\\\""),0)	
+login_entity_ref	arrayindex(regextract(_raw_log ,"LoginEntityRef\\\\\\\":(.*?),"),0)	
+c	arrayindex(regextract(_raw_log ,"SessionKey\\\\\\\":(.*?),"),0)	
+session_ref	arrayindex(regextract(_raw_log ,"SessionRef\\\\\\\":(.*?),"),0)	
+team_ref	arrayindex(regextract(_raw_log ,"TeamRef\\\\\\\":(.*?),"),0)	
+user_id	arrayindex(regextract(_raw_log ,"UserId\\\\\\\":\\\\\\\"(.*?)\\\\\\\""),0)	
+user	arrayindex(regextract(_raw_log ,"UserName\\\\\\\":\\\\\\\"(.*?)\\\\\\\""),0)	
+dvc	arrayindex(regextract(_raw_log ,"WorkstationId\\\\\\\":\\\\\\\"(.*?)\\\\\\\""),0	

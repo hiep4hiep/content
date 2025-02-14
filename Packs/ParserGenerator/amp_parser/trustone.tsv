@@ -1,0 +1,23 @@
+Field Name	Parse statement	Description	Sample value from Log
+src_user	arrayindex(regextract(_raw_log, "^([\w]+)\s"),0)	
+vendor_status	arrayindex(regextract(_raw_log, "(Successful|Failed)\slogin"),0)	
+vendor_action	arrayindex(regextract(_raw_log, "\s(login)\s"),0)	
+user_id	arrayindex(regextract(_raw_log, "[Successful|Failed]\slogin\s([^\s]+)"),0)	
+logon_time	arrayindex(regextract(_raw_log, "(\d\d\/\d\d\/\d\d\d\d\s\d\d:\d\d:\d\d)$"),0)	
+authentication_method	"password"	
+authentication_service	"LDAP"	
+action	""	
+app	""	
+status	""	
+host	_collector_hostnam	
+action	if(vendor_status = "Successful", "success", action)	
+app	if(host contains "amptruasp", "Trust1-Prod", app)	
+status	if(vendor_status = "Successful", "200", status)	
+logon_time_object	parse_timestamp("%d/%m/%Y %H:%M:%S", format_string("%s", logon_time)	
+action	if(vendor_status = "Failed", "failure", action)	
+app	if(host contains "amptruasd", "Trust1-NonProd", app)	
+status	if(vendor_status = "Failed", "400", status)	
+logon_time_epoch	to_epoch(logon_time_object	
+action	if(action = "", "error", action)	
+app	if(app = "", "Trust1", app)	
+status	if(status = "", "401", status)	

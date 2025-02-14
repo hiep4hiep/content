@@ -1,0 +1,107 @@
+id: f5ad15dc-8191-4c20-8cd2-03343480df31
+version: 6
+vcShouldKeepItemLegacyProdMachine: false
+name: OTML - Block Sender
+tags:
+- prod
+starttaskid: "0"
+tasks:
+  "0":
+    id: "0"
+    taskid: 6ce40f42-82ec-4594-8f22-7b2c1ceb322c
+    type: start
+    task:
+      id: 6ce40f42-82ec-4594-8f22-7b2c1ceb322c
+      version: -1
+      name: ""
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "1"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 50
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "1":
+    id: "1"
+    taskid: 99097e52-7491-420c-8754-8f6b6b2fa038
+    type: regular
+    task:
+      id: 99097e52-7491-420c-8754-8f6b6b2fa038
+      version: -1
+      name: Block sender in Mimecast
+      description: Create a Blocked Sender Policy.
+      script: '|||mimecast-create-block-sender-policy'
+      type: regular
+      iscommand: true
+      brand: ""
+    scriptarguments:
+      description:
+        simple: Block ${inputs.email_address} due to Phishing email
+      fromType:
+        simple: individual_email_address
+      fromValue:
+        simple: ${inputs.email_address}
+      option:
+        simple: block_sender
+      toType:
+        simple: everyone
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 195
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: |-
+  {
+    "linkLabelsPosition": {},
+    "paper": {
+      "dimensions": {
+        "height": 240,
+        "width": 380,
+        "x": 50,
+        "y": 50
+      }
+    }
+  }
+inputs:
+- key: email_address
+  value: {}
+  required: false
+  description: ""
+  playbookInputQuery: null
+inputSections:
+- inputs:
+  - email_address
+  name: General (Inputs group)
+  description: Generic group for inputs
+outputSections:
+- outputs: []
+  name: General (Outputs group)
+  description: Generic group for outputs
+outputs: []
+quiet: true
+dirtyInputs: true

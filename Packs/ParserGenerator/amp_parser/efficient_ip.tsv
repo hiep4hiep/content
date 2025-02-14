@@ -1,0 +1,15 @@
+Field Name	Parse statement	Description	Sample value from Log
+event_year	format_timestamp("%Y", _insert_time	
+event_time	parse_timestamp("%b %d %H:%M:%S %Y", concat(arrayindex(regextract(_raw_log,"(\w{3} [\s\d]\d \d{2}\:\d{2}\:\d{2})"),0), " ",event_year), "Australia/Sydney"	
+_time	if(event_time != null, event_time, _insert_time)	
+event_type	arrayindex(regextract(_raw_log,"(\w+)\[\d+\]"),0)	
+event_message	arrayindex(regextract(_raw_log,"\]\: (.+)"),0)	
+dhcp_message_type	arrayindex(regextract(_raw_log,"\[\d+\]\: (DHCP\w+)"),0)	
+source_mac	arrayindex(regextract(_raw_log,"[om] ([0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2})"),0)	
+source_ip_relay	arrayindex(regextract(_raw_log,"via (\d+\.\d+\.\d+\.\d+)"),0)	
+dhcp_message	arrayindex(regextract(_raw_log,"via \d+\.\d+\.\d+\.\d+\: (.+)"),0)	
+source_ip_request	arrayindex(regextract(_raw_log,"[omn] (\d+\.\d+\.\d+\.\d+)"),0)	
+source_device	arrayindex(regextract(_raw_log,"\((.+)\)"),0)	
+source_ip_ack	arrayindex(regextract(_raw_log,"on (\d+\.\d+\.\d+\.\d+)"),0)	
+dns_source_ip	arrayindex(regextract(_raw_log,"(\d+\.\d+\.\d+\.\d+)#"),0)	
+dns_source_port	arrayindex(regextract(_raw_log,"#(\d+)"),0)	

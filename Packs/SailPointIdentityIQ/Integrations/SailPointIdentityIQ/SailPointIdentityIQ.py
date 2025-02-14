@@ -659,6 +659,51 @@ def create_alert(client: Client, display_name: str, attributes=None):
     return client.send_request(IIQ_SCIM_ALERTS_EXT, "POST", None, data)
 
 
+def get_headers(base_url: str, client_id: str, client_secret: str, grant_type: str, verify: bool):
+    """
+    Create header with OAuth 2.0 authentication information.
+
+    :type base_url: ``str``
+    :param base_url: Base URL of the IdentityIQ tenant.
+
+    :type client_id: ``str``
+    :param client_id: Client Id for OAuth 2.0.
+
+    :type client_secret: ``str``
+    :param client_secret: Client Secret for OAuth 2.0.
+
+    :type grant_type: ``str``
+    :param grant_type: Grant Type for OAuth 2.0. Defaulted to 'client_credentials' if not provided.
+
+    :return: Header with OAuth 2.0 information if client_id & client_secret are provided, else None.
+    This will return None if the client_id & client_secret were not valid (authorized).
+    """
+    if base_url is None or client_id is None or client_secret is None:
+        return None
+
+    if grant_type is None:
+        grant_type = 'client_credentials'
+
+    auth_cred = client_id + ':' + client_secret
+    iiq_oauth_body = f'grant_type={grant_type}'
+    iiq_oauth_headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': 'Basic %s' % base64.b64encode(auth_cred.encode()).decode()
+    }
+    oauth_response = requests.request("POST", url=f'{base_url}{IIQ_OAUTH_EXT}', data=iiq_oauth_body,
+                                      headers=iiq_oauth_headers, verify=verify)
+    if oauth_response is not None and 200 <= oauth_response.status_code < 300:
+        return {
+            'Authorization': 'Bearer %s' % oauth_response.json().get('access_token', None),
+            'Content-Type': 'application/json'
+        }
+    else:
+        err_msg = 'Failed to get response'
+        if oauth_response is not None:
+            err_msg += f' {oauth_response.status_code}'
+        raise DemistoException(err_msg)
+
+
 ''' MAIN FUNCTION '''
 
 

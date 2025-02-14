@@ -1,0 +1,147 @@
+id: c553c3f6-3fa6-4dce-834e-60bb30ae20ca
+version: 9
+vcShouldKeepItemLegacyProdMachine: false
+name: AMP - Upload TIM Indicator To DS
+starttaskid: "0"
+tasks:
+  "0":
+    id: "0"
+    taskid: 57f1f375-db4b-47bb-8fa0-b00cb85fbb4a
+    type: start
+    task:
+      id: 57f1f375-db4b-47bb-8fa0-b00cb85fbb4a
+      version: -1
+      name: ""
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "1"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 450,
+          "y": 50
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "1":
+    id: "1"
+    taskid: 30309a48-4e85-4666-88ff-a660c3c3a3ff
+    type: regular
+    task:
+      id: 30309a48-4e85-4666-88ff-a660c3c3a3ff
+      version: -1
+      name: Upload Indicators
+      scriptName: GetAllIndicators
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "2"
+    scriptarguments:
+      indicators:
+        simple: ${playbookQuery}
+      xsiam_api_key:
+        simple: '{TOMMED}cOe7UWM4JoMqWvPFwvLij3/sNSy+sz3LIxvbjIcwBuHLch3dV3XdWEjpV/EG3g60Rgusqy1CC3mSZ+xdxdPrdeSIuizq4vrfb+jXUiwCJ1BEtGBeabe0CQQLDxXff3gKrpL5vnGmRCSmD/bVJJgblmh3aBgCBVJJH6FpWDKUsZN7y3ksunfCjZab9TVY2fZGP2bgyGgd+4K3bvxZsnD51TmipsS9G3V/hU6uWl+c2Ia8rb+OE62nX83wVeh0RPaf4NwnyHJORCeYikm12TGsG9N21m41kfMpIu1UnHyfM8/6+SbuYJ4Lm4Si3qk9DvPD'
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 450,
+          "y": 190
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "2":
+    id: "2"
+    taskid: ca63e5f3-3fe4-44ca-89c3-8f702bbb3d0e
+    type: title
+    task:
+      id: ca63e5f3-3fe4-44ca-89c3-8f702bbb3d0e
+      version: -1
+      name: End
+      description: commands.local.cmd.close.inv
+      type: title
+      iscommand: false
+      brand: Builtin
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 450,
+          "y": 350
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: |-
+  {
+    "linkLabelsPosition": {},
+    "paper": {
+      "dimensions": {
+        "height": 365,
+        "width": 380,
+        "x": 450,
+        "y": 50
+      }
+    }
+  }
+inputs:
+- key: ""
+  value: {}
+  required: false
+  description: Get all malicious feed IOCs
+  playbookInputQuery:
+    query: (type:"IP" or type:"IPv6" or type:"IPv6CIDR" or type:"CIDR" or type:"URL"
+      or type:"Domain" or type:"DomainGlob" or type:"File") and (expirationStatus:active)
+      and (verdict:Malicious) and (sourceBrands:"TAXII 2 Feed" or sourceBrands:"TAXII
+      2 Feed v2" or sourceBrands:"Digital Shadows" or sourceBrands:"TAXIIFeed")
+    queryEntity: indicators
+    results: null
+    daterange:
+      fromdate: 0001-01-01T00:00:00Z
+      todate: 0001-01-01T00:00:00Z
+      period:
+        by: ""
+        byto: ""
+        byfrom: ""
+        tovalue: null
+        fromvalue: null
+        field: ""
+      fromdatelicenseval: 0001-01-01T00:00:00Z
+    runFromLastJobTime: false
+inputSections:
+- inputs: []
+  name: General (Inputs group)
+  description: Generic group for inputs
+outputSections:
+- outputs: []
+  name: General (Outputs group)
+  description: Generic group for outputs
+outputs: []
+quiet: true
+dirtyInputs: true

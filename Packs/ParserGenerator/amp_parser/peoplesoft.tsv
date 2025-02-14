@@ -1,0 +1,17 @@
+Field Name	Parse statement	Description	Sample value from Log
+user	 coalesce(arrayindex(regextract(_raw_log, "user ([^\@\]]+)\@"),0),arrayindex(regextract(_raw_log, "succeeded\: ([^\@\]]+)\@\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"),0))	
+src	coalesce(arrayindex(regextract(_raw_log, "user (?:[^\@\]]+)\@(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"),0), arrayindex(regextract(_raw_log, "succeeded\: (?:[^\@\]]+)\@(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"),0))	
+signature	if(_raw_log contains "authentication", "authentication", "unknown")	
+action	if(_raw_log contains "succeeded", "success", _raw_log contains "fail", "failure", 1=1, "error")	
+OperatorID	arrayindex(regextract(_raw_log, "^[^\.]+\.[^ ]+\s\(\d+\)\s*\[[^\]]+\]\s[^\s]+\s[^\s]+\s([^\s]+)"),0)	
+multipleFields	regexcapture(_raw_log, "^(?P<ServerProcess>[^\.]+)\.(?P<PID>[^ ]+)[^ \n]* (\((?P<ServiceRequest>\d+)[^\[\n]*)?\[(?P<Timestamp>[^\] ]+)(\s+(?P<AdditionalInformation>[^\]]+))?(\])?[^ \n]* (?P<SRID>[\/\w-]+)[^ \n]* (?P<TOPInstanceID>[\d-]+)[^ \n]* (?P<OperatorID>[^ ]+)\s+\((?P<LogLevel>[^\)]+)\)\s+(?P<Message>.+)")	
+SRID	multipleFields -> SRID	
+Message	multipleFields -> Message	
+reason	Message	
+authentication_method	if(Message contains "Token", "Token", Message contains "Password", "Password", Message contains "PeopleCode", "Password", 1=1, "Password")	
+user_agent	coalesce(arrayindex(regextract(_raw_log, "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3} \(([^\)]+)"),0),"-")	
+authentication_service	if(user="PSBATCH", "Local", 1=1, "LDAP")	
+src_user	coalesce(user, OperatorID)	
+host	_collector_hostname	
+dest	_collector_hostname	
+dest_ip	if(host="ampfinasd2vn.amp.com.au", "10.34.165.180", host="ampfinasd1vn.amp.com.au", "10.34.165.181", host="ampfinasp1v.amp.com.au", "10.34.32.58", host="ampfinasp2v.amp.com.au", "10.34.32.59")	

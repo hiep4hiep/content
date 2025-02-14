@@ -1,0 +1,23 @@
+Field Name	Parse statement	Description	Sample value from Log
+log_timestamp	parse_timestamp("%Y-%m-%d %H:%M:%S",arrayindex(regextract(_raw_log,"(\d{4}-\d{2}-\d{2} \d{2}\:\d{2}\:\d{2})"),0)	
+_time	if(log_timestamp != null, log_timestamp, _insert_time)	
+log_level	arrayindex(split(_raw_log," "),2)	
+service	arrayindex(split(_raw_log," "),3)	
+web_container	arrayindex(regextract(_raw_log,"WebContainer : (\d+)"),0)	
+message	arrayindex(regextract(_raw_log,"WebContainer : \d+\] (.+)"),0	
+json_data	arrayindex(regextract(_raw_log,"({.+})"),0	
+ip_address	arrayindex(regextract(_raw_log,"(\d+\.\d+\.\d+\.\d+)\:\d+"),0)	
+source_port	arrayindex(regextract(_raw_log,"\d+\.\d+\.\d+\.\d+\:(\d+)"),0)	
+url	arrayindex(regextract(_raw_log,"(http\w\:[^<>]+)\\n"),0)	
+host	arrayindex(regextract(_raw_log ,"Host: ([^<>]+)\\n"),0)	
+accept_encoding	arrayindex(regextract(_raw_log,"Accept-Encoding: ([^<>]+)\\n"),0)	
+accept_language	arrayindex(regextract(_raw_log,"Accept-Language: ([^<>]+)\\n"),0)	
+authorization	arrayindex(regextract(_raw_log,"Authorization: ([^<>]+)\\n"),0)	
+cache_control	arrayindex(regextract(_raw_log,"Cache-Control: ([^<>]+)\\n"),0)	
+x_powered_by	arrayindex(regextract(_raw_log,"X-Powered-By: ([^<>]+)\\n"),0)	
+location	arrayindex(regextract(_raw_log,"Location: ([^<>]+)\\n"),0)	
+user_agent	arrayindex(regextract(_raw_log,"User-Agent: ([^<>]+)\\n"),0)	
+x_forwarded_host	arrayindex(regextract(_raw_log,"x-forwarded-host: ([^<>]+)\\n"),0)	
+x_forwarded_for	arrayindex(regextract(_raw_log,"X-Forwarded-For: ([^<>]+)\\n"),0)	
+x_forwarded_port	arrayindex(regextract(_raw_log,"X-Forwarded-Port: ([^<>]+)\\n"),0)	
+x_forwarded_protocol	arrayindex(regextract(_raw_log,"X-Forwarded-Proto: ([^<>]+)\\n"),0)	

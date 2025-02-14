@@ -1,0 +1,28 @@
+{
+    "name": "HyperSec",
+    "description": "Integration with HyperSec XDR solution",
+    "support": "developer",
+    "currentVersion": "1.0.0",
+    "author": "Hiep Nguyen",
+    "url": "",
+    "email": "hnguyen@paloaltonetworks.com",
+    "categories": [
+        "Analytics & SIEM"
+    ],
+    "tags": [
+        "hypersec",
+        "clickhouse",
+        "siem",
+        "xdr"
+    ],
+    "useCases": [],
+    "keywords": [],
+    "marketplaces": [
+        "xsoar",
+        "marketplacev2"
+    ],
+    "devEmail": [
+        "hnguyen@paloaltonetworks.com"
+    ],
+    "githubUser": []
+}

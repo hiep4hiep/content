@@ -1,0 +1,490 @@
+id: 8c1960e5-4c57-43d9-8a69-64e39bf43424
+version: 7
+vcShouldKeepItemLegacyProdMachine: false
+name: EQ - Extract Indicators from STIX URL
+starttaskid: "0"
+tasks:
+  "0":
+    id: "0"
+    taskid: f65ca612-6fa4-4097-8748-695e2ee71cc2
+    type: start
+    task:
+      id: f65ca612-6fa4-4097-8748-695e2ee71cc2
+      version: -1
+      name: ""
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "2"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 50
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "1":
+    id: "1"
+    taskid: f537a411-460a-4a8e-884b-1c088567b710
+    type: regular
+    task:
+      id: f537a411-460a-4a8e-884b-1c088567b710
+      version: -1
+      name: Get Stix File
+      description: Sends a HTTP request with advanced capabilities
+      scriptName: HttpV2
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "3"
+    scriptarguments:
+      filename:
+        simple: stixfile
+      method:
+        simple: GET
+      save_as_file:
+        simple: "yes"
+      url:
+        simple: ${inputs.Stix_URL}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 370
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "2":
+    id: "2"
+    taskid: 871e8e30-7a70-455f-8e96-eec816b646b7
+    type: regular
+    task:
+      id: 871e8e30-7a70-455f-8e96-eec816b646b7
+      version: -1
+      name: Delete Context
+      description: |-
+        Delete field from context.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: DeleteContext
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "1"
+    scriptarguments:
+      all:
+        simple: "yes"
+      subplaybook:
+        simple: "yes"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 195
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "3":
+    id: "3"
+    taskid: fb7bc5ba-507c-4c07-8b97-59bbee114c74
+    type: regular
+    task:
+      id: fb7bc5ba-507c-4c07-8b97-59bbee114c74
+      version: -1
+      name: Read Stix File
+      description: Load the contents of a file into context.
+      scriptName: ReadFile
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "4"
+    scriptarguments:
+      entryID:
+        complex:
+          root: File
+          filters:
+          - - operator: isEqualString
+              left:
+                value:
+                  simple: File.Name
+                iscontext: true
+              right:
+                value:
+                  simple: stixfile
+          accessor: EntryID
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 545
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "4":
+    id: "4"
+    taskid: 339441f9-c728-4101-8ee7-9651806c7219
+    type: regular
+    task:
+      id: 339441f9-c728-4101-8ee7-9651806c7219
+      version: -1
+      name: Verify if the Stix File is in JSON
+      description: Verifies if the supplied JSON string is valid and optionally verifies
+        against a provided schema. The script utilizes Powershell's Test-JSON cmdlet.
+      scriptName: VerifyJSON
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#error#':
+      - "8"
+      '#none#':
+      - "5"
+    scriptarguments:
+      json:
+        simple: ${FileData}
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: errorPath
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 720
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "5":
+    id: "5"
+    taskid: 0ee976ac-cf14-484c-8578-00b3fd12847b
+    type: condition
+    task:
+      id: 0ee976ac-cf14-484c-8578-00b3fd12847b
+      version: -1
+      name: Check if Stix File is in JSON format
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "8"
+      "yes":
+      - "6"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: isTrue
+          left:
+            value:
+              simple: VerifyJSON.Result
+            iscontext: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 470,
+          "y": 895
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "6":
+    id: "6"
+    taskid: da606067-e5cf-4f61-830d-7cc32dfa3d7e
+    type: regular
+    task:
+      id: da606067-e5cf-4f61-830d-7cc32dfa3d7e
+      version: -1
+      name: Extract Indicators from Stix
+      description: Creates indicators from the submitted STIX file. Supports STIX
+        1.0 and STIX 2.x. This automation creates indicators and adds an indicator's
+        relationships if available.
+      scriptName: CreateIndicatorsFromSTIX
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "10"
+    scriptarguments:
+      add_context:
+        simple: "true"
+      entry_id:
+        simple: ${File.EntryID}
+      tags:
+        simple: RSSFeed_Stix
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 480,
+          "y": 1070
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "7":
+    id: "7"
+    taskid: 1351bb1b-5f14-443d-88ee-8c8930be2b70
+    type: title
+    task:
+      id: 1351bb1b-5f14-443d-88ee-8c8930be2b70
+      version: -1
+      name: End
+      type: title
+      iscommand: false
+      brand: ""
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 1595
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "8":
+    id: "8"
+    taskid: 93e07417-2952-45c6-8387-6bc2020d1ef0
+    type: regular
+    task:
+      id: 93e07417-2952-45c6-8387-6bc2020d1ef0
+      version: -1
+      name: Print - Not Support Non-JSON Stix
+      description: Prints text to war room (Markdown supported)
+      scriptName: Print
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "11"
+    scriptarguments:
+      value:
+        simple: Stix File is not in JSON format
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 1070
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "9":
+    id: "9"
+    taskid: 134e1c27-ccc9-4448-8acb-25994dfa6eaf
+    type: regular
+    task:
+      id: 134e1c27-ccc9-4448-8acb-25994dfa6eaf
+      version: -1
+      name: Print - Indicator Input from  STIX File successfully
+      description: Prints text to war room (Markdown supported)
+      scriptName: Print
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "7"
+    scriptarguments:
+      value:
+        simple: Indicator Input from  STIX File successfully
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 480,
+          "y": 1420
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "10":
+    id: "10"
+    taskid: be9a28a5-a446-40b8-860a-0f0f157382eb
+    type: regular
+    task:
+      id: be9a28a5-a446-40b8-860a-0f0f157382eb
+      version: -1
+      name: Extract Indicator from STIX File
+      description: commands.local.cmd.extract.indicators
+      script: Builtin|||extractIndicators
+      type: regular
+      iscommand: true
+      brand: Builtin
+    nexttasks:
+      '#none#':
+      - "9"
+    scriptarguments:
+      entryID:
+        simple: ${File.EntryID}
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 480,
+          "y": 1245
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "11":
+    id: "11"
+    taskid: b3c0d670-3ec2-47d2-87ac-4633fc4c3f7c
+    type: regular
+    task:
+      id: b3c0d670-3ec2-47d2-87ac-4633fc4c3f7c
+      version: -1
+      name: Extract Indicators from normal file
+      description: commands.local.cmd.extract.indicators
+      script: Builtin|||extractIndicators
+      type: regular
+      iscommand: true
+      brand: Builtin
+    nexttasks:
+      '#none#':
+      - "7"
+    scriptarguments:
+      entryID:
+        simple: ${File.EntryID}
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 1245
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: |-
+  {
+    "linkLabelsPosition": {
+      "5_6_yes": 0.54
+    },
+    "paper": {
+      "dimensions": {
+        "height": 1610,
+        "width": 810,
+        "x": 50,
+        "y": 50
+      }
+    }
+  }
+inputs:
+- key: Stix_URL
+  value: {}
+  required: false
+  description: ""
+  playbookInputQuery: null
+inputSections:
+- inputs:
+  - Stix_URL
+  name: General (Inputs group)
+  description: Generic group for inputs
+outputSections:
+- outputs:
+  - StixIndicators
+  - ExtractedIndicators
+  name: General (Outputs group)
+  description: Generic group for outputs
+outputs:
+- contextPath: StixIndicators
+  type: unknown
+- contextPath: ExtractedIndicators
+  description: outputs.extractindicators
+dirtyInputs: true

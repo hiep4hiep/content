@@ -1,0 +1,69 @@
+commonfields:
+  id: f67fcaa3-4a3a-40eb-8b19-d6cb3d5b9aca
+  version: 12
+vcShouldKeepItemLegacyProdMachine: false
+name: UpdateLookUpTable
+script: |-
+  current_data = demisto.args().get('current_data')
+  new_data = demisto.args().get('data')
+
+  # Clean up system fields
+  for item in current_data:
+      item.pop("_insert_time")
+      item.pop("_update_time")
+      item.pop("_collector_name")
+      item.pop("_collector_type")
+
+  # Get items which are not in new_data
+  diff = []
+
+  for item in current_data:
+      if item not in new_data:
+          diff.append(item)
+
+  # Delete all diff items:
+  delete_body = {
+      "request": {
+          "filters": diff,
+          "dataset_name": "critical_hosts_lookup"
+      }
+  }
+  demisto.results(demisto.executeCommand("core-api-post", {
+      "uri":"/public_api/v1/xql/lookups/remove_data",
+      "body": delete_body
+  }))
+
+  # Update new data to table
+  body = {
+    "request": {
+      "data": new_data,
+      "key_fields": [
+          "hostname",
+          "ip_address",
+          "application",
+          "assignment_group"
+          ],
+      "dataset_name": "critical_hosts_lookup"
+    }
+  }
+
+  demisto.results(demisto.executeCommand("core-api-post", {
+      "uri":"/public_api/v1/xql/lookups/add_data",
+      "body": body
+  }))
+type: python
+tags: []
+enabled: true
+args:
+- name: data
+  isArray: true
+- name: current_data
+  isArray: true
+scripttarget: 0
+subtype: python3
+pswd: ""
+runonce: false
+dockerimage: demisto/python3:3.11.10.111526
+runas: DBotWeakRole
+engineinfo: {}
+mainengineinfo: {}

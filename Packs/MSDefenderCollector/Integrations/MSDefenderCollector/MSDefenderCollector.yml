@@ -1,0 +1,50 @@
+category: Analytics & SIEM
+commonfields:
+  id: MSDefenderCollector
+  version: -1
+configuration:
+- display: Tenant ID
+  name: tenant_id
+  required: true
+  type: 0
+- display: Client ID
+  name: client_id
+  required: true
+  type: 0
+- displaypassword: Client Secret
+  additionalinfo: App client secret
+  name: credentials
+  required: true
+  hiddenusername: true
+  type: 9
+- display: How far in the past to fetch alert (in days)
+  name: fetch_ago
+  defaultvalue: 7
+  required: true
+  type: 0
+description: 'MSGraph security incident collector'
+display: MSDefenderCollector
+name: MSDefenderCollector
+script:
+  commands:
+  - arguments:
+    - description: '[Enter a description of the argument, including any important information users need to know, for example, default values.]'
+      name: dummy
+      required: true
+    description: '[Enter a description of the command, including any important information users need to know, for example required permissions.]'
+    name: baseintegration-dummy
+    outputs:
+    - contextPath: BaseIntegration.Output
+      description: '[Enter a description of the data returned in this output.]'
+      type: String
+  runonce: false
+  isfetch: true
+  longRunning: false
+  longRunningPort: false
+  script: '-'
+  type: python
+  subtype: python3
+  dockerimage: hiep4hiep/demisto-msgraph-sdk:latest
+fromversion: 5.5.0
+tests:
+- No tests (auto formatted)

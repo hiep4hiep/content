@@ -1,0 +1,73 @@
+category: Network Security
+commonfields:
+  id: ArubaCentralCollector
+  version: -1
+configuration:
+- display: Aruba Central API URL (e.g. 'https://api-ap.central.arubanetworks.com')
+  name: aruba_url
+  defaultvalue: 'https://api-ap.central.arubanetworks.com/'
+  type: 0
+  required: true
+  section: Connect
+- display: Aruba Central API key
+  name: api_token
+  required: true
+  type: 4
+  section: Connect
+- display: Aruba Central Client ID
+  name: client_id
+  required: true
+  type: 4
+  section: Connect
+- display: Aruba Central Client Secret
+  name: client_secret
+  required: true
+  type: 4
+  section: Connect
+- display: XSIAM HTTP Collector URL (e.g. 'https://api-abc-xsiam.xdr.au.paloaltonetworks.com')
+  name: xsiam_url
+  type: 0
+  required: false
+  section: Connect
+- display: XSIAM HTTP Collector API Key
+  name: xsiam_api_key
+  required: false
+  type: 4
+  section: Connect
+- display: Use system proxy settings
+  name: proxy
+  type: 8
+  required: false
+  section: Connect
+  advanced: true
+- display: Trust any certificate (not secure)
+  name: verify
+  type: 8
+  required: false
+  section: Connect
+  advanced: true
+description: 'Aruba Central audit log collector'
+display: ArubaCentralCollector
+name: ArubaCentralCollector
+script:
+  commands:
+  - arguments:
+    - description: '[Enter a description of the argument, including any important information users need to know, for example, default values.]'
+      name: dummy
+      required: true
+    description: '[Enter a description of the command, including any important information users need to know, for example required permissions.]'
+    name: aruba-central-get-events
+    outputs:
+    - contextPath: BaseIntegration.Output
+      description: '[Enter a description of the data returned in this output.]'
+      type: String
+  runonce: false
+  script: '-'
+  type: python
+  subtype: python3
+  dockerimage: demisto/python3:3.10.12.63474
+  isfetchevents: true
+  isfetch: true
+fromversion: 5.5.0
+tests:
+- No tests (auto formatted)

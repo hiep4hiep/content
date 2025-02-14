@@ -1,0 +1,139 @@
+{
+   "envelope_id":"dc4c6831-2a2d-4d28-9356-b146ca9a6f82",
+   "payload":{
+      "type":"block_actions",
+      "user":{
+         "id":"U04HACR06G4",
+         "username":"hnguyen",
+         "name":"hnguyen",
+         "team_id":"T0326BQ6QHJ"
+      },
+      "api_app_id":"A046XQQU7M4",
+      "token":"Vji5Roann8tPMbnTongP5c1j",
+      "container":{
+         "type":"message",
+         "message_ts":"1689653267.398619",
+         "channel_id":"D04GTCT0J8P",
+         "is_ephemeral":false
+      },
+      "trigger_id":"5607163566673.3074398228596.099a4feb67f45e47d5fd4eafc1c2252b",
+      "team":{
+         "id":"T0326BQ6QHJ",
+         "domain":"xsoar-labworkspace"
+      },
+      "enterprise":null,
+      "is_enterprise_install":false,
+      "channel":{
+         "id":"D04GTCT0J8P",
+         "name":"directmessage"
+      },
+      "message":{
+         "type":"message",
+         "subtype":"bot_message",
+         "text":"*Hi, here are some stuffs that I can help with* :ghost:  Please pick an item from the dropdown list, with interactive elements",
+         "ts":"1689653267.398619",
+         "username":"Cortex XSOAR 2",
+         "icons":{
+            "image_48":"https:\/\/s3-us-west-2.amazonaws.com\/slack-files2\/bot_icons\/2022-02-13\/3122228267760_48.png"
+         },
+         "bot_id":"B047U4GHXQQ",
+         "app_id":"A046XQQU7M4",
+         "blocks":[
+            {
+               "type":"section",
+               "block_id":"R+DWC",
+               "text":{
+                  "type":"mrkdwn",
+                  "text":"*Hi, here are some stuffs that I can help with* :ghost: ",
+                  "verbatim":false
+               }
+            },
+            {
+               "type":"section",
+               "block_id":"h3o",
+               "text":{
+                  "type":"mrkdwn",
+                  "text":"Please pick an item from the dropdown list",
+                  "verbatim":false
+               },
+               "accessory":{
+                  "type":"static_select",
+                  "action_id":"static_select-action",
+                  "placeholder":{
+                     "type":"plain_text",
+                     "text":"Select an item",
+                     "emoji":true
+                  },
+                  "options":[
+                     {
+                        "text":{
+                           "type":"plain_text",
+                           "text":"Enrich an indicator",
+                           "emoji":true
+                        },
+                        "value":"value-0"
+                     },
+                     {
+                        "text":{
+                           "type":"plain_text",
+                           "text":"Block an indicator",
+                           "emoji":true
+                        },
+                        "value":"value-1"
+                     },
+                     {
+                        "text":{
+                           "type":"plain_text",
+                           "text":"Create an incident",
+                           "emoji":true
+                        },
+                        "value":"value-2"
+                     }
+                  ]
+               }
+            }
+         ]
+      },
+      "state":{
+         "values":{
+            "h3o":{
+               "static_select-action":{
+                  "type":"static_select",
+                  "selected_option":{
+                     "text":{
+                        "type":"plain_text",
+                        "text":"Enrich an indicator",
+                        "emoji":true
+                     },
+                     "value":"value-0"
+                  }
+               }
+            }
+         }
+      },
+      "response_url":"https:\/\/hooks.slack.com\/actions\/T0326BQ6QHJ\/5587866568486\/XrBOTn32oEJ90LiWzba9c2li",
+      "actions":[
+         {
+            "type":"static_select",
+            "action_id":"static_select-action",
+            "block_id":"h3o",
+            "selected_option":{
+               "text":{
+                  "type":"plain_text",
+                  "text":"Enrich an indicator",
+                  "emoji":true
+               },
+               "value":"value-0"
+            },
+            "placeholder":{
+               "type":"plain_text",
+               "text":"Select an item",
+               "emoji":true
+            },
+            "action_ts":"1689653274.055306"
+         }
+      ]
+   },
+   "type":"interactive",
+   "accepts_response_payload":false
+}

@@ -1,0 +1,50 @@
+Field Name	Parse statement	Description	Sample value from Log
+log_timestamp	parse_timestamp("%d %b %Y %H:%M:%S",arrayindex(regextract(_raw_log,"(\d{2} \w{3} \d{4} \d{2}\:\d{2}\:\d{2}),\d{3}\s\|"),0)	
+_time	if(log_timestamp != null, log_timestamp, _insert_time)	
+log_level	arrayindex(regextract(trim(arrayindex(split(_raw_log,"||"),1)),"\[(.+)\]"),0)	
+web_container	arrayindex(regextract(_raw_log,"WebContainer \: ([^|\s]+)"),0)	
+source_ip	arrayindex(regextract(_raw_log,"SOURCE_IP=([^|\s]+)"),0),   // no source_ip in data se	
+class	arrayindex(regextract(_raw_log,"Class=([^|\s]+)\s\|"),0)	
+tam_id	arrayindex(regextract(_raw_log,"Tam-Id\: ([^|\s]+)"),0)	
+session_id	arrayindex(regextract(_raw_log,"session-id\: ([^|\s]+)"),0), // no session id in data se	
+x_request_id	arrayindex(regextract(_raw_log,"X-Request-ID\: ([^|\s]+)"),0)	
+message	trim(arrayindex(split(_raw_log,"||"),8)),              // splunk signature   	
+user	arrayindex(regextract(_raw_log,"UserID\":\"(.+?)\""),0),	
+description	arrayindex(regextract(_raw_log,"Description \: ([^|\s]+)"),0), // no description in data se	
+dvc_id	arrayindex(regextract(_raw_log,"DeviceId\":\"(.+?)\""),0), // no device id in data se	
+event	arrayindex(regextract(_raw_log,"Event\:\s?([^,]+),"),0)	
+reason	arrayindex(regextract(_raw_log,"Reason\:\s?([^,]+),"),0	
+action=if(event	"Logon", "success", event="TouchIdLogon", "success", event="FailedLogin", "failure", event="EnrolDevice", "success", event="TouchIdEnrolDevice", "success", event="TouchIdFailedLogin", "failure", event="ChangePin", "modified", event="TouchIdFailedEnrolDevice", "failure", passwordReset="'true'", "modified")	
+result=if(event	"DeviceLocked", "lockout")	
+status=if(reason	"Customer updates pin for AMP app on their device", "success"	
+url	arrayindex(regextract(message ,"url\: (https://urldefense.proofpoint.com/v2/url?u=https-3A__-5B-255E-255Cs-5D-2B-29-2522-29-2C0&d=DwIGAg&c=V9IgWpI5PvzTw83UyHGVSoW3Uc1MFWe5J8PTfkrzVSo&r=UhkEJepeo4gkjuxeXj-uRNDJ4tRRjUU6MfmsxqM_PvM&m=HNA0rTekHtcJFfz7Gguu1W9n9a5Ltyd5mv8F4Ylltxz5qU3J7eRoZq2vHj9FLWA5&s=eE3Kocx2pv0NuZBS_wdszEwNOdKxw6VdvOv3elHfgxc&e= ), // no url in data se	
+response_code	arrayindex(regextract(message,"<(\d{3})"),0), // no response code in data se	
+uid	arrayindex(regextract(message,"uid=([^,]+)"),0), // no uid in data se	
+creationTime	arrayindex(regextract(message,"creationTime=([^,]+)"),0), // not clear what this field is	
+source	arrayindex(regextract(message,"source=([^,]+)"),0), // no source in data se	
+state	arrayindex(regextract(message,"state=([^,]+)"),0), /	
+consolidationRequired	arrayindex(regextract(message,"consolidationRequired=([^,]+)"),0)	
+entityRef	arrayindex(regextract(message,"entityRef=([^,]+)"),0)	
+primaryAccessToken	arrayindex(regextract(message,"primaryAccessToken=([^,]+)"),0)	
+scvid	arrayindex(regextract(message,"scvid=([^,]+)"),0)	
+termsAndConditionsAccepted	arrayindex(regextract(message,"termsAndConditionsAccepted=([^,]+)"),0)	
+lastLoginTime	arrayindex(regextract(message,"lastLoginTime=([^,]+)"),0)	
+partKeys	arrayindex(regextract(message,"partKeys=([^,]+)"),0)	
+lockedDetail	arrayindex(regextract(message,"lockedDetail=([^,]+)"),0)	
+accessTokens	arrayindex(regextract(message,"accessTokens=([^,]+)"),0)	
+enrolementStatus	arrayindex(regextract(message,"enrolementStatus=([^,]+)"),0)	
+banknetId	arrayindex(regextract(message,"banknetId=([^,]+)"),0)	
+passwordReset	arrayindex(regextract(message,"passwordReset=([^,]+)"),0)	
+cache_control	arrayindex(regextract(message,"Cache-Control=([^,]+)"),0)	
+content_language	arrayindex(regextract(message,"Content-Language=([^,]+)"),0)	
+content_type	arrayindex(regextract(message,"Content-Type=([^,]+)"),0)	
+date	arrayindex(regextract(message,"Date=(\[.+\])"),0)	
+Expires	arrayindex(regextract(message,"Expires=([^,]+)"),0)	
+Pragma	arrayindex(regextract(message,"Pragma=([^,]+)"),0)	
+strict_transport_security	arrayindex(regextract(message,"Strict-Transport-Security=([^,]+)"),0)	
+x_content_type_options	arrayindex(regextract(message,"X-Content-Type-Options=([^,]+)"),0)	
+x_frame_options	arrayindex(regextract(message,"X-Frame-Options=([^,]+)"),0)	
+x_powered_by	arrayindex(regextract(message,"X-Powered-By=([^,]+)"),0)	
+x_xss_protection	arrayindex(regextract(message,"X-XSS-Protection=([^,]+)"),0)	
+content_length	arrayindex(regextract(message,"Content-Length=([^,]+)"),0)	
+Connection	arrayindex(regextract(message,"Content-Length=([^,]+)"),0)	

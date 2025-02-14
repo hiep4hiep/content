@@ -1,0 +1,189 @@
+category: Analytics & SIEM
+commonfields:
+  id: AWS-S3Collector
+  version: -1
+configuration:
+- display: S3 Bucket
+  name: bucket
+  required: false
+  type: 0
+  section: Connect
+- display: S3 Key Prefix
+  name: prefix
+  required: false
+  type: 0
+  section: Connect
+- display: RoleARN
+  name: roleArn
+  required: false
+  type: 0
+  section: Connect
+- display: Role Session Name
+  name: roleSessionName
+  required: false
+  type: 0
+  section: Connect
+- display: AWS Default Region
+  name: defaultRegion
+  options:
+  - us-east-1
+  - us-east-2
+  - us-west-1
+  - us-west-2
+  - ca-central-1
+  - eu-west-1
+  - eu-central-1
+  - eu-west-2
+  - ap-northeast-1
+  - ap-northeast-2
+  - ap-southeast-1
+  - ap-southeast-2
+  - ap-south-1
+  - sa-east-1
+  - eu-north-1
+  - eu-west-3
+  - us-gov-east-1
+  - us-gov-west-1
+  required: false
+  type: 15
+  section: Connect
+  advanced: true
+- display: Role Session Duration
+  name: sessionDuration
+  required: false
+  type: 0
+  section: Connect
+  advanced: true
+- display: Access Key
+  name: credentials
+  required: false
+  type: 9
+  displaypassword: Secret Key
+  section: Connect
+- display: Access Key
+  name: access_key
+  required: false
+  type: 0
+  hidden: true
+  section: Connect
+- display: Secret Key
+  name: secret_key
+  required: false
+  type: 4
+  hidden: true
+  section: Connect
+- display: Timeout
+  name: timeout
+  additionalinfo: The time in seconds till a timeout exception is reached. You can specify just the read timeout (for example 60) or also the connect timeout followed after a comma (for example 60,10). If a connect timeout is not specified, a default of 10 second will be used.
+  defaultvalue: 60,10
+  required: false
+  type: 0
+  section: Connect
+  advanced: true
+- display: Retries
+  name: retries
+  defaultvalue: 5
+  additionalinfo: "The maximum number of retry attempts when connection or throttling errors are encountered. Set to 0 to disable retries. The default value is 5 and the limit is 10. Note: Increasing the number of retries will increase the execution time."
+  required: false
+  type: 0
+  section: Connect
+  advanced: true
+- display: First Fetch
+  name: first_fetch
+  defaultvalue: 1
+  additionalinfo: "The first fetch timestamp in hours unit. Add 1 if fetching 1 hour ago"
+  required: false
+  type: 0
+  section: Connect
+  advanced: true
+- display: PrivateLink service URL.
+  name: endpoint_url
+  required: false
+  type: 0
+  section: Connect
+  advanced: true
+- display: STS PrivateLink URL.
+  name: sts_endpoint_url
+  required: false
+  type: 0
+  section: Connect
+  advanced: true
+- display: XSIAM HTTP Collector URL (e.g. 'https://api-abc-xsiam.xdr.au.paloaltonetworks.com')
+  name: xsiam_url
+  type: 0
+  required: true
+  section: Connect
+- display: XSIAM HTTP Collector API Key
+  name: xsiam_api_key
+  required: true
+  type: 4
+  section: Connect
+- display: Trust any certificate (not secure)
+  name: insecure
+  required: false
+  type: 8
+  section: Connect
+  advanced: true
+- display: Use system proxy settings
+  name: proxy
+  required: false
+  type: 8
+  section: Connect
+  advanced: true
+description: AWS S3 Collector which reads S3 object and send to XSIAM
+display: 'AWS-S3Collector'
+name: AWS-S3Collector
+script:
+  commands:
+  - arguments:
+    - default: false
+      description: The name of S3 bucket.
+      isArray: false
+      name: bucket
+      required: false
+      secret: false
+    - default: false
+      description: The S3 object key to download.
+      isArray: false
+      name: key
+      required: false
+      secret: false
+    - default: false
+      description: The AWS Region, if not specified the default region will be used.
+      isArray: false
+      name: region
+      required: false
+      secret: false
+    - default: false
+      description: The Amazon Resource Name (ARN) of the role to assume.
+      isArray: false
+      name: roleArn
+      required: false
+      secret: false
+    - default: false
+      description: An identifier for the assumed role session.
+      isArray: false
+      name: roleSessionName
+      required: false
+      secret: false
+    - default: false
+      description: The duration, in seconds, of the role session. The value can range from 900 seconds (15 minutes) up to the maximum session duration setting for the role.
+      isArray: false
+      name: roleSessionDuration
+      required: false
+      secret: false
+    deprecated: false
+    description: Download a file from S3 bucket to war room.
+    execution: false
+    name: aws-s3-download-file
+  runonce: false
+  script: '-'
+  type: python
+  subtype: python3
+  longRunning: true
+  longRunningPort: false
+  isfetchevents: true
+  dockerimage: demisto/boto3py3:1.0.0.52713
+fromversion: 6.8.0
+tests:
+- No tests (auto formatted)

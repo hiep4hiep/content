@@ -1,0 +1,303 @@
+id: af232fea-2c69-43c7-8558-ff92b012a865
+version: 12
+vcShouldKeepItemLegacyProdMachine: false
+name: AMP - Update AD Lookup
+description: Update AD Lookup table
+starttaskid: "0"
+tasks:
+  "0":
+    id: "0"
+    taskid: 46440628-64b8-4e2c-84e6-39b7c138d1cd
+    type: start
+    task:
+      id: 46440628-64b8-4e2c-84e6-39b7c138d1cd
+      version: -1
+      name: ""
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "1"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 450,
+          "y": 50
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "1":
+    id: "1"
+    taskid: bdf4c9e4-5075-49a8-8b69-f943994d9db2
+    type: regular
+    task:
+      id: bdf4c9e4-5075-49a8-8b69-f943994d9db2
+      version: -1
+      name: Run AD Search
+      description: Runs Active Directory queries.
+      script: '|||ad-search'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "2"
+    scriptarguments:
+      attributes:
+        simple: desktopProfile,sAMAccountName
+      filter:
+        simple: (&(desktopProfile=high_privileged_ad_group))
+      size-limit:
+        simple: "400"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 450,
+          "y": 180
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "2":
+    id: "2"
+    taskid: 973b9d23-e5b4-4903-8011-7c38acb7dc32
+    type: regular
+    task:
+      id: 973b9d23-e5b4-4903-8011-7c38acb7dc32
+      version: -1
+      name: Convert JSON to String
+      description: Dumps a json from context key input, and returns a json object
+        string result
+      scriptName: DumpJSON
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "3"
+    scriptarguments:
+      key:
+        simple: ActiveDirectory.Search
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 450,
+          "y": 340
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "3":
+    id: "3"
+    taskid: 3ad11545-d34d-4527-8cef-71138adb4df2
+    type: regular
+    task:
+      id: 3ad11545-d34d-4527-8cef-71138adb4df2
+      version: -1
+      name: Format search string
+      description: |-
+        Set a value in context under the key you entered. If no value is entered, the script doesn't do anything.
+
+        This automation runs using the default Limited User role, unless you explicitly change the permissions.
+        For more information, see the section about permissions here:
+        https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.10/Cortex-XSOAR-Administrator-Guide/Automations
+      scriptName: SetAndHandleEmpty
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "7"
+    scriptarguments:
+      key:
+        simple: SearchString
+      value:
+        complex:
+          root: JsonStr
+          transformers:
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith: {}
+              toReplace:
+                value:
+                  simple: '['
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith: {}
+              toReplace:
+                value:
+                  simple: ']'
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith:
+                value:
+                  simple: \"
+              toReplace:
+                value:
+                  simple: '"'
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 450,
+          "y": 500
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "4":
+    id: "4"
+    taskid: f11a11e3-bb81-458f-88eb-ee0359a46077
+    type: regular
+    task:
+      id: f11a11e3-bb81-458f-88eb-ee0359a46077
+      version: -1
+      name: Run query
+      description: |-
+        Execute an XQL query and retrieve results of an executed XQL query API. The command will be executed every 10 seconds until results are retrieved or until a timeout error is raised.
+        When more than 1000 results are retrieved, the command will return a compressed gzipped JSON format file,
+        unless the argument 'parse_result_file_to_context' is set to true and then the results will be extracted to the context.
+      script: '|||xdr-xql-generic-query'
+      type: regular
+      iscommand: true
+      brand: ""
+    scriptarguments:
+      query:
+        simple: |-
+          dataset = ad_high_desktop_profile | limit 1 | alter test_key = arraycreate(${query_string})
+          | fields test_key
+          | arrayexpand test_key
+          | alter desktopProfile = test_key -> desktopProfile, sAMAccountName = test_key -> sAMAccountName
+          | fields desktopProfile,sAMAccountName
+          | target type = lookup append = false ad_high_desktop_profile
+      query_name:
+        simple: AD Update
+      retry-count:
+        simple: "2"
+      retry-interval:
+        simple: "120"
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 450,
+          "y": 830
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "7":
+    id: "7"
+    taskid: 88eb2a58-ef3a-48b4-842a-361e852aec59
+    type: regular
+    task:
+      id: 88eb2a58-ef3a-48b4-842a-361e852aec59
+      version: -1
+      name: Prepare Search String
+      scriptName: PrepareThreatIntelSearchString
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "4"
+    scriptarguments:
+      search_string_input:
+        simple: ${SearchString}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 450,
+          "y": 660
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: |-
+  {
+    "linkLabelsPosition": {},
+    "paper": {
+      "dimensions": {
+        "height": 875,
+        "width": 380,
+        "x": 450,
+        "y": 50
+      }
+    }
+  }
+inputs:
+- key: ""
+  value: {}
+  required: false
+  description: ""
+  playbookInputQuery:
+    query: (verdict:Malicious) and (type:"IP")
+    queryEntity: indicators
+    results: null
+    daterange:
+      fromdate: 0001-01-01T00:00:00Z
+      todate: 0001-01-01T00:00:00Z
+      period:
+        by: ""
+        byto: ""
+        byfrom: ""
+        tovalue: null
+        fromvalue: null
+        field: ""
+      fromdatelicenseval: 0001-01-01T00:00:00Z
+    runFromLastJobTime: true
+inputSections:
+- inputs: []
+  name: General (Inputs group)
+  description: Generic group for inputs
+outputSections:
+- outputs: []
+  name: General (Outputs group)
+  description: Generic group for outputs
+outputs: []
+dirtyInputs: true

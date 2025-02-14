@@ -1,0 +1,23 @@
+
+// Parse alarmLog log                
+| filter _raw_log contains "alarmLog"
+| call common_field_versa_gateway
+| alter
+  applianceName = arrayindex(regextract(_raw_log,"applianceName=([^,]+)"),0),
+  tenantName = arrayindex(regextract(_raw_log,"tenantName=([^,]+)"),0),
+  alarmType = arrayindex(regextract(_raw_log,"alarmType=([^,]+)"),0),
+  alarmKey = arrayindex(regextract(_raw_log,"alarmKey=([^,]+)"),0),
+  generateTime = arrayindex(regextract(_raw_log,"generateTime=([^,]+)"),0),
+  applianceId = arrayindex(regextract(_raw_log,"applianceId=([^,]+)"),0),
+  vsnId = arrayindex(regextract(_raw_log,"vsnId=([^,]+)"),0),
+  tenantId = arrayindex(regextract(_raw_log,"tenantId=([^,]+)"),0),
+  alarmCause = arrayindex(regextract(_raw_log,"alarmCause=([^,]+)"),0),
+  alarmClearable = arrayindex(regextract(_raw_log,"alarmClearable=([^,]+)"),0),
+  alarmClass = arrayindex(regextract(_raw_log,"alarmClass=([^,]+)"),0),
+  alarmKind = arrayindex(regextract(_raw_log,"alarmKind=([^,]+)"),0),
+  alarmEventType = arrayindex(regextract(_raw_log,"alarmEventType=([^,]+)"),0),
+  alarmSeverity = arrayindex(regextract(_raw_log,"alarmSeverity=([^,]+)"),0),
+  alarmOwner = arrayindex(regextract(_raw_log,"alarmOwner=([^,]+)"),0),
+  alarmSeqNo = arrayindex(regextract(_raw_log,"alarmSeqNo=([^,]+)"),0),
+  alarmText = arrayindex(regextract(_raw_log,"alarmText=([^,]+)"),0),
+  serialNum = arrayindex(regextract(_raw_log,"serialNum=([^,]+)"),0),

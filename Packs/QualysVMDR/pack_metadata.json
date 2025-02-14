@@ -1,0 +1,23 @@
+{
+    "name": "QualysVMDR Collector",
+    "description": "XSIAM Collector for QualysVMDR",
+    "support": "developer",
+    "currentVersion": "1.0.0",
+    "author": "Hiep Nguyen",
+    "url": "",
+    "email": "hnguyen@paloaltonetworks.com",
+    "categories": [
+        "Vulnerability Management"
+    ],
+    "tags": [],
+    "useCases": [],
+    "keywords": [],
+    "marketplaces": [
+        "xsoar",
+        "marketplacev2"
+    ],
+    "devEmail": [
+        "hnguyen@paloaltonetworks.com"
+    ],
+    "githubUser": []
+}

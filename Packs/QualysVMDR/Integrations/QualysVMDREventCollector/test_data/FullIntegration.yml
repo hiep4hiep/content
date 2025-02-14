@@ -1,0 +1,216 @@
+category: Vulnerability Management
+commonfields:
+  id: QualysVMDREventCollector
+  version: -1
+configuration:
+- display: Qualys URL (e.g. 'http://qualysapi.qg3.apps.qualys.com/')
+  name: qualys_url
+  defaultvalue: 'http://qualysapi.qg3.apps.qualys.com/'
+  type: 0
+  required: true
+  section: Connect
+- display: Qualys Username
+  name: qualys_authentication
+  type: 9
+  required: true
+  section: Connect
+- display: XSIAM HTTP Collector URL (e.g. 'https://api-abc-xsiam.xdr.au.paloaltonetworks.com')
+  name: xsiam_url
+  type: 0
+  required: true
+  section: Connect
+- display: XSIAM HTTP Collector API Key
+  name: xsiam_api_key
+  required: true
+  type: 4
+  section: Connect
+- display: Use system proxy settings
+  name: proxy
+  type: 8
+  required: false
+  section: Connect
+  advanced: true
+- display: Trust any certificate (not secure)
+  name: verify
+  type: 8
+  required: false
+  section: Connect
+  advanced: true
+description: 'Fetch events from Qualys VMDR'
+display: 'QualysVMDREventCollector'
+name: QualysVMDREventCollector
+script:
+  commands:
+  - arguments:
+    - auto: PREDEFINED
+      defaultValue: 'False'
+      description: Set this argument to True in orfer to create events, otherwise the command will only display them.
+      isArray: false
+      name: should_push_events
+      predefined:
+      - 'True'
+      - 'False'
+      required: true
+    - description: Get events since this time, format YYYY-MM-DD HH:ii:ss.
+      isArray: false
+      name: since_datetime
+      required: false
+    - description: Get events until this time, format YYYY-MM-DD HH:ii:ss.
+      isArray: false
+      name: until_datetime
+      required: false
+    deprecated: false
+    description: Manual command to fetch events and display them.
+    execution: false
+    name: qualys-vmdr-get-events
+  runonce: false
+  isfetchevents: true
+  subtype: python3
+  script: |
+    from datetime import datetime, timedelta
+    import urllib3
+    import demistomock as demisto
+    import csv
+    import base64
+    from CommonServerPython import *
+
+    urllib3.disable_warnings()
+
+
+    class Client(BaseClient):
+        def qualys_vmdr_get_events(self, since_datetime: None, until_datetime: None):
+            params = {
+                "action": "list"
+            }
+            if since_datetime:
+                params["since_datetime"] = since_datetime
+            if until_datetime:
+                params["until_datetime"] = until_datetime
+            
+            #response = self._http_request('GET', 'api/2.0/fo/activity_log/', params=params, resp_type='text')
+            response = '''"Date","Action","Module","Details","User Name","User Role","User IP"
+    "2017-02-03T04:35:38Z","login","auth","user_logged in","saand_rn","Manager","10.113.195.136"
+    "2017-02-02T13:58:16Z","login","auth","user_logged in","saand_rn","Manager","10.113.195.136"
+    "2017-02-02T13:48:07Z","request","auth","API: /api/2.0/fo/activity_log/index.php","saand_rn","Manager","10.113.1
+    95.136"
+    "2017-02-02T13:31:19Z","request","auth","API: /api/2.0/fo/activity_log/index.php","saand_rn","Manager","10.113.1
+    95.136"
+    "2017-02-02T13:28:38Z","request","auth","API: /api/2.0/fo/activity_log/index.php","saand_rn","Manager","10.113.1
+    95.136"
+    "2017-02-02T13:28:17Z","request","auth","API: /api/2.0/fo/activity_log/index.php","saand_rn","Manager","10.113.1
+    95.136"
+    "2017-02-02T13:27:27Z","request","auth","API: /api/2.0/fo/activity_log/index.php","saand_rn","Manager","10.113.1
+    95.136"
+    "2017-02-02T13:26:41Z","request","auth","API: /api/2.0/fo/activity_log/index.php","saand_rn","Manager","10.113.1
+    95.136"
+    "2017-02-02T12:52:43Z","set","host_attribute","comment=[vvv] for 11.11.11.4","saand_rn","Manager","10.113.14.208"
+    "2017-02-02T12:52:43Z","add","option","11.11.11.4 added to both VM-PC license","saand_rn","Manager","10.113.14.208"
+    "2017-02-02T12:50:32Z","create","network","New Network:'abc'","saand_rn","Manager","10.113.14.208"
+    '''
+            events = csv_to_dict(response)
+            return events
+        
+        def send_to_xsiam(self, events):
+            response = self._http_request('POST', '/logs/v1/event', data=events)
+            return response
+        
+
+
+    def csv_to_dict(raw_data):
+        with open('tempdata.csv', 'w') as csv_file:
+            csv_data = csv_file.write(raw_data)
+        
+        with open('tempdata.csv', 'r') as csv_file:
+            csv_data = csv.DictReader(csv_file)
+            return list(csv_data)
+        
+
+    def timestamp_format(timestamp):
+        time_string = timestamp.strftime("%Y-%m-%d %H:%M:%S")
+        return time_string
+
+
+    def get_last_run(events: list[dict]) -> dict:
+        """
+        Get the info from the last run, it returns the time to query from
+        """
+        last_timestamp = events[0]['Date']
+        last_time = datetime.strptime(last_timestamp, "%Y-%m-%dT%H:%M:%SZ")
+        next_fetch_time = last_time + timedelta(seconds=1)
+        return {'since_datetime': timestamp_format(next_fetch_time)}
+
+
+    def fetch_events(client, last_run):
+        since_datetime = last_run.get('since_datetime', None)
+        if not since_datetime:
+            since_datetime = timestamp_format(datetime.now)-timedelta(minutes=60)
+        
+        events = client.qualys_vmdr_get_events(since_datetime)
+        return events
+
+
+    def main():
+        params = demisto.params()
+        args = demisto.args()
+        should_push_events = argToBoolean(args.get('should_push_events', 'false'))
+
+        # Prepare Qualys connection
+        qualys_url = params.get('qualys_url')
+        username = params['qualys_authentication']['identifier']
+        password = params['qualys_authentication']['password']
+        credentials = f"{username}:{password}"
+        encoded_credentials = base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
+        qualys_headers = {
+            'X-Requested-With': 'xsiam',
+            'Authorization': f'Basic {encoded_credentials}'
+        }
+        qualys_client = Client(base_url=qualys_url, headers=qualys_headers)
+
+        # Prepare XSIAM connection
+        xsiam_url = params.get('xsiam_http_collector_url')
+        xsiam_api_key = params.get('xsiam_http_collector_key')
+        xsiam_headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'{xsiam_api_key}'
+            }
+        xsiam_client = Client(base_url=xsiam_url, headers=xsiam_headers)
+
+        command = demisto.command()
+        try:
+            if command == 'test-module':
+                qualys_client.qualys_vmdr_get_events(timestamp_format(datetime.now)-timedelta(minutes=1))
+                return_results('ok')
+            
+            elif command == 'fetch-events':
+                last_run = demisto.getLastRun()
+                events = fetch_events(xsiam_client, last_run)
+                xsiam_client.send_to_xsiam(events)
+                demisto.setLastRun(get_last_run(events))
+
+            elif command == 'qualys-vmdr-get-events':
+                events = qualys_client.qualys_vmdr_get_events(args.get('since_datetime'),args.get('until_datetime'))
+                command_results = CommandResults(
+                    readable_output=tableToMarkdown('Qualys VMDR Logs', events, headerTransform=pascalToSpace),
+                    outputs_prefix='Qualys.Logs',
+                    outputs_key_field='@timestamp',
+                    outputs=events,
+                    raw_response=events,
+                )
+                return_results(command_results)
+                if should_push_events:
+                    xsiam_client.send_to_xsiam(events)
+                  
+
+        except Exception as e:
+            return_error(str(e))
+
+
+    if __name__ in ('__main__', '__builtin__', 'builtins'):
+        main()
+  type: python
+  dockerimage: demisto/python3:3.10.7.35188
+marketplaces:
+- marketplacev2
+fromversion: 6.8.0
+tests:
+- No tests (auto formatted)

@@ -1,0 +1,898 @@
+id: 739163b7-14a7-45b7-8206-9f963726efa5
+version: 30
+vcShouldKeepItemLegacyProdMachine: false
+name: OTML - Short Live User Account
+tags:
+- prod
+starttaskid: "0"
+tasks:
+  "0":
+    id: "0"
+    taskid: 99d5f6a1-c553-4499-838c-c92f14eaa33d
+    type: start
+    task:
+      id: 99d5f6a1-c553-4499-838c-c92f14eaa33d
+      version: -1
+      name: ""
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "8"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 50
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "2":
+    id: "2"
+    taskid: 697adab1-dec4-4735-8344-97d9f2a0679b
+    type: regular
+    task:
+      id: 697adab1-dec4-4735-8344-97d9f2a0679b
+      version: -1
+      name: Search for additional events
+      description: |-
+        Execute an XQL query and retrieve results of an executed XQL query API. The command will be executed every 10 seconds until results are retrieved or until a timeout error is raised.
+        When more than 1000 results are retrieved, the command will return a compressed gzipped JSON format file,
+        unless the argument 'parse_result_file_to_context' is set to true and then the results will be extracted to the context.
+      script: '|||xdr-xql-generic-query'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "23"
+    scriptarguments:
+      query:
+        simple: "datamodel dataset = microsoft_windows_raw \n| filter xdm.source.user.username
+          = \"${alert.targetuser}\"\n| filter xdm.event.id in (\"4720\",\"4722\",\"4723\",\"4724\",\"4725\",\"4726\",\"4688\")"
+      query_name:
+        simple: Enrich user events
+      time_frame:
+        simple: between "${start_time}" and "${end_time}"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 690
+        }
+      }
+    note: true
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "4":
+    id: "4"
+    taskid: 27cf2526-b2c0-44d8-88ee-b0b07bcd0f38
+    type: condition
+    task:
+      id: 27cf2526-b2c0-44d8-88ee-b0b07bcd0f38
+      version: -1
+      name: Pending Analyst review
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      Close - False positive:
+      - "15"
+      True positive:
+      - "19"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 1215
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    message:
+      to: null
+      subject: null
+      body:
+        simple: What do you want to do with this alert?
+      methods: []
+      format: ""
+      bcc: null
+      cc: null
+      timings:
+        retriescount: 2
+        retriesinterval: 360
+        completeafterreplies: 1
+        completeafterv2: true
+        completeaftersla: false
+      replyOptions:
+      - Close - False positive
+      - True positive
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "5":
+    id: "5"
+    taskid: 7ec8c64f-c5b8-49e1-89d5-0d0d5a22c371
+    type: regular
+    task:
+      id: 7ec8c64f-c5b8-49e1-89d5-0d0d5a22c371
+      version: -1
+      name: Close Alert
+      description: commands.local.cmd.close.inv
+      script: Builtin|||closeInvestigation
+      type: regular
+      iscommand: true
+      brand: Builtin
+    nexttasks:
+      '#none#':
+      - "12"
+    scriptarguments:
+      closeReason:
+        simple: False Positive
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 2440
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "8":
+    id: "8"
+    taskid: 0e8201b5-7954-4cd6-8fbd-e5756f48d5cb
+    type: title
+    task:
+      id: 0e8201b5-7954-4cd6-8fbd-e5756f48d5cb
+      version: -1
+      name: Triage
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "9"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 195
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "9":
+    id: "9"
+    taskid: f8c7128b-dd60-4c9b-8f69-f1d2044b4d50
+    type: regular
+    task:
+      id: f8c7128b-dd60-4c9b-8f69-f1d2044b4d50
+      version: -1
+      name: Calculate start_time for XQL search
+      description: Set a value in context under the key you entered.
+      scriptName: Set
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "10"
+    scriptarguments:
+      key:
+        simple: start_time
+      value:
+        complex:
+          root: alert
+          accessor: firsteventtime
+          transformers:
+          - operator: ModifyDateTime
+            args:
+              variation:
+                value:
+                  simple: 1 day ago
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 340
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "10":
+    id: "10"
+    taskid: 681786ca-cf65-4150-88ba-62afdef166ac
+    type: regular
+    task:
+      id: 681786ca-cf65-4150-88ba-62afdef166ac
+      version: -1
+      name: Calculate end_time for XQL search
+      description: Set a value in context under the key you entered.
+      scriptName: Set
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "2"
+    scriptarguments:
+      key:
+        simple: end_time
+      value:
+        complex:
+          root: alert
+          accessor: lasteventtime
+          transformers:
+          - operator: ModifyDateTime
+            args:
+              variation:
+                value:
+                  simple: in 1 day
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 515
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "11":
+    id: "11"
+    taskid: 6f298035-41d7-43b3-8f48-0a749a1c7b62
+    type: regular
+    task:
+      id: 6f298035-41d7-43b3-8f48-0a749a1c7b62
+      version: -1
+      name: Assign Analyst
+      description: |-
+        Assign analyst to incident.
+        Note: the script should be executed from within an alert.
+        By default,  the analyst is picked randomly from the available users, according to the provided roles (if no roles provided, will fetch all users).
+        Otherwise, the analyst will be picked according to the 'assignBy' arguments.
+        machine-learning: DBot will calculated and decide who is the best analyst for the job.
+        top-user: The user that is most commonly owns this type of incident
+        less-busy-user: The less busy analyst will be picked to be the incident owner.
+        online: The analyst is picked randomly from all online analysts, according to the provided roles (if no roles provided, will fetch all users).
+        current: The user that executed the command.
+      scriptName: AssignAnalystToIncident
+      type: regular
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "4"
+    scriptarguments:
+      assignBy:
+        simple: random
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 1040
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "12":
+    id: "12"
+    taskid: 54889bf8-27d7-472e-8983-54eff93b0fbd
+    type: title
+    task:
+      id: 54889bf8-27d7-472e-8983-54eff93b0fbd
+      version: -1
+      name: Done
+      type: title
+      iscommand: false
+      brand: ""
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 265,
+          "y": 2615
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "15":
+    id: "15"
+    taskid: ef3c4b3a-bf53-4809-821b-81dd44603038
+    type: playbook
+    task:
+      id: ef3c4b3a-bf53-4809-821b-81dd44603038
+      version: -1
+      name: OTML - Close Jira Ticket
+      playbookName: OTML - Close Jira Ticket
+      type: playbook
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "5"
+    separatecontext: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 50,
+          "y": 2265
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "16":
+    id: "16"
+    taskid: 5de29df9-8aff-40cb-8d5c-b6536d7a3e16
+    type: title
+    task:
+      id: 5de29df9-8aff-40cb-8d5c-b6536d7a3e16
+      version: -1
+      name: Block Accounts
+      type: title
+      iscommand: false
+      brand: ""
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 695,
+          "y": 50
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "17":
+    id: "17"
+    taskid: e5ef59a3-40ea-4e56-8707-bbc11c104038
+    type: regular
+    task:
+      id: e5ef59a3-40ea-4e56-8707-bbc11c104038
+      version: -1
+      name: Block the created account
+      description: Disables an Active Directory user account.
+      script: '|||ad-disable-account'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "5"
+    scriptarguments:
+      username:
+        simple: ${alert.targetuser}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 480,
+          "y": 2265
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "18":
+    id: "18"
+    taskid: 8b0e7d05-c7c9-45c8-826f-c955bc76add4
+    type: regular
+    task:
+      id: 8b0e7d05-c7c9-45c8-826f-c955bc76add4
+      version: -1
+      name: Block the source account
+      description: Disables an Active Directory user account.
+      script: '|||ad-disable-account'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "20"
+      - "24"
+    scriptarguments:
+      username:
+        simple: ${alert.sourceuserid}
+    separatecontext: false
+    continueonerror: true
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 592.5,
+          "y": 1740
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "19":
+    id: "19"
+    taskid: d7810227-ab2d-4e42-876e-e996f845fe98
+    type: regular
+    task:
+      id: d7810227-ab2d-4e42-876e-e996f845fe98
+      version: -1
+      name: Get Source account details
+      description: Retrieves detailed information about a user account. The user can
+        be specified by name, email address, or as an Active Directory Distinguished
+        Name (DN). If no filter is specified, all users are returned.
+      script: '|||ad-get-user'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "21"
+    scriptarguments:
+      username:
+        simple: ${alert.sourceuserid}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 480,
+          "y": 1390
+        }
+      }
+    note: true
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "20":
+    id: "20"
+    taskid: 86db3e21-bb4e-4190-8274-ac5c88b32ee4
+    type: regular
+    task:
+      id: 86db3e21-bb4e-4190-8274-ac5c88b32ee4
+      version: -1
+      name: Get Target account details
+      description: Retrieves detailed information about a user account. The user can
+        be specified by name, email address, or as an Active Directory Distinguished
+        Name (DN). If no filter is specified, all users are returned.
+      script: '|||ad-get-user'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "22"
+    scriptarguments:
+      username:
+        simple: ${alert.targetuser}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 480,
+          "y": 1915
+        }
+      }
+    note: true
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "21":
+    id: "21"
+    taskid: beffd668-3c66-4262-820c-cd56634e3204
+    type: condition
+    task:
+      id: beffd668-3c66-4262-820c-cd56634e3204
+      version: -1
+      name: Confirm to block source the account?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      "No":
+      - "20"
+      "Yes":
+      - "18"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 480,
+          "y": 1565
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    message:
+      to: null
+      subject: null
+      body:
+        simple: Do you want to block the source account ${alert.sourceuserid}
+      methods: []
+      format: ""
+      bcc: null
+      cc: null
+      timings:
+        retriescount: 2
+        retriesinterval: 360
+        completeafterreplies: 1
+        completeafterv2: true
+        completeaftersla: false
+      replyOptions:
+      - "Yes"
+      - "No"
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "22":
+    id: "22"
+    taskid: e705ba91-050c-4eba-8e13-5212b3547e5a
+    type: condition
+    task:
+      id: e705ba91-050c-4eba-8e13-5212b3547e5a
+      version: -1
+      name: Confirm to block the target account?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      "No":
+      - "5"
+      "Yes":
+      - "17"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 480,
+          "y": 2090
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    message:
+      to: null
+      subject: null
+      body:
+        simple: Do you want to block the target account ${alert.targetuser}
+      methods: []
+      format: ""
+      bcc: null
+      cc: null
+      timings:
+        retriescount: 2
+        retriesinterval: 360
+        completeafterreplies: 1
+        completeafterv2: true
+        completeaftersla: false
+      replyOptions:
+      - "Yes"
+      - "No"
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "23":
+    id: "23"
+    taskid: 4c750396-1e95-4bfd-8c4a-7f4a22e0e5f8
+    type: condition
+    task:
+      id: 4c750396-1e95-4bfd-8c4a-7f4a22e0e5f8
+      version: -1
+      name: Is there any result?
+      type: condition
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#default#':
+      - "15"
+      "yes":
+      - "11"
+    separatecontext: false
+    conditions:
+    - label: "yes"
+      condition:
+      - - operator: greaterThan
+          left:
+            value:
+              simple: PaloAltoNetworksXQL.GenericQuery.number_of_results
+            iscontext: true
+          right:
+            value:
+              simple: "0"
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 260,
+          "y": 860
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "24":
+    id: "24"
+    taskid: 0aa0ebf7-a8dc-4ac8-85f2-6e904f2002f2
+    type: title
+    task:
+      id: 0aa0ebf7-a8dc-4ac8-85f2-6e904f2002f2
+      version: -1
+      name: Get Manager and Email them
+      type: title
+      iscommand: false
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "27"
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 1050,
+          "y": 1485
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "25":
+    id: "25"
+    taskid: f8de8389-268d-4e28-8de4-7f1cb9cfe847
+    type: regular
+    task:
+      id: f8de8389-268d-4e28-8de4-7f1cb9cfe847
+      version: -1
+      name: Get Manager Email
+      description: Retrieves detailed information about a user account. The user can
+        be specified by name, email address, or as an Active Directory Distinguished
+        Name (DN). If no filter is specified, all users are returned.
+      script: '|||ad-get-user'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "26"
+    scriptarguments:
+      name:
+        complex:
+          root: ActiveDirectory.Users
+          accessor: manager
+          transformers:
+          - operator: split
+            args:
+              delimiter:
+                value:
+                  simple: OU=
+          - operator: FirstArrayElement
+          - operator: RegexExtractAll
+            args:
+              error_if_no_match: {}
+              ignore_case: {}
+              multi_line: {}
+              period_matches_newline: {}
+              regex:
+                value:
+                  simple: CN=(.+),
+              unpack_matches: {}
+          - operator: replace
+            args:
+              limit: {}
+              replaceWith: {}
+              toReplace:
+                value:
+                  simple: \
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 1150,
+          "y": 1835
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    fieldMapping:
+    - incidentfield: Manager Email Address
+      output:
+        simple: ${ActiveDirectory.Users.mail}
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "26":
+    id: "26"
+    taskid: edf74417-1fa4-408e-8d31-e0a8c819e826
+    type: regular
+    task:
+      id: edf74417-1fa4-408e-8d31-e0a8c819e826
+      version: -1
+      name: Send email to manager and cc OTML service desk
+      description: commands.server.mail.sendmail
+      script: mail-sender|||send-mail
+      type: regular
+      iscommand: true
+      brand: mail-sender
+    scriptarguments:
+      body:
+        simple: The account ${alert.sourceuserid} created ${alert.targetuser} and
+          this performed unusual activities. This account has been disabled after
+          being reviewed by an analyst and you are receiving an Email as you are listed
+          as the account Manager.
+      cc:
+        simple: ICT-Enterprise-Systems@oktedi.com
+      subject:
+        simple: 'Suspicious activity  from user ${alert.sourceuserid} '
+      to:
+        simple: ${ActiveDirectory.Users.[1].mail}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 1170,
+          "y": 2070
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+  "27":
+    id: "27"
+    taskid: 728b4087-764b-4a91-8612-1d60d97c67a3
+    type: regular
+    task:
+      id: 728b4087-764b-4a91-8612-1d60d97c67a3
+      version: -1
+      name: Get Manager
+      description: Retrieves detailed information about a user account. The user can
+        be specified by name, email address, or as an Active Directory Distinguished
+        Name (DN). If no filter is specified, all users are returned.
+      script: '|||ad-get-user'
+      type: regular
+      iscommand: true
+      brand: ""
+    nexttasks:
+      '#none#':
+      - "25"
+    scriptarguments:
+      username:
+        simple: ${alert.sourceuserid}
+    separatecontext: false
+    continueonerrortype: ""
+    view: |-
+      {
+        "position": {
+          "x": 1160,
+          "y": 1645
+        }
+      }
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    fieldMapping:
+    - incidentfield: sAMAccountName
+      output:
+        simple: ${ActiveDirectory.Users.sAMAccountName}
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: |-
+  {
+    "linkLabelsPosition": {
+      "21_20_No": 0.89
+    },
+    "paper": {
+      "dimensions": {
+        "height": 2630,
+        "width": 1500,
+        "x": 50,
+        "y": 50
+      }
+    }
+  }
+inputs: []
+outputs: []

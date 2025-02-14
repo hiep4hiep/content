@@ -1,0 +1,92 @@
+[
+    {
+       "rule_id":334,
+       "name":"[AMP] Insecure Or Cleartext Authentication [SplunkDefault]",
+       "severity":"SEV_040_HIGH",
+       "xql_query":"//Title: Access - Insecure Or Cleartext Authentication - Rule\nconfig case_sensitive = false \n\n| datamodel dataset in (linux_linux_raw,microsoft_windows_raw ,amp_edw_raw,msft_o365_azure_ad_raw,msft_o365_general_raw,versa_gateway_raw,was_*,ibm_tim_raw ,cyber_ark_vault_raw, amp*, salesforce_login_raw, amazon_aws_raw , cyber_ark_vault_raw )\n//| filter xdm.event.outcome in (XDM_CONST.OUTCOME_FAILED , XDM_CONST.OUTCOME_SUCCESS )\n| filter xdm.event.type = \"authentication\" or xdm.observer.product in (\"windows\",\"linux\")\n| alter authevent= if(xdm.observer.product = \"windows\" and xdm.event.id in(\"4625\",\"4776\",\"4672\",\"4624\"), \"auth_event\", xdm.observer.product !=\"windows\",\"auth_event\")\n| filter (authevent not in (null, \"\"\"\"\"\")) \n| alter dest= if(xdm.observer.product = \"windows\", xdm.source.host.hostname , xdm.observer.product !=\"windows\",coalesce(xdm.target.host.hostname , xdm.target.ipv4 , xdm.target.host.fqdn )) \n| alter dest = if((dest not in (null, \"\"\"\"\"\")) , dest, \"unknown\")\n| alter insecure= if(xdm.observer.product = \"windows\" and xdm.logon.type = XDM_CONST.LOGON_TYPE_NETWORK_CLEARTEXT , \"insecure\", (xdm.observer.product !=\"windows\" and (xdm.target.port in( 21, 80, 23, 25, 110, 143, 161, 2049, 514, 389, 513))),\"insecure\")\n| filter (insecure not in (null, \"\"\"\"\"\")) \n| alter user= if(xdm.observer.product = \"windows\", xdm.target.user.username , xdm.observer.product !=\"windows\",xdm.source.user.username ) \n| fields _time ,xdm.event.id, xdm.event.type,authevent  ,insecure, xdm.source.port ,xdm.target.port ,  xdm.observer.product as app,xdm.network.application_protocol, xdm.network.application_protocol_category , xdm.network.application_protocol_subcategory , xdm.event.outcome ,xdm.logon.type, xdm.source.user.username , xdm.source.host.hostname ,xdm.target.user.username,xdm.target.host.hostname, xdm.target.ipv4, xdm.target.host.fqdn , dest,xdm.event.description , xdm.event.operation ,xdm.event.operation_sub_type , xdm.auth.service , xdm.network.protocol_layers , xdm.intermediate.port , xdm.network.ip_protocol,*\n\n| filter user not contains \"PBIEgwService\" or user not contains \"IUSR_\" or user not contains \"HealthMailbox\" or user not contains \"$\"\n| comp count() as count, values(xdm.event.id ) as signature_id , values(xdm.event.description ) as raw_log, values(xdm.source.user.username ) as `xdm.source.user.username`, values(xdm.target.user.username ) as `xdm.target.user.username`, values(user) as user, min(_time ) as start_time, max(_time ) as end_time by dest, app //values(xdm.observer.product ) as app,values(authevent ) as authevent,\n| fields app,dest , user , xdm.source.user.username , xdm.target.user.username , signature_id , start_time , end_time , count , raw_log , *\n",
+       "is_enabled":true,
+       "description":"Detects authentication requests that transmit the password over the network as cleartext (unencrypted)",
+       "alert_name":"[AMP] Insecure Or Cleartext Authentication [SplunkDefault]",
+       "alert_category":"CREDENTIAL_ACCESS",
+       "alert_type":null,
+       "alert_description":"Detects authentication requests that transmit the password over the network as cleartext (unencrypted)",
+       "alert_domain":"DOMAIN_SECURITY",
+       "alert_fields":{
+          "app":"app",
+          "dest":"dest",
+          "count":"count",
+          "endtime":"end_time",
+          "srcuser":"user",
+          "rawevent":"raw_log",
+          "starttime":"start_time",
+          "sourceuser":"xdm.source.user.username",
+          "targetuser":"xdm.target.user.username",
+          "signatureid":"signature_id"
+       },
+       "execution_mode":"SCHEDULED",
+       "search_window":"70 minutes",
+       "simple_schedule":"1 hour",
+       "timezone":"Australia/Sydney",
+       "crontab":"0 * * * *",
+       "suppression_enabled":true,
+       "suppression_duration":"24 hours",
+       "suppression_fields":[
+          "app",
+          "dest"
+       ],
+       "dataset":"alerts",
+       "user_defined_severity":null,
+       "user_defined_category":null,
+       "mitre_defs":{
+          "TA0006 - Credential Access":[
+             "T1003 - OS Credential Dumping"
+          ]
+       },
+       "investigation_query_link":"config case_sensitive = false \n| datamodel dataset in (linux_linux_raw,microsoft_windows_raw ,amp_edw_raw,msft_o365_azure_ad_raw,msft_o365_general_raw,versa_gateway_raw,was_*,ibm_tim_raw ,cyber_ark_vault_raw, amp*, salesforce_login_raw, amazon_aws_raw , cyber_ark_vault_raw )\n| alter dest= if(xdm.observer.product = \"windows\", xdm.source.host.hostname , xdm.observer.product !=\"windows\",coalesce(xdm.target.host.hostname , xdm.target.ipv4 , xdm.target.host.fqdn )) \n| alter dest = if((dest not in (null, \"\"\"\"\"\")) , dest, \"unknown\")\n| filter xdm.observer.product = $app\n| filter dest = $dest\n",
+       "drilldown_query_timeframe":"ALERT",
+       "mapping_strategy":"CUSTOM",
+       "action":"ALERTS",
+       "lookup_mapping":[
+          
+       ]
+    },
+    {
+       "rule_id":338,
+       "name":"[AMP] XSIAM License Utilisation Alert [NTT]",
+       "severity":"SEV_040_HIGH",
+       "xql_query":"config case_sensitive = false\n| dataset = metrics_source \n| fields _vendor , _product , total_size_bytes , total_size_rate\n\n| comp sum(total_size_bytes ) as ingestion \n\n| alter Ingestion_by_GB = divide(round(multiply(divide(ingestion , pow(2,30)),1000)),1000) //Rounding to 3 Decimal Places\n| alter Percentage_Ingestion_Done = divide(round(multiply(divide(Ingestion_by_GB, 650),10000)),100) // Ingested in GB Divided by Total Ingestible Limit 650GB\n| filter Percentage_Ingestion_Done >= 90\n\n| fields Ingestion_by_GB as total_GB_used, Percentage_Ingestion_Done as percentage_license_utilise, ingestion as number_of_logs_ingested , *\n",
+       "is_enabled":true,
+       "description":"This alert triggers when the daily license utilisation reaches 90%. The current daily license is 650 GB.",
+       "alert_name":"[AMP] XSIAM License Utilisation Alert [NTT]",
+       "alert_category":"OTHER",
+       "alert_type":null,
+       "alert_description":"This alert triggers when the daily license utilisation reaches 90%.\nThe current daily license is 650 GB",
+       "alert_domain":"DOMAIN_SECURITY",
+       "alert_fields":{
+          "totalgbused":"total_GB_used",
+          "numberoflogsingested":"number_of_logs_ingested",
+          "percentagelicenseutilise":"percentage_license_utilise"
+       },
+       "execution_mode":"SCHEDULED",
+       "search_window":"24 hours",
+       "simple_schedule":"custom",
+       "timezone":"Australia/Sydney",
+       "crontab":"0 13 * * *",
+       "suppression_enabled":false,
+       "suppression_duration":null,
+       "suppression_fields":null,
+       "dataset":"alerts",
+       "user_defined_severity":null,
+       "user_defined_category":null,
+       "mitre_defs":{
+          
+       },
+       "investigation_query_link":"config case_sensitive = false\n| dataset = metrics_source \n| fields _vendor , _product , total_size_bytes , total_size_rate\n\n| comp sum(total_size_bytes ) as ingestion \n\n| alter Ingestion_by_GB = divide(round(multiply(divide(ingestion , pow(2,30)),1000)),1000) //Rounding to 3 Decimal Places\n| alter Percentage_Ingestion_Done = divide(round(multiply(divide(Ingestion_by_GB, 650),10000)),100) // Ingested in GB Divided by Total Ingestible Limit 650GB",
+       "drilldown_query_timeframe":"ALERT",
+       "mapping_strategy":"CUSTOM",
+       "action":"ALERTS",
+       "lookup_mapping":[
+          
+       ]
+    }
+ ]
