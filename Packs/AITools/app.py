@@ -3,7 +3,6 @@ import os
 from prompt_claude import *
 import markdown
 from dotenv import load_dotenv
-import asyncio
 from flask import jsonify
 
 load_dotenv()  # Load from .env if exists
@@ -21,7 +20,6 @@ def index():
             return render_template('index.html', response=html_output, loading=False, prompt=user_prompt)
     return render_template('index.html', response="", loading=False)
 
-# Remove the async endpoint if not using AJAX for background calls
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
