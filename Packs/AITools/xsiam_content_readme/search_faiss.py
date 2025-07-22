@@ -4,7 +4,7 @@ import torch
 import json
 
 
-def search_sentence_in_faiss(sentence, faiss_index_path="readme_faiss.index", metadata_path="readmes_corpus.json"):
+def search_sentence_in_faiss(sentence, faiss_index_path="readme_faiss.index", metadata_path="readme_corpus.json"):
     """
     Searches for the most similar sentence in a FAISS index given an input sentence.
     Args:
@@ -23,13 +23,11 @@ def search_sentence_in_faiss(sentence, faiss_index_path="readme_faiss.index", me
     embedding = model.encode(sentence, convert_to_tensor=True, device=device)
     embedding_np = embedding.cpu().unsqueeze(0).numpy()
     D, I = index.search(embedding_np, k=1)
-    
-    ### Get item from corpus
-    with open(metadata_path, 'r', encoding='utf-8') as infile:
-        corpus = json.load(infile)
-        data = corpus[I[0][0]]['data']
-    return data
 
+    with open(metadata_path, 'r', encoding='utf-8') as infile:
+        target_idx = I[0][0]
+        corpus_data = json.load(infile)
+        return corpus_data[target_idx]
 
 if __name__ == "__main__":
-    print(search_sentence_in_faiss("ZScaler Internet Access into XSIAM"))
+    print(search_sentence_in_faiss("Aruba ClearPass Policy Manager"))
