@@ -1,0 +1,1544 @@
+raw_log,data_model
+"{
+  ""_time"": 1753142419000,
+  ""readOnly"": true,
+  ""eventTime"": 1753142419000,
+  ""_insert_time"": 1753142724000,
+  ""managementEvent"": true,
+  ""_collection_timestamp"": 1753142724360,
+  ""_id"": ""Sk7y4yGpPRZnwTaPzOaVeA==:4:92:202"",
+  ""_tag"": [],
+  ""_vendor"": ""Amazon"",
+  ""eventID"": ""64be13d1-e6e8-466a-a710-392d36ffff68"",
+  ""_product"": ""AWS"",
+  ""_raw_log"": null,
+  ""_log_type"": ""Cloud Audit Log"",
+  ""_raw_json"": null,
+  ""awsRegion"": ""us-east-1"",
+  ""errorCode"": null,
+  ""eventName"": ""ListResources"",
+  ""eventType"": ""AwsApiCall"",
+  ""requestID"": ""c2506d2c-54f6-47d3-8a18-448a28a96c87"",
+  ""resources"": null,
+  ""userAgent"": ""config.amazonaws.com"",
+  ""_device_id"": null,
+  ""apiVersion"": null,
+  ""tlsDetails"": null,
+  ""eventSource"": ""cloudcontrolapi.amazonaws.com"",
+  ""errorMessage"": null,
+  ""eventVersion"": ""1.11"",
+  ""userIdentity"": {
+    ""type"": ""AssumedRole"",
+    ""principalId"": ""AROAV45A5A3OBN6ZSWHVR:ConfigResourceCompositionSession"",
+    ""arn"": ""arn:aws:sts::405674985180:assumed-role/AWSServiceRoleForConfig/ConfigResourceCompositionSession"",
+    ""accountId"": ""405674985180"",
+    ""accessKeyId"": ""ASIAV45A5A3OEI7742DQ"",
+    ""sessionContext"": {
+      ""sessionIssuer"": {
+        ""type"": ""Role"",
+        ""principalId"": ""AROAV45A5A3OBN6ZSWHVR"",
+        ""arn"": ""arn:aws:iam::405674985180:role/aws-service-role/config.amazonaws.com/AWSServiceRoleForConfig"",
+        ""accountId"": ""405674985180"",
+        ""userName"": ""AWSServiceRoleForConfig""
+      },
+      ""attributes"": {
+        ""creationDate"": ""2025-07-22T00:00:18Z"",
+        ""mfaAuthenticated"": ""false""
+      }
+    },
+    ""invokedBy"": ""config.amazonaws.com""
+  },
+  ""eventCategory"": ""Management"",
+  ""sharedEventID"": null,
+  ""vpcEndpointId"": null,
+  ""_collector_name"": ""CloudTrail Logs Enterprise Org"",
+  ""_collector_type"": ""Amazon S3"",
+  ""sourceIPAddress"": ""config.amazonaws.com"",
+  ""responseElements"": null,
+  ""requestParameters"": {
+    ""typeName"": ""AWS::BackupGateway::Hypervisor""
+  },
+  ""recipientAccountId"": ""405674985180"",
+  ""additionalEventData"": null,
+  ""serviceEventDetails"": null,
+  ""vpcEndpointAccountId"": null,
+  ""_log_source_file_name"": ""405674985180_CloudTrail_us-east-1_20250722T0005Z_zWUu0uMpC53eQ9SM.json.gz"",
+  ""_log_source_file_path"": ""o-4en0jtu6gv/AWSLogs/405674985180/CloudTrail/us-east-1/2025/07/22/"",
+  ""_reporting_device_name"": ""rmit-controltower-cloudtrail-logs-386210904643-ap-southeast-2"",
+  ""_final_reporting_device_name"": ""rmit-controltower-cloudtrail-logs-386210904643-ap-southeast-2"",
+  ""sessionCredentialFromConsole"": null
+}","[MODEL: dataset=""amazon_aws_raw""]
+alter 
+    targetIP1 = json_extract_scalar(Service, ""$.Action.NetworkConnectionAction.RemoteIpDetails.IpAddressV4""),
+    targetIP2 = json_extract_scalar(Service, ""$.Action.KubernetesApiCallAction.RemoteIpDetails.IpAddressV4""),
+    username1 = trim(json_extract_scalar(Resource,""$.AccessKeyDetails.UserName""), ""\""""),
+    username2 = json_extract_scalar(Resource, ""$.KubernetesDetails.KubernetesUserDetails.Username""),
+    userType = json_extract_scalar(Resource, ""$.AccessKeyDetails.UserType""),
+    severity = to_float(Severity), 
+    PrincipalId = Resource -> AccessKeyDetails.PrincipalId
+| alter
+    xdm.alert.category = json_extract_scalar(Resource, ""$.ResourceType""),
+    xdm.alert.subcategory = Type,
+    xdm.alert.description = Description,
+    xdm.event.outcome_reason = Title,
+    xdm.alert.severity = if( severity >= 7, ""High"", severity >= 4 and severity < 6.9 , ""Medium"", severity >= 1 and severity < 3.9 , ""Low"", to_string(Severity)),
+    xdm.target.resource.id = AccountId,
+    xdm.target.host.hostname = json_extract_scalar(Resource, ""$.EksClusterDetails.Name""),
+    xdm.source.user.user_type = if(userType in(""Root"",""IAMUser"",""Role"",""FederatedUser"",""AWSAccount""),XDM_CONST.USER_TYPE_REGULAR , userType in(""Directory"",""AWSService"") ,XDM_CONST.USER_TYPE_SERVICE_ACCOUNT,userType in(""AssumedRole"") ,XDM_CONST.USER_TYPE_MACHINE_ACCOUNT ,to_string(userType)),
+    xdm.target.process.name = json_extract_scalar(Service, ""$.ServiceName""),
+    xdm.source.host.ipv4_addresses = arraycreate(coalesce(json_extract_scalar(Service,  ""$.Action.AwsApiCallAction.RemoteIpDetails.IpAddressV4""), """")),
+    xdm.source.ipv4 = json_extract_scalar(Service, ""$.Action.NetworkConnectionAction.LocalIpDetails.IpAddressV4""),
+    xdm.target.ipv4 = coalesce(targetIP1, targetIP2),
+    xdm.source.user.username = coalesce(username1, username2),
+    xdm.target.cloud.region = Region,
+    xdm.target.resource.name = Arn,
+    xdm.target.resource.parent_id  = PrincipalId,
+    xdm.network.http.response_code = Service -> Action.KubernetesApiCallAction.StatusCode;"
+"Jul 29 12:16:26 172.16.35.227 ProxySG: 250017 Authentication failed from 10.141.35.144: user 'LOCAL\p1359263' (realm SingtelProxy_IT)(0) NORMAL_EVENT authutility.cpp 113
+Jul 29 12:16:26 2024-07-29 04: 16:57 11 10.141.5.58 407 TCP_DENIED 657 247 HEAD http ping.citrix.com 80 / - - - - - - - ""CITRIXRECEIVER"" DENIED ""AmdocsApprovedURLs;MCCStandardWhitelistSites;Technology/Internet"" - 172.16.35.227 0
+Jul 29 12:16:26 2024-07-29 04: 16:57 157669 10.148.148.231 200 TCP_TUNNELED 8596 4763 CONNECT tcp ecs.office.com 443 / - - - - ecs.office.com - - ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"" OBSERVED ""ServiceNow URL;O365Urls;NPS URL;Sharepoint_URL;Cloud VDI URL whitelist;UnifyCloud URL;HCI POC Azure Portal;Chennai and Bangalore URLs;All AccessYes URL;Permitted Sites;test_0365;IT;Sudong_MCC_KCC;Innovax URL;GEIM Tenant_URL;AmdocsApprovedURLs;Xenapps Allowed URLs;ADDconnectURLs;Espresso O365 URL;O365URL;Technology/Internet"" - 172.16.35.227 443
+Jul 29 12:16:26 2024-07-29 04: 16:57 12 10.141.6.69 206 TCP_NC_MISS 131714 408 GET http swdc02-mscdn.manage.microsoft.com 80 /5d909be8-cdb0-4028-89d4-a8898e73f6f9/62837087-93f0-4166-b256-25861bf9270b/a4f5e21a-cd1f-402a-a00d-ba7bde3ad1a8.intunewin.bin - - - - swdc02-mscdn.manage.microsoft.com application/octet-stream - ""Microsoft-Delivery-Optimization/10.0"" OBSERVED ""ITSD_URL;ProjectHarmony_URL;Peacock User Whitelist;URLRequest;Visual Studio Whitelist;O365Urls;Peacock URL;DEV_UAT;NPS URL;Cloud VDI URL whitelist;Intune2URL;HCI PILOT URL;Exchange 2016 URL;UnifyCloud URL;MDATP;DPM;HCI POC Azure Portal;MSActivation;All AccessYes URL;Permitted Sites;PowerBI_URL;COS url;Sudong_MCC_KCC;Innovax URL;GEIM Tenant_URL;AmdocsApprovedURLs;MCCStandardWhitelistSites;Xenapps Allowed URLs;Peacock Automation;HybridJoin-Azure;Permitted CCO Sites;Intune URL;URLfor SCCM Server Access;GeneralWhitelistedURL;IntuneAutopilotServer Url;O365URL;Technology/Internet"" - 172.16.35.227 80
+","[MODEL:dataset=""symantec_bluecoatproxysg_raw""]
+filter event_type = ""proxy""
+| alter c_ip = x->c_ip, 
+    sc_status = x->sc_status,
+    s_action = x->s_action,
+    sc_bytes = x->sc_bytes,
+    cs_bytes = x->cs_bytes,
+    cs_method = x->cs_method,
+    cs_uri_scheme = x->cs_uri_scheme,
+    cs_host = x->cs_host,
+    cs_uri_port = x->cs_uri_port,
+    cs_uri_path = arrayindex(regextract(x->cs_uri_path, ""^\""?([^\""]*?)\""?$""), 0),
+    cs_uri_query = arrayindex(regextract(x->cs_uri_query, ""^\""?([^\""]*?)\""?$""), 0),
+    cs_username = arrayindex(regextract(x->cs_username, ""^\""?([^\""]*?)\""?$""), 0),
+    cs_auth_group = arrayindex(regextract(x->cs_auth_group, ""^\""?([^\""]*?)\""?$""), 0),
+    //s_hierarchy = arrayindex(regextract(x->s_hierarchy, ""^\""?([^\""]*?)\""?$""), 0),
+    //s_supplier_name = arrayindex(regextract(x->s_supplier_name, ""^\""?([^\""]*?)\""?$""), 0),
+    rs_content_type = arrayindex(regextract(x->rs_content_type, ""^\""?([^\""]*?)\""?$""), 0),
+    cs_referer = arrayindex(regextract(x->cs_referer, ""^\""?([^\""]*?)\""?$""), 0),
+    cs_user_agent = arrayindex(regextract(x->cs_user_agent, ""^\""?([^\""]*?)\""?$""), 0),
+    sc_filter_result = arrayindex(regextract(x->sc_filter_result, ""^\""?([^\""]*?)\""?$""), 0),
+    cs_categories = arrayindex(regextract(x->cs_categories, ""^\""?([^\""]*?)\""?$""), 0),
+    // x_virus_id = arrayindex(regextract(x->x_virus_id, ""^\""?([^\""]*?)\""?$""), 0),
+    s_ip = x->s_ip,
+    r_supplier_port = x->r_supplier_port
+
+| alter // post extraction processing 
+    // check IP addresses formats 
+    c_ip_v4 = if(c_ip ~= ""(?:\d{1,3}\.){3}\d{1,3}"", c_ip),
+    c_ip_v6 = if(c_ip ~= ""(?:[a-fA-F\d]{0,4}\:){7}[\wa-fA-F]{0,4}"", c_ip),
+    s_ip_v4 = if(s_ip ~= ""(?:\d{1,3}\.){3}\d{1,3}"", s_ip),
+    s_ip_v6 = if(s_ip ~= ""(?:[a-fA-F\d]{0,4}\:){7}[\wa-fA-F]{0,4}"", s_ip)
+
+|alter http_proto = if(cs_uri_port=""443"",""https"",""http""), 
+cs_uri_query_new = if(cs_uri_query = ""-"", """", cs_uri_query) 
+//|alter cs_url = replace(concat(http_proto, ""://"", cs_host, "":"", cs_uri_port, cs_uri_path, cs_uri_query),""/-"","""")
+|alter cs_url = replace(concat(http_proto, ""://"", cs_host, "":"", cs_uri_port, cs_uri_path, cs_uri_query_new), ""/-"","""")
+
+|alter // XDM
+xdm.observer.name = concat(""Symantec-Bluecoatproxysg_""+""ProxySG_"" + if(s_ip_v4 != null, s_ip_v4)),
+xdm.target.url = cs_url,
+xdm.intermediate.ipv4 = if(s_ip_v4 != null, s_ip_v4),
+xdm.intermediate.ipv6 = if(s_ip_v6 != null, s_ip_v6),
+xdm.source.ipv4 = c_ip_v4,
+xdm.source.ipv6 = c_ip_v6,
+xdm.network.http.response_code = if(sc_status = ""100"", XDM_CONST.HTTP_RSP_CODE_CONTINUE, sc_status = ""101"", XDM_CONST.HTTP_RSP_CODE_SWITCHING_PROTOCOLS, sc_status = ""102"", XDM_CONST.HTTP_RSP_CODE_PROCESSING, sc_status = ""103"", XDM_CONST.HTTP_RSP_CODE_EARLY_HINTS, sc_status = ""200"", XDM_CONST.HTTP_RSP_CODE_OK, sc_status = ""201"", XDM_CONST.HTTP_RSP_CODE_CREATED, sc_status = ""202"", XDM_CONST.HTTP_RSP_CODE_ACCEPTED, sc_status = ""203"", XDM_CONST.HTTP_RSP_CODE_NON__AUTHORITATIVE_INFORMATION, sc_status = ""204"", XDM_CONST.HTTP_RSP_CODE_NO_CONTENT, sc_status = ""205"", XDM_CONST.HTTP_RSP_CODE_RESET_CONTENT, sc_status = ""206"", XDM_CONST.HTTP_RSP_CODE_PARTIAL_CONTENT, sc_status = ""207"", XDM_CONST.HTTP_RSP_CODE_MULTI__STATUS, sc_status = ""208"", XDM_CONST.HTTP_RSP_CODE_ALREADY_REPORTED, sc_status = ""226"", XDM_CONST.HTTP_RSP_CODE_IM_USED, sc_status = ""300"", XDM_CONST.HTTP_RSP_CODE_MULTIPLE_CHOICES, sc_status = ""301"", XDM_CONST.HTTP_RSP_CODE_MOVED_PERMANENTLY, sc_status = ""302"", XDM_CONST.HTTP_RSP_CODE_FOUND, sc_status = ""303"", XDM_CONST.HTTP_RSP_CODE_SEE_OTHER, sc_status = ""304"", XDM_CONST.HTTP_RSP_CODE_NOT_MODIFIED, sc_status = ""305"", XDM_CONST.HTTP_RSP_CODE_USE_PROXY, sc_status = ""307"", XDM_CONST.HTTP_RSP_CODE_TEMPORARY_REDIRECT, sc_status = ""308"", XDM_CONST.HTTP_RSP_CODE_PERMANENT_REDIRECT, sc_status = ""400"", XDM_CONST.HTTP_RSP_CODE_BAD_REQUEST, sc_status = ""401"", XDM_CONST.HTTP_RSP_CODE_UNAUTHORIZED, sc_status = ""402"", XDM_CONST.HTTP_RSP_CODE_PAYMENT_REQUIRED, sc_status = ""403"", XDM_CONST.HTTP_RSP_CODE_FORBIDDEN, sc_status = ""404"", XDM_CONST.HTTP_RSP_CODE_NOT_FOUND, sc_status = ""405"", XDM_CONST.HTTP_RSP_CODE_METHOD_NOT_ALLOWED, sc_status = ""406"", XDM_CONST.HTTP_RSP_CODE_NOT_ACCEPTABLE, sc_status = ""407"", XDM_CONST.HTTP_RSP_CODE_PROXY_AUTHENTICATION_REQUIRED, sc_status = ""408"", XDM_CONST.HTTP_RSP_CODE_REQUEST_TIMEOUT, sc_status = ""409"", XDM_CONST.HTTP_RSP_CODE_CONFLICT, sc_status = ""410"", XDM_CONST.HTTP_RSP_CODE_GONE, sc_status = ""411"", XDM_CONST.HTTP_RSP_CODE_LENGTH_REQUIRED, sc_status = ""412"", XDM_CONST.HTTP_RSP_CODE_PRECONDITION_FAILED, sc_status = ""413"", XDM_CONST.HTTP_RSP_CODE_CONTENT_TOO_LARGE, sc_status = ""414"", XDM_CONST.HTTP_RSP_CODE_URI_TOO_LONG, sc_status = ""415"", XDM_CONST.HTTP_RSP_CODE_UNSUPPORTED_MEDIA_TYPE, sc_status = ""416"", XDM_CONST.HTTP_RSP_CODE_RANGE_NOT_SATISFIABLE, sc_status = ""417"", XDM_CONST.HTTP_RSP_CODE_EXPECTATION_FAILED, sc_status = ""421"", XDM_CONST.HTTP_RSP_CODE_MISDIRECTED_REQUEST, sc_status = ""422"", XDM_CONST.HTTP_RSP_CODE_UNPROCESSABLE_CONTENT, sc_status = ""423"", XDM_CONST.HTTP_RSP_CODE_LOCKED, sc_status = ""424"", XDM_CONST.HTTP_RSP_CODE_FAILED_DEPENDENCY, sc_status = ""425"", XDM_CONST.HTTP_RSP_CODE_TOO_EARLY, sc_status = ""426"", XDM_CONST.HTTP_RSP_CODE_UPGRADE_REQUIRED, sc_status = ""428"", XDM_CONST.HTTP_RSP_CODE_PRECONDITION_REQUIRED, sc_status = ""429"", XDM_CONST.HTTP_RSP_CODE_TOO_MANY_REQUESTS, sc_status = ""431"", XDM_CONST.HTTP_RSP_CODE_REQUEST_HEADER_FIELDS_TOO_LARGE, sc_status = ""451"", XDM_CONST.HTTP_RSP_CODE_UNAVAILABLE_FOR_LEGAL_REASONS, sc_status = ""500"", XDM_CONST.HTTP_RSP_CODE_INTERNAL_SERVER_ERROR, sc_status = ""501"", XDM_CONST.HTTP_RSP_CODE_NOT_IMPLEMENTED, sc_status = ""502"", XDM_CONST.HTTP_RSP_CODE_BAD_GATEWAY, sc_status = ""503"", XDM_CONST.HTTP_RSP_CODE_SERVICE_UNAVAILABLE, sc_status = ""504"", XDM_CONST.HTTP_RSP_CODE_GATEWAY_TIMEOUT, sc_status = ""505"", XDM_CONST.HTTP_RSP_CODE_HTTP_VERSION_NOT_SUPPORTED, sc_status = ""506"", XDM_CONST.HTTP_RSP_CODE_VARIANT_ALSO_NEGOTIATES, sc_status = ""507"", XDM_CONST.HTTP_RSP_CODE_INSUFFICIENT_STORAGE, sc_status = ""508"", XDM_CONST.HTTP_RSP_CODE_LOOP_DETECTED, sc_status = ""511"", XDM_CONST.HTTP_RSP_CODE_NETWORK_AUTHENTICATION_REQUIRED, sc_status = null, null, sc_status),
+//xdm.event.outcome_reason = s_action,
+xdm.target.sent_bytes = to_integer(sc_bytes), 
+xdm.source.sent_bytes = to_integer(cs_bytes),
+ xdm.network.http.method = if(cs_method = ""GET"", XDM_CONST.HTTP_METHOD_GET, cs_method = ""POST"", XDM_CONST.HTTP_METHOD_POST, cs_method = ""PUT"", XDM_CONST.HTTP_METHOD_PUT, cs_method = ""OPTIONS"", XDM_CONST.HTTP_METHOD_OPTIONS, cs_method = ""CONNECT"", XDM_CONST.HTTP_METHOD_CONNECT, cs_method = ""ACL"", XDM_CONST.HTTP_METHOD_ACL, cs_method = ""BASELINE_CONTROL"", XDM_CONST.HTTP_METHOD_BASELINE_CONTROL, cs_method = ""BIND"", XDM_CONST.HTTP_METHOD_BIND, cs_method = ""CHECKIN"", XDM_CONST.HTTP_METHOD_CHECKIN, cs_method = ""CHECKOUT"", XDM_CONST.HTTP_METHOD_CHECKOUT, cs_method = ""COPY"", XDM_CONST.HTTP_METHOD_COPY, cs_method = ""DELETE"", XDM_CONST.HTTP_METHOD_DELETE, cs_method = ""HEAD"", XDM_CONST.HTTP_METHOD_HEAD, cs_method = ""LABEL"", XDM_CONST.HTTP_METHOD_LABEL, cs_method = ""LINK"", XDM_CONST.HTTP_METHOD_LINK, cs_method = ""LOCK"", XDM_CONST.HTTP_METHOD_LOCK, cs_method = ""MERGE"", XDM_CONST.HTTP_METHOD_MERGE, cs_method = ""MKACTIVITY"", XDM_CONST.HTTP_METHOD_MKACTIVITY, cs_method = ""MKCALENDAR"", XDM_CONST.HTTP_METHOD_MKCALENDAR, cs_method = ""MKCOL"", XDM_CONST.HTTP_METHOD_MKCOL, cs_method = ""MKREDIRECTREF"", XDM_CONST.HTTP_METHOD_MKREDIRECTREF, cs_method = ""MKWORKSPACE"", XDM_CONST.HTTP_METHOD_MKWORKSPACE, cs_method = ""MOVE"", XDM_CONST.HTTP_METHOD_MOVE, cs_method = ""ORDERPATCH"", XDM_CONST.HTTP_METHOD_ORDERPATCH, cs_method = ""PATCH"", XDM_CONST.HTTP_METHOD_PATCH, cs_method = ""PRI"", XDM_CONST.HTTP_METHOD_PRI, cs_method = ""PROPFIND"", XDM_CONST.HTTP_METHOD_PROPFIND, cs_method = ""PROPPATCH"", XDM_CONST.HTTP_METHOD_PROPPATCH, cs_method = ""REBIND"", XDM_CONST.HTTP_METHOD_REBIND, cs_method = ""REPORT"", XDM_CONST.HTTP_METHOD_REPORT, cs_method = ""SEARCH"", XDM_CONST.HTTP_METHOD_SEARCH, cs_method = ""TRACE"", XDM_CONST.HTTP_METHOD_TRACE, cs_method = ""UNBIND"", XDM_CONST.HTTP_METHOD_UNBIND, cs_method = ""UNCHECKOUT"", XDM_CONST.HTTP_METHOD_UNCHECKOUT, cs_method = ""UNLINK"", XDM_CONST.HTTP_METHOD_UNLINK, cs_method = ""UNLOCK"", XDM_CONST.HTTP_METHOD_UNLOCK, cs_method = ""UPDATE"", XDM_CONST.HTTP_METHOD_UPDATE, cs_method = ""UPDATEREDIRECTREF"", XDM_CONST.HTTP_METHOD_UPDATEREDIRECTREF, cs_method = ""VERSION_CONTROL"", XDM_CONST.HTTP_METHOD_VERSION_CONTROL, cs_method),
+xdm.network.ip_protocol = if(cs_uri_scheme=""TCP"", XDM_CONST.IP_PROTOCOL_TCP, cs_uri_scheme=""UDP"", XDM_CONST.IP_PROTOCOL_UDP, cs_uri_scheme=""ICMP"",XDM_CONST.IP_PROTOCOL_ICMP, cs_uri_scheme=""HOPOPT"",XDM_CONST.IP_PROTOCOL_HOPOPT, cs_uri_scheme=""IGMP"",XDM_CONST.IP_PROTOCOL_IGMP, cs_uri_scheme=""GGP"",XDM_CONST.IP_PROTOCOL_GGP, cs_uri_scheme=""IP"",XDM_CONST.IP_PROTOCOL_IP, cs_uri_scheme=""ST"",XDM_CONST.IP_PROTOCOL_ST, cs_uri_scheme=""CBT"",XDM_CONST.IP_PROTOCOL_CBT, cs_uri_scheme=""EGP"",XDM_CONST.IP_PROTOCOL_EGP, cs_uri_scheme=""IGP"",XDM_CONST.IP_PROTOCOL_IGP, cs_uri_scheme=""BBN_RCC_MON"",XDM_CONST.IP_PROTOCOL_BBN_RCC_MON, cs_uri_scheme=""NVP_II"",XDM_CONST.IP_PROTOCOL_NVP_II, cs_uri_scheme=""PUP"",XDM_CONST.IP_PROTOCOL_PUP, cs_uri_scheme=""ARGUS"",XDM_CONST.IP_PROTOCOL_ARGUS, cs_uri_scheme=""EMCON"",XDM_CONST.IP_PROTOCOL_EMCON, cs_uri_scheme=""XNET"",XDM_CONST.IP_PROTOCOL_XNET, cs_uri_scheme=""CHAOS"",XDM_CONST.IP_PROTOCOL_CHAOS, cs_uri_scheme=""MUX"",XDM_CONST.IP_PROTOCOL_MUX, cs_uri_scheme=""DCN_MEAS"",XDM_CONST.IP_PROTOCOL_DCN_MEAS, cs_uri_scheme=""HMP"",XDM_CONST.IP_PROTOCOL_HMP, cs_uri_scheme=""PRM"",XDM_CONST.IP_PROTOCOL_PRM, cs_uri_scheme=""XNS_IDP"",XDM_CONST.IP_PROTOCOL_XNS_IDP, cs_uri_scheme=""TRUNK_1"",XDM_CONST.IP_PROTOCOL_TRUNK_1, cs_uri_scheme=""TRUNK_2"",XDM_CONST.IP_PROTOCOL_TRUNK_2, cs_uri_scheme=""LEAF_1"",XDM_CONST.IP_PROTOCOL_LEAF_1, cs_uri_scheme=""LEAF_2"",XDM_CONST.IP_PROTOCOL_LEAF_2, cs_uri_scheme=""RDP"",XDM_CONST.IP_PROTOCOL_RDP, cs_uri_scheme=""IRTP"",XDM_CONST.IP_PROTOCOL_IRTP, cs_uri_scheme=""ISO_TP4"",XDM_CONST.IP_PROTOCOL_ISO_TP4, cs_uri_scheme=""NETBLT"",XDM_CONST.IP_PROTOCOL_NETBLT, cs_uri_scheme=""MFE_NSP"",XDM_CONST.IP_PROTOCOL_MFE_NSP, cs_uri_scheme=""MERIT_INP"",XDM_CONST.IP_PROTOCOL_MERIT_INP, cs_uri_scheme=""DCCP"",XDM_CONST.IP_PROTOCOL_DCCP, cs_uri_scheme=""3PC"",XDM_CONST.IP_PROTOCOL_3PC, cs_uri_scheme=""IDPR"",XDM_CONST.IP_PROTOCOL_IDPR, cs_uri_scheme=""XTP"",XDM_CONST.IP_PROTOCOL_XTP, cs_uri_scheme=""DDP"",XDM_CONST.IP_PROTOCOL_DDP, cs_uri_scheme=""IDPR_CMTP"",XDM_CONST.IP_PROTOCOL_IDPR_CMTP, cs_uri_scheme=""TP"",XDM_CONST.IP_PROTOCOL_TP, cs_uri_scheme=""IL"",XDM_CONST.IP_PROTOCOL_IL, cs_uri_scheme=""IPV6"",XDM_CONST.IP_PROTOCOL_IPV6, cs_uri_scheme=""SDRP"",XDM_CONST.IP_PROTOCOL_SDRP, cs_uri_scheme=""IPV6_ROUTE"",XDM_CONST.IP_PROTOCOL_IPV6_ROUTE, cs_uri_scheme=""IPV6_FRAG"",XDM_CONST.IP_PROTOCOL_IPV6_FRAG, cs_uri_scheme=""IDRP"",XDM_CONST.IP_PROTOCOL_IDRP, cs_uri_scheme=""RSVP"",XDM_CONST.IP_PROTOCOL_RSVP, cs_uri_scheme=""GRE"",XDM_CONST.IP_PROTOCOL_GRE, cs_uri_scheme=""DSR"",XDM_CONST.IP_PROTOCOL_DSR, cs_uri_scheme=""BNA"",XDM_CONST.IP_PROTOCOL_BNA, cs_uri_scheme=""ESP"",XDM_CONST.IP_PROTOCOL_ESP, cs_uri_scheme=""AH"",XDM_CONST.IP_PROTOCOL_AH, cs_uri_scheme=""I_NLSP"",XDM_CONST.IP_PROTOCOL_I_NLSP, cs_uri_scheme=""SWIPE"",XDM_CONST.IP_PROTOCOL_SWIPE, cs_uri_scheme=""NARP"",XDM_CONST.IP_PROTOCOL_NARP, cs_uri_scheme=""MOBILE"",XDM_CONST.IP_PROTOCOL_MOBILE, cs_uri_scheme=""TLSP"",XDM_CONST.IP_PROTOCOL_TLSP, cs_uri_scheme=""SKIP"",XDM_CONST.IP_PROTOCOL_SKIP, cs_uri_scheme=""IPV6_ICMP"",XDM_CONST.IP_PROTOCOL_IPV6_ICMP, cs_uri_scheme=""IPV6_NONXT"",XDM_CONST.IP_PROTOCOL_IPV6_NONXT, cs_uri_scheme=""IPV6_OPTS"",XDM_CONST.IP_PROTOCOL_IPV6_OPTS, cs_uri_scheme=""CFTP"",XDM_CONST.IP_PROTOCOL_CFTP, cs_uri_scheme=""SAT_EXPAK"",XDM_CONST.IP_PROTOCOL_SAT_EXPAK, cs_uri_scheme=""KRYPTOLAN"",XDM_CONST.IP_PROTOCOL_KRYPTOLAN, cs_uri_scheme=""RVD"",XDM_CONST.IP_PROTOCOL_RVD, cs_uri_scheme=""IPPC"",XDM_CONST.IP_PROTOCOL_IPPC, cs_uri_scheme=""SAT_MON"",XDM_CONST.IP_PROTOCOL_SAT_MON, cs_uri_scheme=""VISA"",XDM_CONST.IP_PROTOCOL_VISA, cs_uri_scheme=""IPCV"",XDM_CONST.IP_PROTOCOL_IPCV, cs_uri_scheme=""CPNX"",XDM_CONST.IP_PROTOCOL_CPNX, cs_uri_scheme=""CPHB"",XDM_CONST.IP_PROTOCOL_CPHB, cs_uri_scheme=""WSN"",XDM_CONST.IP_PROTOCOL_WSN, cs_uri_scheme=""PVP"",XDM_CONST.IP_PROTOCOL_PVP, cs_uri_scheme=""BR_SAT_MON"",XDM_CONST.IP_PROTOCOL_BR_SAT_MON, cs_uri_scheme=""SUN_ND"",XDM_CONST.IP_PROTOCOL_SUN_ND, cs_uri_scheme=""WB_MON"",XDM_CONST.IP_PROTOCOL_WB_MON, cs_uri_scheme=""WB_EXPAK"",XDM_CONST.IP_PROTOCOL_WB_EXPAK, cs_uri_scheme=""ISO_IP"",XDM_CONST.IP_PROTOCOL_ISO_IP, cs_uri_scheme=""VMTP"",XDM_CONST.IP_PROTOCOL_VMTP, cs_uri_scheme=""SECURE_VMTP"",XDM_CONST.IP_PROTOCOL_SECURE_VMTP, cs_uri_scheme=""VINES"",XDM_CONST.IP_PROTOCOL_VINES, cs_uri_scheme=""TTP"",XDM_CONST.IP_PROTOCOL_TTP, cs_uri_scheme=""NSFNET_IGP"",XDM_CONST.IP_PROTOCOL_NSFNET_IGP, cs_uri_scheme=""DGP"",XDM_CONST.IP_PROTOCOL_DGP, cs_uri_scheme=""TCF"",XDM_CONST.IP_PROTOCOL_TCF, cs_uri_scheme=""EIGRP"",XDM_CONST.IP_PROTOCOL_EIGRP, cs_uri_scheme=""OSPFIGP"",XDM_CONST.IP_PROTOCOL_OSPFIGP, cs_uri_scheme=""SPRITE_RPC"",XDM_CONST.IP_PROTOCOL_SPRITE_RPC, cs_uri_scheme=""LARP"",XDM_CONST.IP_PROTOCOL_LARP, cs_uri_scheme=""MTP"",XDM_CONST.IP_PROTOCOL_MTP, cs_uri_scheme=""AX25"",XDM_CONST.IP_PROTOCOL_AX25, cs_uri_scheme=""IPIP"",XDM_CONST.IP_PROTOCOL_IPIP, cs_uri_scheme=""MICP"",XDM_CONST.IP_PROTOCOL_MICP, cs_uri_scheme=""SCC_SP"",XDM_CONST.IP_PROTOCOL_SCC_SP, cs_uri_scheme=""ETHERIP"",XDM_CONST.IP_PROTOCOL_ETHERIP, cs_uri_scheme=""ENCAP"",XDM_CONST.IP_PROTOCOL_ENCAP, cs_uri_scheme=""GMTP"",XDM_CONST.IP_PROTOCOL_GMTP, cs_uri_scheme=""IFMP"",XDM_CONST.IP_PROTOCOL_IFMP, cs_uri_scheme=""PNNI"",XDM_CONST.IP_PROTOCOL_PNNI, cs_uri_scheme=""PIM"",XDM_CONST.IP_PROTOCOL_PIM, cs_uri_scheme=""ARIS"",XDM_CONST.IP_PROTOCOL_ARIS, cs_uri_scheme=""SCPS"",XDM_CONST.IP_PROTOCOL_SCPS, cs_uri_scheme=""QNX"",XDM_CONST.IP_PROTOCOL_QNX, cs_uri_scheme=""AN"",XDM_CONST.IP_PROTOCOL_AN, cs_uri_scheme=""IPCOMP"",XDM_CONST.IP_PROTOCOL_IPCOMP, cs_uri_scheme=""SNP"",XDM_CONST.IP_PROTOCOL_SNP, cs_uri_scheme=""COMPAQ_PEER"",XDM_CONST.IP_PROTOCOL_COMPAQ_PEER, cs_uri_scheme=""IPX_IN_IP"",XDM_CONST.IP_PROTOCOL_IPX_IN_IP, cs_uri_scheme=""VRRP"",XDM_CONST.IP_PROTOCOL_VRRP, cs_uri_scheme=""PGM"",XDM_CONST.IP_PROTOCOL_PGM, cs_uri_scheme=""L2TP"",XDM_CONST.IP_PROTOCOL_L2TP, cs_uri_scheme=""DDX"",XDM_CONST.IP_PROTOCOL_DDX, cs_uri_scheme=""IATP"",XDM_CONST.IP_PROTOCOL_IATP, cs_uri_scheme=""STP"",XDM_CONST.IP_PROTOCOL_STP, cs_uri_scheme=""SRP"",XDM_CONST.IP_PROTOCOL_SRP, cs_uri_scheme=""UTI"",XDM_CONST.IP_PROTOCOL_UTI, cs_uri_scheme=""SMP"",XDM_CONST.IP_PROTOCOL_SMP, cs_uri_scheme=""SM"",XDM_CONST.IP_PROTOCOL_SM, cs_uri_scheme=""PTP"",XDM_CONST.IP_PROTOCOL_PTP, cs_uri_scheme=""ISIS"",XDM_CONST.IP_PROTOCOL_ISIS, cs_uri_scheme=""FIRE"",XDM_CONST.IP_PROTOCOL_FIRE, cs_uri_scheme=""CRTP"",XDM_CONST.IP_PROTOCOL_CRTP, cs_uri_scheme=""CRUDP"",XDM_CONST.IP_PROTOCOL_CRUDP, cs_uri_scheme=""SSCOPMCE"",XDM_CONST.IP_PROTOCOL_SSCOPMCE, cs_uri_scheme=""IPLT"",XDM_CONST.IP_PROTOCOL_IPLT, cs_uri_scheme=""SPS"",XDM_CONST.IP_PROTOCOL_SPS, cs_uri_scheme=""PIPE"",XDM_CONST.IP_PROTOCOL_PIPE, cs_uri_scheme=""SCTP"",XDM_CONST.IP_PROTOCOL_SCTP, cs_uri_scheme=""FC"",XDM_CONST.IP_PROTOCOL_FC, cs_uri_scheme=""RSVP_E2E_IGNORE"",XDM_CONST.IP_PROTOCOL_RSVP_E2E_IGNORE, cs_uri_scheme=""MOBILITY"",XDM_CONST.IP_PROTOCOL_MOBILITY, cs_uri_scheme=""UDPLITE"",XDM_CONST.IP_PROTOCOL_UDPLITE, cs_uri_scheme=""MPLS_IN_IP"",XDM_CONST.IP_PROTOCOL_MPLS_IN_IP, cs_uri_scheme=""MANET"",XDM_CONST.IP_PROTOCOL_MANET, cs_uri_scheme=""HIP"",XDM_CONST.IP_PROTOCOL_HIP, cs_uri_scheme=""SHIM6"",XDM_CONST.IP_PROTOCOL_SHIM6, cs_uri_scheme=""WESP"",XDM_CONST.IP_PROTOCOL_WESP, cs_uri_scheme=""ROHC"",XDM_CONST.IP_PROTOCOL_ROHC, cs_uri_scheme=""RESERVED"",XDM_CONST.IP_PROTOCOL_RESERVED,cs_uri_scheme=""0"",XDM_CONST.IP_PROTOCOL_HOPOPT, cs_uri_scheme=""1"",XDM_CONST.IP_PROTOCOL_ICMP, cs_uri_scheme=""2"",XDM_CONST.IP_PROTOCOL_IGMP, cs_uri_scheme=""3"",XDM_CONST.IP_PROTOCOL_GGP, cs_uri_scheme=""4"",XDM_CONST.IP_PROTOCOL_IP, cs_uri_scheme=""5"",XDM_CONST.IP_PROTOCOL_ST, cs_uri_scheme=""6"",XDM_CONST.IP_PROTOCOL_TCP, cs_uri_scheme=""7"",XDM_CONST.IP_PROTOCOL_CBT, cs_uri_scheme=""8"",XDM_CONST.IP_PROTOCOL_EGP, cs_uri_scheme=""9"",XDM_CONST.IP_PROTOCOL_IGP, cs_uri_scheme=""10"",XDM_CONST.IP_PROTOCOL_BBN_RCC_MON, cs_uri_scheme=""11"",XDM_CONST.IP_PROTOCOL_NVP_II, cs_uri_scheme=""12"",XDM_CONST.IP_PROTOCOL_PUP, cs_uri_scheme=""13"",XDM_CONST.IP_PROTOCOL_ARGUS, cs_uri_scheme=""14"",XDM_CONST.IP_PROTOCOL_EMCON, cs_uri_scheme=""15"",XDM_CONST.IP_PROTOCOL_XNET, cs_uri_scheme=""16"",XDM_CONST.IP_PROTOCOL_CHAOS, cs_uri_scheme=""17"",XDM_CONST.IP_PROTOCOL_UDP, cs_uri_scheme=""18"",XDM_CONST.IP_PROTOCOL_MUX, cs_uri_scheme=""19"",XDM_CONST.IP_PROTOCOL_DCN_MEAS, cs_uri_scheme=""20"",XDM_CONST.IP_PROTOCOL_HMP, cs_uri_scheme=""21"",XDM_CONST.IP_PROTOCOL_PRM, cs_uri_scheme=""22"",XDM_CONST.IP_PROTOCOL_XNS_IDP, cs_uri_scheme=""23"",XDM_CONST.IP_PROTOCOL_TRUNK_1, cs_uri_scheme=""24"",XDM_CONST.IP_PROTOCOL_TRUNK_2, cs_uri_scheme=""25"",XDM_CONST.IP_PROTOCOL_LEAF_1, cs_uri_scheme=""26"",XDM_CONST.IP_PROTOCOL_LEAF_2, cs_uri_scheme=""27"",XDM_CONST.IP_PROTOCOL_RDP, cs_uri_scheme=""28"",XDM_CONST.IP_PROTOCOL_IRTP, cs_uri_scheme=""29"",XDM_CONST.IP_PROTOCOL_ISO_TP4, cs_uri_scheme=""30"",XDM_CONST.IP_PROTOCOL_NETBLT, cs_uri_scheme=""31"",XDM_CONST.IP_PROTOCOL_MFE_NSP, cs_uri_scheme=""32"",XDM_CONST.IP_PROTOCOL_MERIT_INP, cs_uri_scheme=""33"",XDM_CONST.IP_PROTOCOL_DCCP, cs_uri_scheme=""34"",XDM_CONST.IP_PROTOCOL_3PC, cs_uri_scheme=""35"",XDM_CONST.IP_PROTOCOL_IDPR, cs_uri_scheme=""36"",XDM_CONST.IP_PROTOCOL_XTP, cs_uri_scheme=""37"",XDM_CONST.IP_PROTOCOL_DDP, cs_uri_scheme=""38"",XDM_CONST.IP_PROTOCOL_IDPR_CMTP, cs_uri_scheme=""39"",XDM_CONST.IP_PROTOCOL_TP, cs_uri_scheme=""40"",XDM_CONST.IP_PROTOCOL_IL, cs_uri_scheme=""41"",XDM_CONST.IP_PROTOCOL_IPV6, cs_uri_scheme=""42"",XDM_CONST.IP_PROTOCOL_SDRP, cs_uri_scheme=""43"",XDM_CONST.IP_PROTOCOL_IPV6_ROUTE, cs_uri_scheme=""44"",XDM_CONST.IP_PROTOCOL_IPV6_FRAG, cs_uri_scheme=""45"",XDM_CONST.IP_PROTOCOL_IDRP, cs_uri_scheme=""46"",XDM_CONST.IP_PROTOCOL_RSVP, cs_uri_scheme=""47"",XDM_CONST.IP_PROTOCOL_GRE, cs_uri_scheme=""48"",XDM_CONST.IP_PROTOCOL_DSR, cs_uri_scheme=""49"",XDM_CONST.IP_PROTOCOL_BNA, cs_uri_scheme=""50"",XDM_CONST.IP_PROTOCOL_ESP, cs_uri_scheme=""51"",XDM_CONST.IP_PROTOCOL_AH, cs_uri_scheme=""52"",XDM_CONST.IP_PROTOCOL_I_NLSP, cs_uri_scheme=""53"",XDM_CONST.IP_PROTOCOL_SWIPE, cs_uri_scheme=""54"",XDM_CONST.IP_PROTOCOL_NARP, cs_uri_scheme=""55"",XDM_CONST.IP_PROTOCOL_MOBILE, cs_uri_scheme=""56"",XDM_CONST.IP_PROTOCOL_TLSP, cs_uri_scheme=""57"",XDM_CONST.IP_PROTOCOL_SKIP, cs_uri_scheme=""58"",XDM_CONST.IP_PROTOCOL_IPV6_ICMP, cs_uri_scheme=""59"",XDM_CONST.IP_PROTOCOL_IPV6_NONXT, cs_uri_scheme=""60"",XDM_CONST.IP_PROTOCOL_IPV6_OPTS, cs_uri_scheme=""62"",XDM_CONST.IP_PROTOCOL_CFTP, cs_uri_scheme=""64"",XDM_CONST.IP_PROTOCOL_SAT_EXPAK, cs_uri_scheme=""65"",XDM_CONST.IP_PROTOCOL_KRYPTOLAN, cs_uri_scheme=""66"",XDM_CONST.IP_PROTOCOL_RVD, cs_uri_scheme=""67"",XDM_CONST.IP_PROTOCOL_IPPC, cs_uri_scheme=""69"",XDM_CONST.IP_PROTOCOL_SAT_MON, cs_uri_scheme=""70"",XDM_CONST.IP_PROTOCOL_VISA, cs_uri_scheme=""71"",XDM_CONST.IP_PROTOCOL_IPCV, cs_uri_scheme=""72"",XDM_CONST.IP_PROTOCOL_CPNX, cs_uri_scheme=""73"",XDM_CONST.IP_PROTOCOL_CPHB, cs_uri_scheme=""74"",XDM_CONST.IP_PROTOCOL_WSN, cs_uri_scheme=""75"",XDM_CONST.IP_PROTOCOL_PVP, cs_uri_scheme=""76"",XDM_CONST.IP_PROTOCOL_BR_SAT_MON, cs_uri_scheme=""77"",XDM_CONST.IP_PROTOCOL_SUN_ND, cs_uri_scheme=""78"",XDM_CONST.IP_PROTOCOL_WB_MON, cs_uri_scheme=""79"",XDM_CONST.IP_PROTOCOL_WB_EXPAK, cs_uri_scheme=""80"",XDM_CONST.IP_PROTOCOL_ISO_IP, cs_uri_scheme=""81"",XDM_CONST.IP_PROTOCOL_VMTP, cs_uri_scheme=""82"",XDM_CONST.IP_PROTOCOL_SECURE_VMTP, cs_uri_scheme=""83"",XDM_CONST.IP_PROTOCOL_VINES, cs_uri_scheme=""84"",XDM_CONST.IP_PROTOCOL_TTP, cs_uri_scheme=""85"",XDM_CONST.IP_PROTOCOL_NSFNET_IGP, cs_uri_scheme=""86"",XDM_CONST.IP_PROTOCOL_DGP, cs_uri_scheme=""87"",XDM_CONST.IP_PROTOCOL_TCF, cs_uri_scheme=""88"",XDM_CONST.IP_PROTOCOL_EIGRP, cs_uri_scheme=""89"",XDM_CONST.IP_PROTOCOL_OSPFIGP, cs_uri_scheme=""90"",XDM_CONST.IP_PROTOCOL_SPRITE_RPC, cs_uri_scheme=""91"",XDM_CONST.IP_PROTOCOL_LARP, cs_uri_scheme=""92"",XDM_CONST.IP_PROTOCOL_MTP, cs_uri_scheme=""93"",XDM_CONST.IP_PROTOCOL_AX25, cs_uri_scheme=""94"",XDM_CONST.IP_PROTOCOL_IPIP, cs_uri_scheme=""95"",XDM_CONST.IP_PROTOCOL_MICP, cs_uri_scheme=""96"",XDM_CONST.IP_PROTOCOL_SCC_SP, cs_uri_scheme=""97"",XDM_CONST.IP_PROTOCOL_ETHERIP, cs_uri_scheme=""98"",XDM_CONST.IP_PROTOCOL_ENCAP, cs_uri_scheme=""100"",XDM_CONST.IP_PROTOCOL_GMTP, cs_uri_scheme=""101"",XDM_CONST.IP_PROTOCOL_IFMP, cs_uri_scheme=""102"",XDM_CONST.IP_PROTOCOL_PNNI, cs_uri_scheme=""103"",XDM_CONST.IP_PROTOCOL_PIM, cs_uri_scheme=""104"",XDM_CONST.IP_PROTOCOL_ARIS, cs_uri_scheme=""105"",XDM_CONST.IP_PROTOCOL_SCPS, cs_uri_scheme=""106"",XDM_CONST.IP_PROTOCOL_QNX, cs_uri_scheme=""107"",XDM_CONST.IP_PROTOCOL_AN, cs_uri_scheme=""108"",XDM_CONST.IP_PROTOCOL_IPCOMP, cs_uri_scheme=""109"",XDM_CONST.IP_PROTOCOL_SNP, cs_uri_scheme=""110"",XDM_CONST.IP_PROTOCOL_COMPAQ_PEER, cs_uri_scheme=""111"",XDM_CONST.IP_PROTOCOL_IPX_IN_IP, cs_uri_scheme=""112"",XDM_CONST.IP_PROTOCOL_VRRP, cs_uri_scheme=""113"",XDM_CONST.IP_PROTOCOL_PGM, cs_uri_scheme=""115"",XDM_CONST.IP_PROTOCOL_L2TP, cs_uri_scheme=""116"",XDM_CONST.IP_PROTOCOL_DDX, cs_uri_scheme=""117"",XDM_CONST.IP_PROTOCOL_IATP, cs_uri_scheme=""118"",XDM_CONST.IP_PROTOCOL_STP, cs_uri_scheme=""119"",XDM_CONST.IP_PROTOCOL_SRP, cs_uri_scheme=""120"",XDM_CONST.IP_PROTOCOL_UTI, cs_uri_scheme=""121"",XDM_CONST.IP_PROTOCOL_SMP, cs_uri_scheme=""122"",XDM_CONST.IP_PROTOCOL_SM, cs_uri_scheme=""123"",XDM_CONST.IP_PROTOCOL_PTP, cs_uri_scheme=""124"",XDM_CONST.IP_PROTOCOL_ISIS, cs_uri_scheme=""125"",XDM_CONST.IP_PROTOCOL_FIRE, cs_uri_scheme=""126"",XDM_CONST.IP_PROTOCOL_CRTP, cs_uri_scheme=""127"",XDM_CONST.IP_PROTOCOL_CRUDP, cs_uri_scheme=""128"",XDM_CONST.IP_PROTOCOL_SSCOPMCE, cs_uri_scheme=""129"",XDM_CONST.IP_PROTOCOL_IPLT, cs_uri_scheme=""130"",XDM_CONST.IP_PROTOCOL_SPS, cs_uri_scheme=""131"",XDM_CONST.IP_PROTOCOL_PIPE, cs_uri_scheme=""132"",XDM_CONST.IP_PROTOCOL_SCTP, cs_uri_scheme=""133"",XDM_CONST.IP_PROTOCOL_FC, cs_uri_scheme=""134"",XDM_CONST.IP_PROTOCOL_RSVP_E2E_IGNORE, cs_uri_scheme=""135"",XDM_CONST.IP_PROTOCOL_MOBILITY, cs_uri_scheme=""136"",XDM_CONST.IP_PROTOCOL_UDPLITE, cs_uri_scheme=""137"",XDM_CONST.IP_PROTOCOL_MPLS_IN_IP, cs_uri_scheme=""138"",XDM_CONST.IP_PROTOCOL_MANET, cs_uri_scheme=""139"",XDM_CONST.IP_PROTOCOL_HIP, cs_uri_scheme=""140"",XDM_CONST.IP_PROTOCOL_SHIM6, cs_uri_scheme=""141"",XDM_CONST.IP_PROTOCOL_WESP, cs_uri_scheme=""142"",XDM_CONST.IP_PROTOCOL_ROHC, cs_uri_scheme=""255"",XDM_CONST.IP_PROTOCOL_RESERVED, cs_uri_scheme),
+xdm.network.http.domain = cs_host,
+xdm.target.port = to_integer(cs_uri_port),
+xdm.target.resource.name = cs_uri_path,
+xdm.source.user.username = cs_username ,
+xdm.source.user.groups = if(cs_auth_group != null, arraycreate(cs_auth_group)),
+//xdm.target.domain  = s_supplier_name,
+xdm.network.http.content_type = rs_content_type ,
+xdm.network.http.referrer = cs_referer,
+xdm.source.user_agent = cs_user_agent,
+xdm.observer.action = s_action,
+xdm.network.http.url_category = cs_categories,
+// xdm.alert.original_threat_id = x_virus_id,
+xdm.intermediate.port = to_integer(r_supplier_port),
+xdm.event.type = event_type,
+xdm.event.operation = event_type,
+xdm.event.outcome = if(sc_filter_result = ""DENIED"", XDM_CONST.OUTCOME_FAILED, sc_filter_result = ""OBSERVED"", XDM_CONST.OUTCOME_SUCCESS, sc_filter_result = ""PROXIED"", XDM_CONST.OUTCOME_PARTIAL, sc_filter_result)
+;
+
+filter event_type = ""authentication""
+| alter observer_ip = arrayindex(regextract(_raw_log, ""(\d+\.\d+\.\d+\.\d+)\sProxySG""), 0)
+| alter description = arrayindex(regextract(_raw_log, "":\s+(.*)""), 0 )
+| alter xdm.intermediate.ipv4 = x -> device_ip,
+xdm.event.id = x -> event_id,
+xdm.event.type = event_type,
+xdm.event.operation = x -> event_type,
+xdm.event.outcome = if(x->event_result = ""failed"",XDM_CONST.OUTCOME_FAILED , XDM_CONST.OUTCOME_SUCCESS ),
+xdm.source.ipv4 = x-> source_ip,
+xdm.source.user.username = x->source_user,
+xdm.event.operation_sub_type = x->event_subtype,
+xdm.observer.type = x-> device_type,
+xdm.event.outcome_reason = x->info,
+//xdm.event.description = x->realm
+xdm.event.description = description,
+xdm.observer.name = concat(""Symantec-Bluecoatproxysg_""+""ProxySG_"" + observer_ip)
+;"
+"Oct 18 06:08:18 sf-tower CEF: 0|Silverfort|Admin Console|5.0.4.13|MFA|MFA request|2|rt=""1729231759367"" suser=""saguntalah.apkrishnan@singtel.com"" sntdom=""singtel.corp.root"" shost=""n/a"" src=""undefined"" destinationServiceName="""" dhost=""10.170.6.130"" dntdom=""singtel.corp.root"" app=""LDAPS"" cs1Label=SilverfortReqRisk cs1=""Low"" cs2Label=SilverfortReqResult cs2=""Allowed"" cs3Label=SilverfortPolicyAction cs3=""MFA"" cs4Label=SilverfortPolicyId cs4=""5"" cs5Label=SilverfortMfaResponse cs5=""Approved"" cs6Label=SilverfortMfaResponseTime cs6=""13s""  cs7Label=SilverfortReqRiskIndicators cs7=""n/a"" cs8Label=SilverfortPolicyName cs8=""VDS_"" cs9Label=Country cs9=""n/a"" cs10Label=City cs10=""n/a"" cs11Label=Coordinates cs11=""n/a"" cs12Label=RequestID cs12=""21023477572168506691"" syslog_id=6030
+Oct 11 15:58:55 sf-tower CEF: 0|Siverfort|Admin Console|4.3.120.0|Authentication|Authentication request|2|rt=1728662399455 suer=srivarman sntdom=sintel.corp.root shost=st-kc-v-0400002 src=null destinationServiceName= dhost=mccitsvr03 dntdom=sintel.corp.root app=NTLM cs1Label=SiverfortReqRisk cs1=Medium cs2Label=SiverfortReqResult cs2=Allowed cs3Label=SilverfortPolicyAction cs3=n/a cs4Label=SilverfortPolicyId cs4=-1 cs5Label=SilverfortMfaResponse cs5=n/a cs6Label=SiverfortMfaResponseTime cs6=n/a cs7Label=SiverfortReqRiskIndicatiors cs7=User_is_at_high_risk,Shared_device cs8Label=SiverfortPolicyName cs8=n/a","[MODEL: dataset = ""silverfort_admin_console_raw""] 
+
+//The event type we're mapping is ""Authentication""
+// filter ReportLogType = ""Authentication""
+// alter    outcome_reason = arrayindex(regextract(cs2, ""\w+\s\((.+)\)""), 0) //The format of 'cs2' is 'Denied (Bad Password)', we're extracting the outcome reason, which will appear mostly in Denied.
+//Mapping to XDM fields
+alter 
+    version = arrayindex(regextract(_raw_log, ""\|Silverfort\|Admin Console\|(\d+(?:\.\d+){0,3})\|""),0), 
+    // ReportLogType = arrayindex(regextract(_raw_log, ""ReportLogType=(.+)\srt""),0), //
+    observer_name = arrayindex(regextract(_raw_log, ""\s+([a-zA-Z0-9-]+)\s+CEF""),0),
+    ReportLogType = arrayindex(regextract(_raw_log, ""\|(\w+\|\w+\s\w+)\|\d+\|""), 0), 
+    //src_user = arrayindex(regextract(_raw_log ,""suser\=([^\\s]+)""), 0), //src_user comes sometimes as UPN
+    src_user = arrayindex(regextract(_raw_log ,""suser\=\""(.*)\""\ssntdom\=""), 0),
+    cs2 = arrayindex(regextract(_raw_log, ""cs2=\""(.+)\""\scs3Label""),0), //The format of 'cs2' is 'Denied (Bad Password)', we're extracting the outcome reason, which will appear mostly in Denied.
+    //risks = if(cs7 != ""n/a"", replace(cs7, ""_"", "" "")) //Comes with underscore instead of sp
+    sntdom = arrayindex(regextract(_raw_log, ""sntdom=\""(.+)\""\sshost""),0), //
+    //shost = arrayindex(regextract(_raw_log ,""shost\=([^\\s]+)""), 0),//
+    shost = arrayindex(regextract(_raw_log ,""shost\=\""(.*)\""\ssrc\=""), 0),
+    src = arrayindex(regextract(_raw_log, ""src\=\""(.+)\""\s+destinationServiceName=""), 0),//
+    destinationServiceName = arrayindex(regextract(_raw_log ,""destinationServiceName\=\""([^\s]+)\""""), 0),//
+    dhost = arrayindex(regextract(_raw_log, ""dhost=\""(.+)\""\sdntdom""),0), //
+    dntdom = arrayindex(regextract(_raw_log, ""dntdom=\""(.+)\""\sapp""),0), //
+    app = arrayindex(regextract(_raw_log ,""app\=\""([^\s]+)\""""), 0),//
+    //cs1Label = arrayindex(regextract(_raw_log ,""cs1Label\=([^\s]+)""), 0),//
+    cs1 = arrayindex(regextract(_raw_log ,""cs1\=\""([^\s]+)\""""), 0),//
+    //cs2Label = arrayindex(regextract(_raw_log ,""cs2Label\=([^\s]+)""), 0),//
+    //cs3Label = arrayindex(regextract(_raw_log ,""cs3Label\=([^\s]+)""), 0),//
+    cs3 = arrayindex(regextract(_raw_log, ""cs3=\""(.+)\""\scs4Label""),0),//
+    //cs4Label = arrayindex(regextract(_raw_log ,""cs4Label\=([^\s]+)""), 0),//
+    //cs4 = arrayindex(regextract(_raw_log, ""cs4=\""(.+)\""\scs5Label""),0),//
+    //cs5Label = arrayindex(regextract(_raw_log ,""cs5Label\=([^\s]+)""), 0),//
+    cs5 = arrayindex(regextract(_raw_log, ""cs5=\""(.+)\""\scs6Label""),0),//
+    //cs6Label = arrayindex(regextract(_raw_log ,""cs6Label\=([^\s]+)""), 0),//
+    cs6 = arrayindex(regextract(_raw_log, ""cs6=\""(.+)\""\s+cs7Label""),0),//
+    //cs7Label = arrayindex(regextract(_raw_log ,""cs7Label\=([^\s]+)""), 0),//
+    //xdm.alert.risks = arraycreate(arrayindex(regextract(_raw_log ,""cs7=\""(.+)\""\s+cs8Label""), 0)),
+    cs7 = arraycreate(arrayindex(regextract(_raw_log ,""cs7=\""(.+)\""\s+cs8Label""), 0)),
+    cs8 = arrayindex(regextract(_raw_log ,""cs8=\""(.+)\""\s+cs9Label""), 0)
+    //cs9 = arrayindex(regextract(_raw_log ,""cs9=\""(.+)\""\s+cs10Label""), 0),
+    //cs10 = arrayindex(regextract(_raw_log ,""cs10=\""(.+)\""\s+cs11Label""), 0)
+| alter    outcome_reason = arrayindex(regextract(cs2, ""\w+\s\((.+)\)""), 0), //The format of 'cs2' is 'Denied (Bad Password)', we're extracting the outcome reason, which will appear mostly in Denied.
+    syslog_id = arrayindex(regextract(_raw_log ,""syslog_id=([^\s]+)""), 0)
+|alter
+    xdm.alert.risks = cs7,
+    xdm.observer.name = if(observer_name != null, concat( ""Silverfort_"" + observer_name + ""_null""),
+                         ""Silverfort_null_null""), // 2025.02.12.v1.2 - Tao Feng
+    xdm.observer.version = version, 
+    xdm.source.user.username = src_user ,
+    //xdm.source.user.upn = src_user,
+    xdm.source.user.domain = sntdom,
+    xdm.source.host.hostname = shost,
+    xdm.source.ipv4 = if(src != ""undefined"", src), //- 2025.02.10.v1.1 - Tao Feng
+    xdm.source.ipv6 = arrayindex(regextract(src, ""(?:[a-fA-F\d]{0,4}\:){7}[\wa-fA-F]{0,4}""),0),
+    xdm.target.application.name = if(destinationServiceName != """", destinationServiceName),
+    // xdm.auth.auth_method = if(destinationServiceName != """", destinationServiceName),
+    // xdm.target.resource.name = if(dhost !="""", dhost),
+    xdm.target.host.hostname = if(dhost !="""", dhost),
+    xdm.target.domain = if(dntdom != """", dntdom),
+    // xdm.event.operation_sub_type = app,
+    xdm.auth.service = app ,
+    // xdm.event.description = cs7 ,
+    // xdm.alert.description = cs7,
+    //xdm.alert.risks =  to_string(cs7) ,
+    xdm.alert.severity = cs1,
+    xdm.event.outcome = if(cs2 contains ""Allowed"", XDM_CONST.OUTCOME_SUCCESS, cs2 contains ""Denied"", XDM_CONST.OUTCOME_FAILED, XDM_CONST.OUTCOME_UNKNOWN),
+    //xdm.event.outcome = cs2,
+    xdm.event.outcome_reason = outcome_reason,
+    xdm.observer.action = if(cs3 != ""n/a"",cs3),
+    //xdm.event.id = cs4,
+    xdm.event.id = syslog_id,
+    xdm.network.rule = cs8,
+    // xdm.event.outcome_reason = if(cs5 != ""n/a"", cs5, outcome_reason),
+    // xdm.event.outcome_reason = if(cs5 != ""n/a"", cs5),
+   // xdm.alert.risks = split(risks ,"",""),
+   // xdm.network.rule = if(cs8 != ""n/a"", replace(cs8, ""_"", "" "")),
+    //xdm.source.location.country = if(cs9 != ""n/a"", cs9),
+    // xdm.source.location.city = if(cs10 != ""n/a"", cs10),
+    //xdm.source.location.latitude = latitude,
+    //xdm.source.location.longitude = longitude,
+    xdm.event.type = ""authentication"",
+    xdm.event.original_event_type = ReportLogType,
+    xdm.event.tags = arraycreate(XDM_CONST.EVENT_TAG_AUTHENTICATION),
+    xdm.auth.mfa.client_details  = concat(if(cs5 != ""n/a"", cs5) + ""-"" + if(cs6 != ""n/a"", cs6)),
+    xdm.event.operation = if(ReportLogType = ""MFA|MFA request"", XDM_CONST.OPERATION_TYPE_AUTH_MFA, 
+                               ReportLogType = ""Authentication|Authentication request"", XDM_CONST.OPERATION_TYPE_AUTH_LOGIN)
+;
+
+
+
+"
+"Jul 29 11:58:45 10.142.255.241 %ASA-4-722037: Group <GroupPolicy_bccusers> User <randychong> IP <128.106.255.70> SVC closing connection: DPD failure.
+Jul 29 11:58:43 10.142.255.242 %ASA-6-737016: IPAA: Session=0x2feef000, Freeing local pool OTP-Profile address 10.141.6.85
+Jul 29 11:58:43 10.142.255.242 %ASA-6-737031: IPAA: Session=0x2feef000, Removed 10.141.6.85 from standby
+Jul 29 11:58:43 10.142.255.242 %ASA-4-113019: Group = Macbook, Username = P1357447, IP = 101.100.164.15, Session disconnected. Session Type: SSL, Duration: 2h:56m:04s, Bytes xmt: 75747920, Bytes rcv: 53703806, Reason: Idle Timeout
+Jul 29 11:58:43 10.142.255.242 %ASA-6-716002: Group <GroupPolicy_Macbook> User <P1357447> IP <101.100.164.15> WebVPN session terminated: Idle Timeout.
+Jul 29 11:58:43 10.142.255.241 %ASA-6-737016: IPAA: Session=0x2feef000, Freeing local pool OTP-Profile address 10.141.6.85
+Jul 29 11:58:43 10.142.255.241 %ASA-6-737016: IPAA: Session=0x2feaa000, Freeing local pool OTP-Profile address 10.141.6.34
+Jul 29 11:58:43 10.142.255.241 %ASA-4-113019: Group = Macbook, Username = P1357447, IP = 101.100.164.15, Session disconnected. Session Type: SSL, Duration: 2h:56m:04s, Bytes xmt: 75817120, Bytes rcv: 53703806, Reason: Idle Timeout
+Jul 29 11:58:43 10.142.255.241 %ASA-6-716002: Group <GroupPolicy_Macbook> User <P1357447> IP <101.100.164.15> WebVPN session terminated: Idle Timeout.
+Jul 29 11:58:43 10.142.255.241 %ASA-5-109210: UAUTH: Session=0x2feef000, User=P1357447, Assigned IP=10.141.6.85, Succeeded removing entry.
+Jul 29 11:58:43 10.142.255.241 %ASA-4-113019: Group = Wintel, Username = P4011098, IP = 49.248.119.190, Session disconnected. Session Type: SSL, Duration: 3h:08m:44s, Bytes xmt: 19223986, Bytes rcv: 7176568, Reason: Idle Timeout
+Jul 29 11:58:43 10.142.255.241 %ASA-6-716002: Group <GroupPolicy_Wintel> User <P4011098> IP <49.248.119.190> WebVPN session terminated: Idle Timeout.
+Jul 29 11:58:43 10.142.255.241 %ASA-5-109210: UAUTH: Session=0x2feaa000, User=P4011098, Assigned IP=10.141.6.34, Succeeded removing entry.
+Jul 29 11:58:43 10.142.255.242 %ASA-6-737016: IPAA: Session=0x2feaa000, Freeing local pool OTP-Profile address 10.141.6.34
+Jul 29 11:58:43 10.142.255.242 %ASA-6-737031: IPAA: Session=0x2feaa000, Removed 10.141.6.34 from standby
+Jul 29 11:58:43 10.142.255.242 %ASA-4-113019: Group = Wintel, Username = P4011098, IP = 49.248.119.190, Session disconnected. Session Type: AnyConnect-Parent, Duration: 3h:08m:44s, Bytes xmt: 19216020, Bytes rcv: 7176568, Reason: Idle Timeout
+Jul 29 11:58:43 10.142.255.242 %ASA-6-716002: Group <GroupPolicy_Wintel> User <P4011098> IP <49.248.119.190> WebVPN session terminated: Idle Timeout.
+Jul 29 11:58:43 10.142.255.241 %ASA-6-722023: Group <OTP> User <ruby> IP <10.32.102.224> TCP SVC connection terminated without compression
+Jul 29 11:58:43 asaSingtel-DR : %ASA-3-746016: user-identity: DNS lookup for ienquiry.ica.gov.sg failed, reason:Timeout or unresolvable
+Jul 29 11:58:43 asaSingtel-DR : %ASA-3-746016: user-identity: DNS lookup for ienquiry.ica.gov.sg failed, reason:Timeout or unresolvable
+Jul 29 11:58:40 10.142.255.241 %ASA-6-716058: Group <Roadshow_PC> User <g-pcrdshar> IP <119.234.36.11> AnyConnect session lost connection. Waiting to resume.","[RULE: cisco_asa_vpn_main_fields_xdm_mapping]
+alter observer_ip = arrayindex(regextract(_raw_log, ""(\d+\.\d+\.\d+\.\d+)\s\:*\s*\%ASA-\d+""), 0),
+      observer_name_1 = arrayindex(regextract(_raw_log, ""([a-zA-Z-_]+)\s\:*\s*\%ASA-\d+""), 0)
+|alter
+    xdm.event.id = to_string(event_id),
+    xdm.alert.severity = severity,
+    xdm.event.description = message,
+    //xdm.observer.name = concat(""Cisco-ASA_"" + observer_name), 
+    xdm.observer.name = if(observer_name_1 != null, concat(""Cisco-ASA_"" + observer_name_1 + ""_null""), concat(""Cisco-ASA_"" + ""null_"" + observer_ip)),
+    xdm.source.application.name = ""asa""
+;
+
+[MODEL: dataset=cisco_asa_vpn_raw]
+/*-----Event ID: 113019-----*/
+call cisco_asa_vpn_main_fields_xdm_mapping
+| filter xdm.event.id in (""113019"")
+| alter 
+    src_group = arrayindex(regextract(_raw_log, ""Group\s\=\s(.*)\,\sUsername""), 0),
+    src_username = arrayindex(regextract(_raw_log, ""\sUsername\s=\s(.*)\,\sIP""), 0),
+    src_ip = arrayindex(regextract(_raw_log, ""IP\s=\s(\d+.\d+.\d+.\d+)\,""), 0),
+    session_outcome = arrayindex(regextract(_raw_log, ""IP\s=\s\d+.\d+.\d+.\d+\,\s(.*)\.\sSession\sType""), 0),
+    session_type = arrayindex(regextract(_raw_log, ""\sSession\sType\:\s(.*)\,\sDuration""), 0),
+    session_reason = arrayindex(regextract(_raw_log, ""Reason\:\s(.*)""), 0)
+// duration
+| alter
+    duration_string_no_days = arrayindex(regextract(_raw_log, ""[D|d]uration\:*\s+([hH0-9]+:[mM0-9]+:[sS0-9]+)[\s|\,]*""), 0),
+    duration_string_days = arrayindex(regextract(_raw_log, ""[D|d]uration\:*\s+([dD0-9]*\s[hH0-9]+:[mM0-9]+:[sS0-9]+)[\s|\,]*""), 0)
+| alter
+    duration_days = arrayindex(split(duration_string_days, "" ""), 0),
+    duration_string = arrayindex(split(duration_string_days, "" ""), 1)
+| alter 
+    duration_string = if(duration_string = null or duration_string = """", duration_string_no_days, duration_string)
+| alter 
+    duration_split = split(duration_string, "":"")
+// duration parts
+| alter
+    duration_part_0 = arrayindex(duration_split,0),
+    duration_part_1 = arrayindex(duration_split,1),
+    duration_part_2 = arrayindex(duration_split,2)
+| alter
+    duration_part_0_millis = if(duration_part_0 contains ""h"", multiply(to_integer(arrayindex(regextract(duration_part_0, ""\d+""), 0)), 3600000), duration_part_0 ~= ""\d+"" and duration_part_0 != ""0"", multiply(to_integer(duration_part_0), 3600000), 0),
+    duration_part_1_millis = if(duration_part_1 contains ""m"", multiply(to_integer(arrayindex(regextract(duration_part_1, ""\d+""), 0)), 60000), duration_part_1 ~= ""\d+"" and duration_part_1 != ""0"", multiply(to_integer(duration_part_1), 60000), 0),
+    duration_part_2_millis = if(duration_part_2 contains ""s"", multiply(to_integer(arrayindex(regextract(duration_part_2, ""\d+""), 0)), 1000), duration_part_2 ~= ""\d+"" and duration_part_2 != ""0"", multiply(to_integer(duration_part_2), 1000), 0),
+    duration_part_days = if(duration_days != null, multiply(to_integer(arrayindex(regextract(duration_days, ""\d+""), 0)), 86400000), 0)
+| alter 
+    duration = add(add(add(duration_part_0_millis, duration_part_1_millis), duration_part_2_millis), duration_part_days)
+| alter 
+    bytes_sent = arrayindex(regextract(_raw_log, ""Bytes\sxmt\:\s(.*)\,\sBytes\srcv""), 0),
+    bytes_received = arrayindex(regextract(_raw_log, ""Bytes\srcv\:\s(.*),\sReason""), 0)
+| alter
+    xdm.source.user.groups = arraycreate(src_group),
+    xdm.source.user.username = src_username,
+    xdm.source.ipv4 = src_ip,
+    xdm.event.operation = session_outcome,
+    xdm.network.protocol_layers = arraycreate(session_type),
+    xdm.event.outcome_reason = session_reason,
+    xdm.event.duration = to_integer(duration),
+    xdm.source.sent_bytes = to_integer(bytes_sent),
+    xdm.target.sent_bytes = to_integer(bytes_received)
+;
+
+/*-------Event ID: 113009-------*/
+call cisco_asa_vpn_main_fields_xdm_mapping
+| filter xdm.event.id in (""113009"")
+| alter 
+    src_group = arrayindex(regextract(_raw_log, ""AAA\sretrieved\sdefault\sgroup\spolicy\s\((.*)\)\sfor\suser\s=""), 0),
+    src_username = arrayindex(regextract(_raw_log, ""AAA\sretrieved\sdefault\sgroup\spolicy.*\sfor\suser\s=\s(.*)""), 0)
+| alter 
+    xdm.source.user.groups = arraycreate(src_group),
+    xdm.source.user.username = src_username
+;
+
+/*-------Event ID: 113010-------*/
+call cisco_asa_vpn_main_fields_xdm_mapping
+| filter xdm.event.id in (""113010"")
+| alter 
+    src_username = arrayindex(regextract(_raw_log, ""AAA\schallenge\sreceived\sfor\suser\s(.*)\sfrom\sserver""), 0),
+    src_ip = arrayindex(regextract(_raw_log, ""AAA\schallenge\sreceived\sfor\suser\s.*\sfrom\sserver\s(\d+.\d+.\d+.\d+)\.""), 0)
+| alter 
+    xdm.source.user.username = src_username,
+    xdm.source.ipv4 = src_ip 
+;
+"
+"Jul 29 12:02:50 10.64.66.67 logver=604122060 timestamp=1722225769 devname=""CONEY_FW"" devid=""FGT3KD3Z16800677"" vd=""Coney_FW"" date=2024-07-29 time=12:02:49 eventtime=1722225770015413639 tz=""+0800"" logid=""0000000020"" type=""traffic"" subtype=""forward"" level=""notice"" srcip=10.151.40.165 srcport=51617 srcintf=""P1.1871"" srcintfrole=""lan"" dstip=10.189.216.190 dstport=445 dstintf=""port2"" dstintfrole=""undefined"" srccountry=""Reserved"" dstcountry=""Reserved"" sessionid=2203524708 proto=6 action=""accept"" policyid=10709 policytype=""policy"" poluuid=""51b0d8f0-3485-51e7-ab30-f714fe90cec7"" service=""SMB"" trandisp=""noop"" duration=64573 sentbyte=1463017 rcvdbyte=36738958 sentpkt=9775 rcvdpkt=30992 appcat=""unscanned"" sentdelta=104 rcvddelta=82 srchwvendor=""Cisco"" osname=""Windows"" mastersrcmac=""00:de:fb:55:b9:41"" srcmac=""00:de:fb:55:b9:41"" srcserver=0 dsthwvendor=""Cisco"" masterdstmac=""00:00:0c:9f:f6:68"" dstmac=""00:00:0c:9f:f6:68"" dstserver=1
+Jul 29 12:02:50 10.64.66.67 logver=604122060 timestamp=1722225769 devname=""CONEY_FW"" devid=""FGT3KD3Z16800677"" vd=""Coney_FW"" date=2024-07-29 time=12:02:49 eventtime=1722225770009431883 tz=""+0800"" logid=""0000000013"" type=""traffic"" subtype=""forward"" level=""notice"" srcip=10.94.22.17 srcport=44077 srcintf=""port2"" srcintfrole=""undefined"" dstip=185.46.212.89 dstport=80 dstintf=""P1.1871"" dstintfrole=""lan"" srccountry=""Reserved"" dstcountry=""Netherlands"" sessionid=2335239208 proto=6 action=""close"" policyid=10709 policytype=""policy"" poluuid=""51b0d8f0-3485-51e7-ab30-f714fe90cec7"" service=""HTTP"" trandisp=""noop"" duration=242 sentbyte=2006 rcvdbyte=6283 sentpkt=27 rcvdpkt=26 appcat=""unscanned"" sentdelta=596 rcvddelta=6223 devtype=""Router"" mastersrcmac=""50:87:89:47:7d:44"" srcmac=""50:87:89:47:7d:44"" srcserver=0 dsthwvendor=""Cisco"" dstosname=""Windows"" masterdstmac=""00:de:fb:55:b9:41"" dstmac=""00:de:fb:55:b9:41"" dstserver=0
+Jul 29 12:02:50 10.64.66.67 logver=604122060 timestamp=1722225769 devname=""CONEY_FW"" devid=""FGT3KD3Z16800677"" vd=""Coney_FW"" date=2024-07-29 time=12:02:49 eventtime=1722225770014799030 tz=""+0800"" logid=""0315012544"" type=""utm"" subtype=""webfilter"" eventtype=""urlfilter"" level=""warning"" urlfilteridx=25 urlfilterlist=""OFFICE_365_URL_LIST"" policyid=11017 sessionid=2336015737 srcip=10.144.241.72 srcport=54356 srcintf=""port2"" srcintfrole=""undefined"" dstip=52.113.194.132 dstport=443 dstintf=""P3.1872"" dstintfrole=""lan"" proto=6 service=""HTTPS"" hostname=""ecs.office.com"" profile=""Office 365 URL List"" action=""blocked"" reqtype=""direct"" url=""https://ecs.office.com/"" sentbyte=172 rcvdbyte=0 direction=""outgoing"" urlsource=""Local URLfilter Block"" msg=""URL was blocked because it is in the URL filter list"" crscore=30 craction=8 crlevel=""high""","[MODEL:dataset=""fortinet_fortigate_raw""]
+alter type = arrayindex(regextract(_raw_log, ""type=\""([^\s]+)\""""),0)
+| filter type = ""traffic""
+| call common_fortigate 
+;
+
+alter type = arrayindex(regextract(_raw_log, ""type=\""([^\s]+)\""""),0)
+| filter type = ""appevent""
+| call common_fortigate 
+;
+
+alter type = arrayindex(regextract(_raw_log, ""type=\""([^\s]+)\""""),0)
+| filter type = ""utm""
+| call common_fortigate 
+| alter xdm.target.url = arrayindex(regextract(_raw_log, ""url=\""([^\s]+)\""""),0),
+    // xdm.network.http.url_category = arrayindex(regextract(_raw_log, ""urlfilterlist=\""([^\s]+)\""""),0),
+    xdm.event.outcome_reason = arrayindex(regextract(_raw_log, ""msg=\""([^\s]+)\""""),0),
+    xdm.alert.risks = arraycreate(""crscore "",arrayindex(regextract(_raw_log, ""crscore=([^\s]+)""),0),""craction "",arrayindex(regextract(_raw_log, ""craction=([^\s]+)""),0), ""crlevel "",arrayindex(regextract(_raw_log, ""crlevel=([^\s]+)""),0))
+;
+
+
+alter type = arrayindex(regextract(_raw_log, ""type=\""([^\s]+)\""""),0)
+| filter type = ""event""
+| alter subtype1 = arrayindex(regextract(_raw_log, ""subtype=\""([^\s]+)\""""),0) 
+| filter subtype1 != ""system"" and subtype1 != ""vpn"" 
+| call common_fortigate 
+;
+
+alter type = arrayindex(regextract(_raw_log, ""type=\""([^\s]+)\""""),0)
+| filter type = ""event""
+| alter subtype1 = arrayindex(regextract(_raw_log, ""subtype=\""([^\s]+)\""""),0) 
+| filter subtype1 = ""system"" 
+| call common_fortigate 
+//alter subtype = arrayindex(regextract(_raw_log, ""subtype=\""([^\s]+)\""""),0) //
+//| filter subtype = ""system""
+//| alter logid = arrayindex(regextract(_raw_log, ""logid\=\""([^\s]+)\""""), 0)
+//| alter devname = arrayindex(regextract(_raw_log, ""devname\=\""([^\s]+)\""""), 0)//
+//| alter devid = arrayindex(regextract(_raw_log, ""devid\=\""([^\s]+)\""""), 0)//
+//| alter level = arrayindex(regextract(_raw_log, ""level=\""([^\s]+)\""""),0) 
+//| alter type = arrayindex(regextract(_raw_log, ""type=\""([^\s]+)\""""),0) //
+//| alter subtype = arrayindex(regextract(_raw_log, ""subtype=\""([^\s]+)\""""),0) //
+| alter logdesc= arrayindex(regextract(_raw_log, ""logdesc=\""([^\=]+)\""""),0) 
+| alter msg = arrayindex(regextract(_raw_log, ""msg=\""([^\=]+)\""""),0)
+| alter devinfo = arrayindex(regextract(_raw_log, ""(cpu=.+) msg=""),0)
+| alter waninfo = arrayindex(regextract(_raw_log, ""waninfo=\""(.+)\""""),0)
+//| alter action = arrayindex(regextract(_raw_log, ""action=\""([^\s]+)\""""),0) 
+| alter hostname = arrayindex(regextract(_raw_log, ""hostname=\""([^\s]+)\""""),0)
+| alter
+    //xdm.event.id = logid , 
+    //xdm.observer.name = concat(""Fortigate_"" + devname + ""_null""),
+    //xdm.observer.unique_identifier = devid ,
+    //xdm.event.type = type ,
+    //xdm.event.operation_sub_type = subtype ,
+    //xdm.event.log_level = level ,
+    xdm.event.description = concat(msg,"" "",if(devinfo!=null,devinfo,""""),"" "",if(waninfo!=null,waninfo,"""")),
+    xdm.event.original_event_type = logdesc,
+    xdm.target.domain = hostname
+    //xdm.observer.action = action
+;
+
+alter subtype = arrayindex(regextract(_raw_log, ""subtype=\""([^\s]+)\""""),0) //
+| filter subtype = ""vpn""
+| alter logver = arrayindex(regextract(_raw_log, ""logver\=([^\s]+)""), 0)
+| alter logid = arrayindex(regextract(_raw_log, ""logid\=\""([^\s]+)\""""), 0)
+| alter devname = arrayindex(regextract(_raw_log, ""devname\=\""([^\s]+)\""""), 0)//
+| alter devid = arrayindex(regextract(_raw_log, ""devid\=\""([^\s]+)\""""), 0)//
+| alter level = arrayindex(regextract(_raw_log, ""level=\""([^\s]+)\""""),0) 
+| alter type = arrayindex(regextract(_raw_log, ""type=\""([^\s]+)\""""),0) //
+//| alter subtype = arrayindex(regextract(_raw_log, ""subtype=\""([^\s]+)\""""),0) //
+| alter sourceip = arrayindex(regextract(_raw_log, ""locip\=([^\s]+)""), 0)
+| alter destip= arrayindex(regextract(_raw_log, ""remip\=([^\s]+)""), 0)
+| alter sourceport = arrayindex(regextract(_raw_log, ""locport\=(\d+)""), 0)
+| alter destport = arrayindex(regextract(_raw_log, ""remport\=(\d+)""), 0)
+| alter action = arrayindex(regextract(_raw_log, ""action=\""([^\s]+)\""""),0) 
+| alter outintf= arrayindex(regextract(_raw_log, ""outintf=\""([^\s]+)\""""),0) 
+| alter cookies = arrayindex(regextract(_raw_log, ""cookies=\""([^\s]+)\""""),0)
+| alter user = arrayindex(regextract(_raw_log, ""user=\""([^\s]+)\""""),0) 
+| alter group = arrayindex(regextract(_raw_log, ""group=\""([^\s]+)\""""),0) 
+//| alter useralt = arrayindex(regextract(_raw_log, ""useralt=\""([^\s]+)\""""),0) 
+| alter xauthuser = arrayindex(regextract(_raw_log, ""xauthuser=\""([^\s]+)\""""),0) 
+| alter xauthgroup = arrayindex(regextract(_raw_log, ""xauthgroup=\""([^\s]+)\""""),0) 
+| alter assignip = arrayindex(regextract(_raw_log, ""assignip=([^\s]+)""),0) 
+//| alter init = arrayindex(regextract(_raw_log, ""init=\""([^\s]+)\""""),0)
+//| alter mode = arrayindex(regextract(_raw_log, ""mode=\""([^\s]+)\""""),0)  
+//| alter direction = arrayindex(regextract(_raw_log, ""dir=\""([^\s]+)\""""),0)
+//| alter role=arrayindex(regextract(_raw_log, ""role=\""([^\s]+)\""""),0) 
+//| alter result= arrayindex(regextract(_raw_log, ""result=\""([^\s]+)\""""),0) 
+| alter status= arrayindex(regextract(_raw_log, ""status=\""([^\s]+)\""""),0) 
+| alter msg = arrayindex(regextract(_raw_log, ""msg=\""([^\=]+)\""""),0)
+| alter logdesc= arrayindex(regextract(_raw_log, ""logdesc=\""([^\=]+)\""""),0) 
+//| alter vpntunnel = arrayindex(regextract(_raw_log, ""vpntunnel=\""([^\=]+)\""""),0)
+| alter
+    xdm.source.application.version = logver ,
+    xdm.event.id = logid , 
+    xdm.observer.name = concat(""Fortigate_"" + devname + ""_null""),
+    xdm.observer.unique_identifier = devid ,
+    xdm.event.type = type ,
+    xdm.event.operation_sub_type = subtype ,
+    xdm.event.log_level = level ,
+    xdm.event.outcome = if(status=""success"",XDM_CONST.OUTCOME_SUCCESS,XDM_CONST.OUTCOME_FAILED),
+    xdm.network.ip_protocol = XDM_CONST.IP_PROTOCOL_ESP ,
+    xdm.observer.action = action ,
+    xdm.target.ipv4 = if(destip contains ""."",destip,null),
+    xdm.target.ipv6 = if(destip contains "":"",destip,null),
+    xdm.target.port = to_integer(destport),
+    xdm.target.interface = outintf,
+    xdm.source.ipv4 = if(sourceip contains ""."",sourceip,null),
+    xdm.source.ipv6 = if(sourceip contains "":"",sourceip,null),
+    xdm.source.port = to_integer(sourceport),
+    xdm.source.user.username = user,
+    xdm.source.user.groups = arraycreate(group),
+    xdm.intermediate.user.username = xauthuser,
+    xdm.intermediate.user.groups = arraycreate(xauthgroup),
+    xdm.network.vpn.allocated_ipv4 = assignip,
+    xdm.network.session_id = cookies,
+    xdm.event.description = msg,
+    xdm.event.original_event_type = logdesc
+    //xdm.intermediate.host.hostname = vpntunnel
+ ;"
+"Sep  2 17:37:54 10.189.199.191  09/02/2024:09:37:52 GMT  0-PPE-2 : default SSLVPN Message 8609214 0 :  ""native client, request: checking aaac/epac for dht lookup""
+Sep  2 17:37:54 10.189.199.191  09/02/2024:09:37:52 GMT  0-PPE-2 : default SSLLOG SSL_HANDSHAKE_SUCCESS 8609213 0 :  SPCBId 2548525 - ClientIP 10.128.71.228 - ClientPort 64940 - VserverServiceIP 10.189.216.142 - VserverServicePort 443 - ClientVersion TLSv1.2 - CipherSuite ""TLS1.2-ECDHE-RSA-AES256-GCM-SHA384"" - Session New  - HandshakeTime 6 ms
+Sep  2 17:41:51 10.174.206.27  09/02/2024:09:39:13 GMT  0-PPE-2 : default SSLVPN LOGIN 48514235 0 : Context cp683408@165.21.21.38 - SessionId: 900009 - User cp683408 - Client_ip 165.21.21.38 - Nat_ip ""Mapped Ip"" - Vserver 118.201.219.231:443 - Browser_type ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.0.0"" - SSLVPN_client_type ICA - Group(s) ""NonSOENCS""
+Sep  2 17:41:18 10.174.206.27  09/02/2024:09:38:40 GMT  0-PPE-1 : default AAA LOGIN_FAILED 48280623 0 :  User CP683408 - Client_ip 165.21.21.38 - Failure_reason ""External authentication server denied access"" - Browser Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.0.0
+Sep  2 17:41:14 10.174.206.27  09/02/2024:09:38:36 GMT  0-PPE-1 : default SSLVPN LOGIN 48280504 0 : Context p4003580@202.91.135.83 - SessionId: 895895 - User p4003580 - Client_ip 202.91.135.83 - Nat_ip ""Mapped Ip"" - Vserver 118.201.219.231:443 - Browser_type ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"" - SSLVPN_client_type ICA - Group(s) ""NonSOEAmdocs""
+Sep  2 17:40:36 10.174.206.27  09/02/2024:09:37:58 GMT  0-PPE-1 : default SSLVPN LOGIN 48280354 0 : Context cp970990_prd@202.91.135.69 - SessionId: 895892 - User cp970990_prd - Client_ip 202.91.135.69 - Nat_ip ""Mapped Ip"" - Vserver 118.201.219.231:443 - Browser_type ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 Edg/127.0.0.0"" - SSLVPN_client_type ICA - Group(s) ""CTX_BCP_Users""
+Sep  2 17:40:05 10.174.206.27  09/02/2024:09:37:27 GMT  0-PPE-1 : default SSLVPN LOGIN 48280148 0 : Context cp812443@202.91.135.83 - SessionId: 895889 - User cp812443 - Client_ip 202.91.135.83 - Nat_ip ""Mapped Ip"" - Vserver 118.201.219.231:443 - Browser_type ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"" - SSLVPN_client_type ICA - Group(s) ""NonSOEAmdocs""
+Sep  2 17:37:36 10.174.206.27  09/02/2024:09:34:58 GMT  0-PPE-0 : default SSLVPN LOGIN 42836994 0 : Context p4010524@118.185.162.128 - SessionId: 876193 - User p4010524 - Client_ip 118.185.162.128 - Nat_ip ""Mapped Ip"" - Vserver 118.201.219.231:443 - Browser_type ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"" - SSLVPN_client_type ICA - Group(s) ""NonSOEACC""
+Sep  2 17:37:20 10.174.206.27  09/02/2024:09:34:43 GMT  0-PPE-2 : default SSLVPN LOGIN 48513415 0 : Context p4003579@202.91.134.74 - SessionId: 900006 - User p4003579 - Client_ip 202.91.134.74 - Nat_ip ""Mapped Ip"" - Vserver 118.201.219.231:443 - Browser_type ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.0.0"" - SSLVPN_client_type ICA - Group(s) ""NonSOEAmdocs""","[MODEL: dataset = ""citrix_adc_raw""]
+alter
+        http_method = arrayindex(regextract(_raw_log,""\s\:\s(\w+)\s\/""),0),
+        feature = arrayindex(regextract(_raw_log,""\:\s\w+\s(\w+)\s""),0),
+        message_type = arrayindex(regextract(_raw_log,""\:\s\w+\s\w+\s(\w+)\s""),0),
+        Status = lowercase(arrayindex(regextract(_raw_log,""Status\s\""(\w+)\""""),0)),
+        message_type_lower = lowercase(arrayindex(regextract(_raw_log,""\:\s\w+\s\w+\s(\w+)\s""),0)),
+        observer_name = arrayindex(regextract(_raw_log,""(\S+)\s\S+-\S+-\S+\s:""),0),
+        observer_ip = arrayindex(regextract(_raw_log,""\s\d{2}:\d{2}:\d{2}\s(\d+\.\d+\.\d+\.\d+)""),0),
+        validfrom = arrayindex(regextract(_raw_log, ""ValidFrom\s\""([^\""]+)\sGMT\""""), 0),
+        validto = arrayindex(regextract(_raw_log, ""ValidTo\s\""([^\""]+)\sGMT\""""), 0),
+        user_level = arrayindex(regextract(_raw_log,""\sUser\s([^\s]+)\s-\sADM_User""),0)
+| alter
+        xdm.observer.name = if(observer_name != null, concat(""Citrix_"" + observer_name + ""_"" + observer_ip), concat(""Citrix_"" + ""null_"" + observer_ip)),
+        //xdm.observer.name = arrayindex(regextract(_raw_log,""(\S+)\s\S+-\S+-\S+\s:""),0),
+        //xdm.event.type = concat(feature, "" - "", message_type),
+        xdm.event.type = feature, 
+        xdm.event.original_event_type = message_type,
+        xdm.event.id = arrayindex(regextract(_raw_log,""\:\s\w+\s\w+\s\w+\s(\d+)\s""),0),
+        xdm.event.description = coalesce(arrayindex(regextract(_raw_log,""\d+\s\d+\s\:\s+\""([^\""]+)\""*""),0),
+                                        arrayindex(regextract(_raw_log,""<\d+\>\s\d{2}\/\d{2}\/\d{4}\:\d{2}\:\d{2}\:\d{2}.\w{3}\s.+?\:.+?\:\s+(.+)""),0),
+                                        arrayindex(regextract(_raw_log, ""\d{2}\/\d{2}\/\d{4}\:\d{2}\:\d{2}\:\d{2}\s\w{3}\s+[^:]+\s+:\s+(.+)$""), 0),
+                                        arrayindex(regextract(_raw_log,""0-PPE-\d\s*:\s*\w+\s+\w+\s+\w+\s+\d+\s+0\s*:\s*(.*)""),0)
+                                        ),
+        xdm.event.operation_sub_type  = arrayindex(regextract(_raw_log, ""0-PPE-\d+""),0),
+        xdm.source.ipv4 = coalesce(arrayindex(regextract(_raw_log,""Source\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})""),0),
+                                   arrayindex(regextract(_raw_log,""Client_ip\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\s""),0),
+                                   arrayindex(regextract(_raw_log,""Context\s[\w\d]+\@(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\s""),0),
+                                   arrayindex(regextract(_raw_log,""client=(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\:""),0),
+                                   arrayindex(regextract(_raw_log,""ClientIP\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})""),0),
+                                   arrayindex(regextract(_raw_log,""client\spcb\_fip\s\=\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})""),0),
+                                   arrayindex(regextract(_raw_log,""Remote.ip\s[\=\s]*(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})""),0),
+                                   arrayindex(regextract(_raw_log,""src-ip:port=(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\:""),0) 
+                                   ),
+    
+        xdm.source.ipv6 = coalesce(arrayindex(regextract(_raw_log,""Source\s([a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5})""),0),
+                                   arrayindex(regextract(_raw_log,""Client_ip\s([a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5})\s""),0),
+                                   arrayindex(regextract(_raw_log,""Context\s[\w\d]+\@([a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5})\s""),0),
+                                   arrayindex(regextract(_raw_log,""client=([a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5})\:""),0),
+                                   arrayindex(regextract(_raw_log,""ClientIP\s([a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5})""),0),
+                                   arrayindex(regextract(_raw_log,""Remote.ip\s[\=\s]*([a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5})""),0)
+                                   ),
+        xdm.source.port = to_integer(coalesce(arrayindex(regextract(_raw_log,""Source\s\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:(\d+)\s""),0),
+                                              arrayindex(regextract(_raw_log,""client=\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:(\d+)""),0),
+                                              arrayindex(regextract(_raw_log,""ClientPort\s(\d+)""),0),
+                                              arrayindex(regextract(_raw_log,""pcb_fport\s\=\s(\d+)""),0),
+                                              arrayindex(regextract(_raw_log,""Remote.ip\s[\=\s]*\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:(\d+).+\sto""),0),
+                                              arrayindex(regextract(_raw_log,""Remote.ip\s\=\s\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:(\d+).+\s""),0),
+                                              arrayindex(regextract(_raw_log,""src-ip:port=\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:(\d+)""),0)
+                                              )),
+        xdm.target.port = to_integer(coalesce(arrayindex(regextract(_raw_log,""Destination\s\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:(\d+)\s""),0),
+                                              arrayindex(regextract(_raw_log,""VserverServicePort\s(\d+)\s""),0),
+                                              arrayindex(regextract(_raw_log,""Sending\srequest\sto.+?\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:(\d+)""),0),
+                                              arrayindex(regextract(_raw_log,""Vserver\s\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:(\d+)""),0),
+                                              arrayindex(regextract(_raw_log,""sta-server\=\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:(\d+)""),0),
+                                              arrayindex(regextract(_raw_log,""vda\=\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:(\d+)""),0),
+                                              arrayindex(regextract(_raw_log,""received\sin\sSTA\sresponse\:\s\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:(\d+)""),0),
+                                              arrayindex(regextract(_raw_log,""dst-ip:port=\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:(\d+)""),0),
+                                              arrayindex(regextract(_raw_log,""ServerPort\s(\d+)""),0)
+                                    )),
+        xdm.target.ipv4 = coalesce(arrayindex(regextract(_raw_log,""Destination\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\:""),0),
+                                   arrayindex(regextract(_raw_log,""Vserver[ServiceIP]*\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})""),0),
+                                   arrayindex(regextract(_raw_log,""Sending\srequest\sto.+?(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})""),0),
+                                   arrayindex(regextract(_raw_log,""ADldap\-(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})""),0),
+                                   arrayindex(regextract(_raw_log,""sta-server\=(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})""),0),
+                                   arrayindex(regextract(_raw_log,""vda\=(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})""),0),
+                                   arrayindex(regextract(_raw_log,""received\sin\sSTA\sresponse\:\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})""),0),
+                                   arrayindex(regextract(_raw_log,""dst-ip:port=(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\:""),0),
+                                   arrayindex(regextract(_raw_log,""ServerIP\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})""),0)
+                                   ),
+        xdm.target.ipv6 = coalesce(arrayindex(regextract(_raw_log,""Destination\s([a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5})\:""),0),
+                                   arrayindex(regextract(_raw_log,""Vserver[ServiceIP]*\s([a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5})""),0),
+                                   arrayindex(regextract(_raw_log,""Sending\srequest\sto.+?([a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5})\s""),0),
+                                   arrayindex(regextract(_raw_log,""ADldap\-([a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5})""),0),
+                                   arrayindex(regextract(_raw_log,""sta-server\=([a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5})""),0),
+                                   arrayindex(regextract(_raw_log,""vda\=([a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5})""),0),
+                                   arrayindex(regextract(_raw_log,""received\sin\sSTA\sresponse\:\s([a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5}[a-fA-F0-9\:]{1,5})""),0)
+                                   ),
+        xdm.source.sent_bytes = to_integer(arrayindex(regextract(_raw_log,""Total_bytes_send\s(\d+)\s""),0)),
+        xdm.target.sent_bytes = to_integer(arrayindex(regextract(_raw_log,""Total_bytes_recv\s(\d+)""),0)),
+        xdm.source.application.name = arrayindex(regextract(_raw_log,""applicationName\s(\w+)\s""),0),
+        //xdm.session_context_id = arrayindex(regextract(_raw_log,""connectionId\s(\w+)\s""),0),
+        xdm.session_context_id = arrayindex(regextract(_raw_log,""connectionId\s([^\s]+)""),0),
+        xdm.source.user.username = coalesce(arrayindex(regextract(_raw_log,""username:domainname\s(\w+)\:""),0),
+                                            arrayindex(regextract(_raw_log,""User\s([\w\@\.\d]+)\s\:""),0),
+                                            arrayindex(regextract(_raw_log,""Context\s([\w\d]+)\@""),0),
+                                            arrayindex(regextract(_raw_log,""user:\s\<([\w\d\.\_\-]+)\@""),0),
+                                            arrayindex(regextract(_raw_log,""\sUser\s(\S+)""),0),
+                                            arrayindex(regextract(_raw_log,""Username\s=\s([^\s]+)\]""),0)
+                                            ),
+        xdm.source.user.domain = arrayindex(regextract(_raw_log,""username:domainname\s\w+\:(\w+)\s""),0),
+        xdm.network.http.method = if(http_method=""ACL"", XDM_CONST.HTTP_METHOD_ACL,http_method=""BASELINE_CONTROL"", XDM_CONST.HTTP_METHOD_BASELINE_CONTROL,http_method=""BIND"", XDM_CONST.HTTP_METHOD_BIND,http_method=""CHECKIN"", XDM_CONST.HTTP_METHOD_CHECKIN,http_method=""CHECKOUT"", XDM_CONST.HTTP_METHOD_CHECKOUT,http_method=""CONNECT"", XDM_CONST.HTTP_METHOD_CONNECT,http_method=""COPY"", XDM_CONST.HTTP_METHOD_COPY,http_method=""DELETE"", XDM_CONST.HTTP_METHOD_DELETE,http_method=""GET"", XDM_CONST.HTTP_METHOD_GET,http_method=""HEAD"", XDM_CONST.HTTP_METHOD_HEAD,http_method=""LABEL"", XDM_CONST.HTTP_METHOD_LABEL,http_method=""LINK"", XDM_CONST.HTTP_METHOD_LINK,http_method=""LOCK"", XDM_CONST.HTTP_METHOD_LOCK,http_method=""MERGE"", XDM_CONST.HTTP_METHOD_MERGE,http_method=""MKACTIVITY"", XDM_CONST.HTTP_METHOD_MKACTIVITY,http_method=""MKCALENDAR"", XDM_CONST.HTTP_METHOD_MKCALENDAR,http_method=""MKCOL"", XDM_CONST.HTTP_METHOD_MKCOL,http_method=""MKREDIRECTREF"", XDM_CONST.HTTP_METHOD_MKREDIRECTREF,http_method=""MKWORKSPACE"", XDM_CONST.HTTP_METHOD_MKWORKSPACE,http_method=""MOVE"", XDM_CONST.HTTP_METHOD_MOVE,http_method=""OPTIONS"", XDM_CONST.HTTP_METHOD_OPTIONS,http_method=""ORDERPATCH"", XDM_CONST.HTTP_METHOD_ORDERPATCH,http_method=""PATCH"", XDM_CONST.HTTP_METHOD_PATCH,http_method=""POST"", XDM_CONST.HTTP_METHOD_POST,http_method=""PRI"", XDM_CONST.HTTP_METHOD_PRI,http_method=""PROPFIND"", XDM_CONST.HTTP_METHOD_PROPFIND,http_method=""PROPPATCH"", XDM_CONST.HTTP_METHOD_PROPPATCH,http_method=""PUT"", XDM_CONST.HTTP_METHOD_PUT,http_method=""REBIND"", XDM_CONST.HTTP_METHOD_REBIND,http_method=""REPORT"", XDM_CONST.HTTP_METHOD_REPORT,http_method=""SEARCH"", XDM_CONST.HTTP_METHOD_SEARCH,http_method=""TRACE"", XDM_CONST.HTTP_METHOD_TRACE,http_method=""UNBIND"", XDM_CONST.HTTP_METHOD_UNBIND,http_method=""UNCHECKOUT"", XDM_CONST.HTTP_METHOD_UNCHECKOUT,http_method=""UNLINK"", XDM_CONST.HTTP_METHOD_UNLINK,http_method=""UNLOCK"", XDM_CONST.HTTP_METHOD_UNLOCK,http_method=""UPDATE"", XDM_CONST.HTTP_METHOD_UPDATE,http_method=""UPDATEREDIRECTREF"", XDM_CONST.HTTP_METHOD_UPDATEREDIRECTREF,http_method=""VERSION_CONTROL"", XDM_CONST.HTTP_METHOD_VERSION_CONTROL, http_method),
+        //xdm.network.http.url = arrayindex(regextract(_raw_log,""GET\s([\w\/\.]+)\s""),0),
+        xdm.network.http.url = coalesce(arrayindex(regextract(_raw_log,""\sGET\s([^\s]+)\s""),0), 
+                                        arrayindex(regextract(_raw_log,""\sPOST\s([^\s]+)\s""),0), 
+                                        arrayindex(regextract(_raw_log,""\sHEAD\s([^\s]+)\s""),0)),
+        xdm.intermediate.host.hostname = arrayindex(regextract(_raw_log,""\:\d{2}\s\w+\s([\w\-\_\.\d\:]+)\s""),0),
+        xdm.network.session_id = coalesce(arrayindex(regextract(_raw_log,""SessionId:\s(\d+)\s""),0),
+                                          arrayindex(regextract(_raw_log,""SessionId\s(\d+)\s""),0),
+                                          arrayindex(regextract(_raw_log,""ICAUUID=([^\""]+)]\s""),0)),
+        //xdm.event.outcome = if(Status = ""SUCCESS"", XDM_CONST.OUTCOME_SUCCESS, Status = ""FAILURE"", XDM_CONST.OUTCOME_FAILED, message_type_lower contains ""success"", XDM_CONST.OUTCOME_SUCCESS, message_type_lower contains ""failure"", XDM_CONST.OUTCOME_FAILED, Status),
+        xdm.event.outcome = if(Status = ""SUCCESS"", XDM_CONST.OUTCOME_SUCCESS, 
+                               Status = ""FAILURE"", XDM_CONST.OUTCOME_FAILED, 
+                               message_type_lower contains ""success"", XDM_CONST.OUTCOME_SUCCESS, 
+                               message_type_lower contains ""failure"", XDM_CONST.OUTCOME_FAILED, 
+                               message_type = ""LOGIN"", XDM_CONST.OUTCOME_SUCCESS, 
+                               message_type = ""LOGOUT"", XDM_CONST.OUTCOME_SUCCESS,
+                               message_type = ""LOGIN_FAILED"", XDM_CONST.OUTCOME_FAILED,
+                               Status),
+        xdm.source.user_agent = arrayindex(regextract(_raw_log,""Browser_type\s\""([^\""]+)\""""),0),
+        xdm.intermediate.ipv4 = coalesce(arrayindex(regextract(_raw_log,""Vserver\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\:""),0),
+                                         arrayindex(regextract(_raw_log,""Vserver_ip\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})""),0)),
+        xdm.intermediate.port = to_integer(arrayindex(regextract(_raw_log,""Vserver_ip\s\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:(\d+)\s""),0)),
+        xdm.network.tls.client_certificate.issuer = arrayindex(regextract(_raw_log, ""IssuerName\s\""?\s?([^\""]+)\""?$""), 0),
+        xdm.network.tls.client_certificate.subject = arrayindex(regextract(_raw_log, ""SubjectName\s\""?\s?([^\""]+)\""?$""), 0),
+        //xdm.network.tls.client_certificate.version = coalesce(arrayindex(regextract(_raw_log, ""ClientVersion\s([^\s]+)""), 0),
+        //                                                      arrayindex(regextract(_raw_log, ""ProtocolVersion\s([^\s]+)""), 0)),
+        xdm.network.tls.client_certificate.version = arrayindex(regextract(_raw_log, ""ClientVersion\s([^\s]+)""), 0),
+        xdm.network.tls.server_certificate.version = arrayindex(regextract(_raw_log, ""ProtocolVersion\s([^\s]+)""), 0),                 
+        xdm.network.tls.cipher = arrayindex(regextract(_raw_log, ""CipherSuite\s\""([^\""]+)\""""), 0),
+        xdm.network.tls.server_certificate.serial = arrayindex(regextract(_raw_log, ""SerialNumber\s\""([^\""]+)\""""), 0),
+        xdm.network.tls.server_certificate.not_before = parse_timestamp(""%b %d %H:%M:%S %Y"", validfrom),
+        xdm.network.tls.server_certificate.not_after = parse_timestamp(""%b %d %H:%M:%S %Y"", validto),
+        xdm.network.tls.client_certificate.algorithm = arrayindex(regextract(_raw_log, ""SignatureAlgorithm\s\""([^\""]+)\""""), 0),
+        xdm.event.duration = to_number(arrayindex(regextract(_raw_log, ""HandshakeTime\s([^\""]+)\sms""), 0)),
+        xdm.event.outcome_reason = coalesce(arrayindex(regextract(_raw_log, ""Reason\s\""([^\""]+)\""""), 0),
+                                            arrayindex(regextract(_raw_log, ""Errmsg\s\""([^\""]+)\""""), 0)),
+        xdm.observer.action = if((feature = ""EVENT"" and message_type contains ""STARTSYS""), ""started"", 
+                                ((feature = ""EVENT"" or feature = ""AAATM"") and (message_type contains ""STOPSYS"" or message_type contains ""LOGOUT"")), ""stopped"", 
+                                (feature = ""SSLVPN"" and message_type = ""LOGIN""), ""added"", 
+                                (feature = ""SSLVPN"" and message_type = ""TCPCONNSTAT""), ""access allowed"",
+                                (message_type contains ""LOGIN"" or message_type contains ""LOGOUT""), ""success"", 
+                                (message_type = ""LOGIN_FAILED""), ""failure""),
+        xdm.auth.privilege_level = if(user_level in (""adm_root"",""root"",""admin""), XDM_CONST.PRIVILEGE_LEVEL_ADMIN, XDM_CONST.PRIVILEGE_LEVEL_USER)
+| alter xdm.event.operation = if(xdm.event.original_event_type in (""LOGIN"", ""LOGOUT""), XDM_CONST.OPERATION_TYPE_AUTH_LOGIN),
+        xdm.network.http.browser = coalesce(arrayindex(regextract(_raw_log, ""Browser_type\s\""([^\""]+)\""""), 0),
+                                            arrayindex(regextract(_raw_log, ""Browser\s([^\""]+)""),0)),
+        xdm.network.vpn.allocated_ipv4 = coalesce(arrayindex(regextract(_raw_log, ""Nat_ip\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})""), 0),
+                                                  arrayindex(regextract(_raw_log, ""NatIP\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\:""), 0)),
+        xdm.source.agent.type = arrayindex(regextract(_raw_log, ""SSLVPN_client_type\s([^\""]+)\s-""), 0),
+        xdm.source.user.groups = arraycreate(arrayindex(regextract(_raw_log, ""Extracted_groups\s\""(.+)\""""), 0)),
+        xdm.source.process.command_line = arrayindex(regextract(_raw_log, ""Command\s\""([^\""]+)\""""), 0)                               
+;"
+"Jul 29 11:58:27 2024-07-29 11: 57:57	reason=Allowed	event_id=7396902100972470317	protocol=HTTP_PROXY	action=Allowed	rulelabel=None	transactionsize=641	responsesize=65	requestsize=576	urlcategory=Professional Services	serverip=104.17.46.71	clienttranstime=0	requestmethod=CONNECT	refererURL=None	useragent=Windows Microsoft Windows 10 Enterprise ZTunnel/1.0	product=NSS	location=Telepark DC->Conops-Steven	ClientIP=10.128.6.62	status=200	user=digvijay.pisal@singtel.com	url=c.bannerflow.net:443	vendor=Zscaler	hostname=c.bannerflow.net	clientpublicIP=180.255.19.216	threatcategory=None	threatname=None	filetype=None	appname=General Browsing	pagerisk=0	department=Consumer Data & Analytics	urlsupercategory=Business and Economy	appclass=General Browsing	dlpengine=None	urlclass=Business Use	threatclass=None	dlpdictionaries=None	fileclass=None	bwthrottle=NO	servertranstime=0	contenttype=Other	unscannabletype=None	devicehostname=ST-L1013297	deviceowner=P1358754
+Jul 29 11:58:27 2024-07-29 11: 57:57	reason=Allowed	event_id=7396902100972470316	protocol=HTTPS	action=Allowed	rulelabel=None	transactionsize=9147	responsesize=1183	requestsize=7964	urlcategory=Finance	serverip=23.53.217.234	clienttranstime=371	requestmethod=POST	refererURL=www.moneycontrol.com/	useragent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36	product=NSS	location=Telepark DC->Conops-Steven	ClientIP=10.128.6.62	status=200	user=digvijay.pisal@singtel.com	url=www.moneycontrol.com/techmvc/ajaxcontent/generate_forum_links/azq3htvfbrznpstgatj7ruttu63rwe2libxg-5__jmcmcwjwidm1bv2gkbhzdc0xot_42dtxom4hairmzn_cia/?classic=true	vendor=Zscaler	hostname=www.moneycontrol.com	clientpublicIP=180.255.19.216	threatcategory=None	threatname=None	filetype=None	appname=Moneycontrol	pagerisk=10	department=Consumer Data & Analytics	urlsupercategory=Business and Economy	appclass=Finance	dlpengine=None	urlclass=Business Use	threatclass=None	dlpdictionaries=None	fileclass=None	bwthrottle=NO	servertranstime=371	contenttype=application/json	unscannabletype=None	devicehostname=ST-L1013297	deviceowner=P1358754
+Jul 29 11:58:27 2024-07-29 11: 57:57	reason=Allowed	event_id=7396902100972470315	protocol=HTTP_PROXY	action=Allowed	rulelabel=None	transactionsize=641	responsesize=65	requestsize=576	urlcategory=Professional Services	serverip=104.17.46.71	clienttranstime=0	requestmethod=CONNECT	refererURL=None	useragent=Windows Microsoft Windows 10 Enterprise ZTunnel/1.0	product=NSS	location=Telepark DC->Conops-Steven	ClientIP=10.128.6.62	status=200	user=digvijay.pisal@singtel.com	url=c.bannerflow.net:443	vendor=Zscaler	hostname=c.bannerflow.net	clientpublicIP=180.255.19.216	threatcategory=None	threatname=None	filetype=None	appname=General Browsing	pagerisk=0	department=Consumer Data & Analytics	urlsupercategory=Business and Economy	appclass=General Browsing	dlpengine=None	urlclass=Business Use	threatclass=None	dlpdictionaries=None	fileclass=None	bwthrottle=NO	servertranstime=0	contenttype=Other	unscannabletype=None	devicehostname=ST-L1013297	deviceowner=P1358754
+Jul 29 11:58:27 2024-07-29 11: 57:57	reason=Allowed	event_id=7396902100972470314	protocol=HTTPS	action=Allowed	rulelabel=None	transactionsize=10136	responsesize=2262	requestsize=7874	urlcategory=Finance	serverip=23.53.217.234	clienttranstime=364	requestmethod=POST	refererURL=www.moneycontrol.com/	useragent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36	product=NSS	location=Telepark DC->Conops-Steven	ClientIP=10.128.6.62	status=200	user=digvijay.pisal@singtel.com	url=www.moneycontrol.com/techmvc/mc_widgets/mega_menu_video_list?classic=true	vendor=Zscaler	hostname=www.moneycontrol.com	clientpublicIP=180.255.19.216	threatcategory=None	threatname=None	filetype=GZIP	appname=Moneycontrol	pagerisk=10	department=Consumer Data & Analytics	urlsupercategory=Business and Economy	appclass=Finance	dlpengine=None	urlclass=Business Use	threatclass=None	dlpdictionaries=None	fileclass=Archive Files	bwthrottle=NO	servertranstime=364	contenttype=text/html	unscannabletype=None	devicehostname=ST-L1013297	deviceowner=P1358754","[MODEL:dataset=""zscaler_nss_raw""]
+filter product_test = ""tunnel""
+|alter
+recordtype = arrayindex(regextract(_raw_log, ""Recordtype=(.+)\stunneltype""), 0),
+tunneltype = arrayindex(regextract(_raw_log, ""tunneltype=([^\s]+)""), 0),
+user = arrayindex(regextract(_raw_log, ""user=(.+)\slocation""), 0), 
+//location = arrayindex(regextract(_raw_log, ""location=(.+)\ssourceip""), 0),
+sourceip = arrayindex(regextract(_raw_log ,""sourceip\=(\d+\.\d+\.\d+\.\d+)""), 0),
+destinationip = arrayindex(regextract(_raw_log,""destinationip\=(\d+\.\d+\.\d+\.\d+)""), 0),
+sourceport = arrayindex(regextract(_raw_log ,""sourceport\=([^\s]+)""), 0),
+txbytes = arrayindex(regextract(_raw_log ,""txbytes\=([^\s]+)""), 0),
+rxbytes = arrayindex(regextract(_raw_log ,""rxbytes\=([^\s]+)""), 0),
+dpdrec = arrayindex(regextract(_raw_log ,""dpdrec\=([^\s]+)""), 0),
+ecordid = arrayindex(regextract(_raw_log ,""ecordid\=([^\s]+)""), 0)
+//vendor = arrayindex(regextract(_raw_log ,""vendor\=([^\s]+)""), 0),//
+//product = arrayindex(regextract(_raw_log ,""product\=([^\s]+)""), 0)
+|alter
+xdm.event.type = recordtype ,
+xdm.network.application_protocol = tunneltype ,
+xdm.source.user.username = user ,
+//xdm.source.location.region = location ,
+xdm.source.ipv4 = sourceip ,
+xdm.target.ipv4 = destinationip ,
+xdm.source.port = to_integer(sourceport) ,
+xdm.source.sent_bytes = to_integer(txbytes) ,
+xdm.target.sent_bytes = to_integer(rxbytes) ,
+xdm.event.id = ecordid ,
+//xdm.observer.vendor = vendor ,
+//xdm.observer.product = product ,
+xdm.source.sent_packets = to_integer(dpdrec),
+xdm.observer.name = concat(""Zscaler-Tunnel_"" + ""null_"" + ""null"")
+;
+
+
+/* |alter 
+ event_id = json_extract_scalar(_raw_json, ""$.event_id""),
+protocol = json_extract_scalar(_raw_json, ""$.protocol""),
+// zproduct = json_extract_scalar(_raw_json, ""$.product""), //
+action = json_extract_scalar(_raw_json, ""$.action""),
+rulelabel = json_extract_scalar(_raw_json, ""$.rulelabel""),
+// transactionsize = json_extract_scalar(_raw_json, ""$.transactionsize""),//
+responsesize = json_extract_scalar(_raw_json, ""$.responsesize""),
+requestsize = json_extract_scalar(_raw_json, ""$.requestsize""),
+urlcategory = json_extract_scalar(_raw_json, ""$.urlcategory""),
+serverip = json_extract_scalar(_raw_json, ""$.serverip""),
+// clienttranstime = json_extract_scalar(_raw_json, ""$.clienttranstime""),//
+requestmethod = json_extract_scalar(_raw_json, ""$.requestmethod""),
+refererurl = json_extract_scalar(_raw_json, ""$.refererurl""),
+// location = json_extract_scalar(_raw_json, ""$.location""),//
+clientip = json_extract_scalar(_raw_json, ""$.clientip""),
+status = json_extract_scalar(_raw_json, ""$.status""),
+user = json_extract_scalar(_raw_json, ""$.user""),
+// url = json_extract_scalar(_raw_json, ""$.url""),//
+// zvendor = json_extract_scalar(_raw_json, ""$.vendor""),//
+// hostname = json_extract_scalar(_raw_json, ""$.hostname""),//
+clientpublicip = json_extract_scalar(_raw_json, ""$.clientpublicip""),
+// threatcategory = json_extract_scalar(_raw_json, ""$.threatcategory""),//
+// threatname = json_extract_scalar(_raw_json, ""$.threatname""),/
+filetype = json_extract_scalar(_raw_json, ""$.filetype""),
+appname = json_extract_scalar(_raw_json, ""$.appname""),
+// pagerisk = json_extract_scalar(_raw_json, ""$.pagerisk""),//
+department = json_extract_scalar(_raw_json, ""$.department""),
+// urlsupercategory = json_extract_scalar(_raw_json, ""$.urlsupercategory""),//
+// appclass = json_extract_scalar(_raw_json, ""$.appclass""),//
+// dlpengine = json_extract_scalar(_raw_json, ""$.dlpengine""),//
+// urlclass = json_extract_scalar(_raw_json, ""$.urlclass""), //
+// threatclass = json_extract_scalar(_raw_json, ""$.threatclass""),//
+// dlpdictionaries = json_extract_scalar(_raw_json, ""$.dlpdictionaries""),//
+// fileclass = json_extract_scalar(_raw_json, ""$.fileclass""),//
+// bwthrottle = json_extract_scalar(_raw_json, ""$.bwthrottle""),//
+// servertranstime = json_extract_scalar(_raw_json, ""$.servertranstime""),//
+contenttype = json_extract_scalar(_raw_json, ""$.contenttype""),
+unscannabletype = json_extract_scalar(_raw_json, ""$.unscannabletype""),
+devicehostname = json_extract_scalar(_raw_json, ""$.devicehostname""),
+// deviceowner = json_extract_scalar(_raw_json, ""$.deviceowner""),//
+gateway_location_name = replace(json_extract_scalar(_raw_json, ""$.location""), ""%20"", "" ""), 
+threat_category = json_extract_scalar(_raw_json, ""$.threatcategory""),
+threat_name = json_extract_scalar(_raw_json, ""$.threatname"")
+|alter useragent  = arrayindex(regextract(_raw_log, ""useragent=(.+)\sproduct""),0)
+//| fields _raw_json, _raw_log, reason, event_id, protocol, action, rulelabel, transactionsize, responsesize, requestsize, urlcategory, serverip, clienttranstime, requestmethod, refererurl, useragent, location, zproduct, clientip, status, user, url, zvendor, hostname, clientpublicip, threatcategory, threatname, filetype, appname, pagerisk, department, urlsupercategory, appclass, dlpengine, urlclass, threatclass, dlpdictionaries, fileclass, bwthrottle, servertranstime, contenttype, unscannabletype, devicehostname, deviceowner */
+
+filter product_test = ""NSS""
+|alter 
+reason = arrayindex(regextract(_raw_log, ""reason=(.+)\tevent_id""), 0),
+//event_id = json_extract_scalar(_raw_json, ""$.event_id""),
+event_id = arrayindex(regextract(_raw_log, ""event_id=(.+)\tprotocol""), 0),
+//protocol = json_extract_scalar(_raw_json, ""$.protocol""),
+protocol = arrayindex(regextract(_raw_log, ""protocol=(.+)\taction""), 0),
+// zproduct = json_extract_scalar(_raw_json, ""$.product""), //
+// action = json_extract_scalar(_raw_json, ""$.action""),
+action = arrayindex(regextract(_raw_log, ""action=(.+)\trulelabel""), 0),
+// rulelabel = json_extract_scalar(_raw_json, ""$.rulelabel""),
+rulelabel = arrayindex(regextract(_raw_log, ""rulelabel=(.+)\ttransactionsize""), 0),
+// transactionsize = json_extract_scalar(_raw_json, ""$.transactionsize""),//
+// responsesize = json_extract_scalar(_raw_json, ""$.responsesize""),
+responsesize = arrayindex(regextract(_raw_log, ""responsesize=(.+)\trequestsize""), 0),
+// requestsize = json_extract_scalar(_raw_json, ""$.requestsize""),
+requestsize = arrayindex(regextract(_raw_log, ""requestsize=(.+)\turlcategory""), 0),
+// urlcategory = json_extract_scalar(_raw_json, ""$.urlcategory""),
+urlcategory = arrayindex(regextract(_raw_log, ""urlcategory=(.+)\tserverip""), 0),
+// serverip = json_extract_scalar(_raw_json, ""$.serverip""),
+serverip = arrayindex(regextract(_raw_log, ""serverip=(.+)\tclienttranstime""), 0),
+// clienttranstime = json_extract_scalar(_raw_json, ""$.clienttranstime""),//
+// requestmethod = json_extract_scalar(_raw_json, ""$.requestmethod""),
+requestmethod = arrayindex(regextract(_raw_log, ""requestmethod=(.+)\trefererURL""), 0),
+// refererurl = json_extract_scalar(_raw_json, ""$.refererurl""),
+refererurl = arrayindex(regextract(_raw_log, ""refererURL=(.+)\tuseragent""), 0),
+useragent  = arrayindex(regextract(_raw_log, ""useragent=(.+)\tproduct""), 0), 
+//| fields _raw_json, _raw_log, reason, event_id, protocol, action, rulelabel, transactionsize, responsesize, requestsize, urlcategory, serverip, clienttranstime, requestmethod, refererurl, useragent, location, zproduct, clientip, status, user, url, zvendor, hostname, clientpublicip, threatcategory, threatname, filetype, appname, pagerisk, department, urlsupercategory, appclass, dlpengine, urlclass, threatclass, dlpdictionaries, fileclass, bwthrottle, servertranstime, contenttype, unscannabletype, devicehostname, deviceowner
+// location = json_extract_scalar(_raw_json, ""$.location""),//
+location = arrayindex(regextract(_raw_log, ""location=(.+)\tClientIP""), 0), //2024.12.26.v1.2 Tao Feng 
+// clientip = json_extract_scalar(_raw_json, ""$.clientip""),
+clientip = arrayindex(regextract(_raw_log, ""ClientIP=(.+)\tstatus""), 0),
+// status = json_extract_scalar(_raw_json, ""$.status""),
+status = arrayindex(regextract(_raw_log, ""status=(.+)\tuser""), 0),
+// user = json_extract_scalar(_raw_json, ""$.user""),
+user = arrayindex(regextract(_raw_log, ""user=(.+)\turl=""), 0),
+// src_user_nick = arrayindex(regextract(_raw_log, ""user=(.+)(?=@)""), 0),
+// url = json_extract_scalar(_raw_json, ""$.url""),//
+url = arrayindex(regextract(_raw_log, ""\turl=(.+)\tvendor=""), 0), 
+// zvendor = json_extract_scalar(_raw_json, ""$.vendor""),//
+// hostname = json_extract_scalar(_raw_json, ""$.hostname""),//
+hostname = arrayindex(regextract(_raw_log, ""\thostname=(.+)\tclientpublicip=""), 0), 
+// clientpublicip = json_extract_scalar(_raw_json, ""$.clientpublicip""),
+clientpublicip = arrayindex(regextract(_raw_log, ""clientpublicIP=(.+)\tthreatcategory""), 0),
+// threatcategory = json_extract_scalar(_raw_json, ""$.threatcategory""),//
+// threatname = json_extract_scalar(_raw_json, ""$.threatname""),/
+// threat_category = json_extract_scalar(_raw_json, ""$.threatcategory""),
+threat_category = arrayindex(regextract(_raw_log, ""threatcategory=(.+)\tthreatname""), 0),
+// threat_name = json_extract_scalar(_raw_json, ""$.threatname""),
+threat_name = arrayindex(regextract(_raw_log, ""threatname=(.+)\tfiletype""), 0),
+// filetype = json_extract_scalar(_raw_json, ""$.filetype""),
+filetype = arrayindex(regextract(_raw_log, ""filetype=(.+)\tappname""), 0),
+// appname = json_extract_scalar(_raw_json, ""$.appname""),
+appname = arrayindex(regextract(_raw_log, ""appname=(.+)\tpagerisk""), 0),
+// pagerisk = json_extract_scalar(_raw_json, ""$.pagerisk""),//
+// department = json_extract_scalar(_raw_json, ""$.department""),
+department = arrayindex(regextract(_raw_log, ""department=(.+)\turlsupercategory""), 0),
+// urlsupercategory = json_extract_scalar(_raw_json, ""$.urlsupercategory""),//
+// appclass = json_extract_scalar(_raw_json, ""$.appclass""),//
+// dlpengine = json_extract_scalar(_raw_json, ""$.dlpengine""),//
+// urlclass = json_extract_scalar(_raw_json, ""$.urlclass""), //
+urlclass = arrayindex(regextract(_raw_log, ""urlclass=(.+)\tthreatclass""), 0),
+// threatclass = json_extract_scalar(_raw_json, ""$.threatclass""),//
+// threatclass = arrayindex(regextract(_raw_log, ""threatclass=(.+)\tdlpdictionaries""), 0),
+// dlpdictionaries = json_extract_scalar(_raw_json, ""$.dlpdictionaries""),//
+// fileclass = json_extract_scalar(_raw_json, ""$.fileclass""),//
+// bwthrottle = json_extract_scalar(_raw_json, ""$.bwthrottle""),//
+// servertranstime = json_extract_scalar(_raw_json, ""$.servertranstime""),//
+// contenttype = json_extract_scalar(_raw_json, ""$.contenttype""),
+contenttype = arrayindex(regextract(_raw_log, ""contenttype=(.+)\tunscannabletype""), 0),
+// unscannabletype = json_extract_scalar(_raw_json, ""$.unscannabletype""),
+unscannabletype = arrayindex(regextract(_raw_log, ""unscannabletype=(.+)\tdevicehostname""), 0),
+// devicehostname = json_extract_scalar(_raw_json, ""$.devicehostname"")
+devicehostname = arrayindex(regextract(_raw_log, ""devicehostname=(.+)\tdeviceowner""), 0),
+// deviceowner = json_extract_scalar(_raw_json, ""$.deviceowner""),//
+deviceowner = arrayindex(regextract(_raw_log, ""deviceowner=(.+)""), 0)
+// gateway_location_name = replace(json_extract_scalar(_raw_json, ""$.location""), ""%20"", "" ""), 
+
+
+|alter 	
+client_public_ipv4 = if(clientpublicip  ~= ""\."",  clientpublicip ),
+client_public_ipv6 = if(clientpublicip ~= "":"",  clientpublicip),
+client_ipv4 = if(clientip  ~= ""\."",  clientip),
+client_ipv6 = if(clientip ~= "":"",  clientip)
+
+|alter 
+xdm.observer.name = concat(""Zscaler-NSS_"" + ""null_"" + ""null""),
+xdm.event.outcome_reason = reason, 
+xdm.event.id = event_id ,
+xdm.network.application_protocol = protocol ,
+xdm.observer.action = action,
+xdm.network.rule = rulelabel ,
+xdm.target.sent_bytes = to_integer(responsesize ),
+xdm.source.sent_bytes = to_integer(requestsize  ),
+xdm.network.http.url_category = urlcategory,
+xdm.target.ipv4 = serverip ,
+xdm.network.http.method = if(requestmethod= ""GET"", XDM_CONST.HTTP_METHOD_GET, requestmethod= ""POST"", XDM_CONST.HTTP_METHOD_POST,requestmethod= ""PUT"", XDM_CONST.HTTP_METHOD_PUT, requestmethod= ""PATCH"", XDM_CONST.HTTP_METHOD_PATCH, requestmethod= ""OPTIONS"", XDM_CONST.HTTP_METHOD_OPTIONS, requestmethod= ""HEAD"", XDM_CONST.HTTP_METHOD_HEAD, requestmethod= ""ACL"", XDM_CONST.HTTP_METHOD_ACL, requestmethod= ""BASELINE_CONTROL"", XDM_CONST.HTTP_METHOD_BASELINE_CONTROL, requestmethod= ""BIND"", XDM_CONST.HTTP_METHOD_BIND, requestmethod= ""CHECKIN"", XDM_CONST.HTTP_METHOD_CHECKIN, requestmethod= ""CHECKOUT"", XDM_CONST.HTTP_METHOD_CHECKOUT, requestmethod= ""CONNECT"", XDM_CONST.HTTP_METHOD_CONNECT, requestmethod= ""COPY"", XDM_CONST.HTTP_METHOD_COPY, requestmethod= ""DELETE"", XDM_CONST.HTTP_METHOD_DELETE, requestmethod= ""LABEL"", XDM_CONST.HTTP_METHOD_LABEL, requestmethod= ""LINK"", XDM_CONST.HTTP_METHOD_LINK, requestmethod= ""LOCK"", XDM_CONST.HTTP_METHOD_LOCK, requestmethod= ""MERGE"", XDM_CONST.HTTP_METHOD_MERGE, requestmethod= ""MKACTIVITY"", XDM_CONST.HTTP_METHOD_MKACTIVITY, requestmethod= ""MKCALENDAR"", XDM_CONST.HTTP_METHOD_MKCALENDAR, requestmethod= ""MKCOL"", XDM_CONST.HTTP_METHOD_MKCOL, requestmethod= ""MKREDIRECTREF"", XDM_CONST.HTTP_METHOD_MKREDIRECTREF, requestmethod= ""MKWORKSPACE"", XDM_CONST.HTTP_METHOD_MKWORKSPACE, requestmethod= ""MOVE"", XDM_CONST.HTTP_METHOD_MOVE,  requestmethod= ""ORDERPATCH"", XDM_CONST.HTTP_METHOD_ORDERPATCH,   requestmethod= ""PRI"", XDM_CONST.HTTP_METHOD_PRI, requestmethod= ""PROPFIND"", XDM_CONST.HTTP_METHOD_PROPFIND, requestmethod= ""PROPPATCH"", XDM_CONST.HTTP_METHOD_PROPPATCH,  requestmethod= ""REBIND"", XDM_CONST.HTTP_METHOD_REBIND, requestmethod= ""REPORT"", XDM_CONST.HTTP_METHOD_REPORT, requestmethod= ""SEARCH"", XDM_CONST.HTTP_METHOD_SEARCH, requestmethod= ""TRACE"", XDM_CONST.HTTP_METHOD_TRACE, requestmethod= ""UNBIND"", XDM_CONST.HTTP_METHOD_UNBIND, requestmethod= ""UNCHECKOUT"", XDM_CONST.HTTP_METHOD_UNCHECKOUT, requestmethod= ""UNLINK"", XDM_CONST.HTTP_METHOD_UNLINK, requestmethod= ""UNLOCK"", XDM_CONST.HTTP_METHOD_UNLOCK, requestmethod= ""UPDATE"", XDM_CONST.HTTP_METHOD_UPDATE, requestmethod= ""UPDATEREDIRECTREF"", XDM_CONST.HTTP_METHOD_UPDATEREDIRECTREF, requestmethod= ""VERSION_CONTROL"", XDM_CONST.HTTP_METHOD_VERSION_CONTROL, to_string(requestmethod)),
+xdm.network.http.referrer = if(refererurl  != ""None"", refererurl ),
+xdm.source.user_agent = if(useragent  != ""Unkown"", useragent ),
+// xdm.intermediate.host.hostname = gateway_location_name,
+xdm.source.location.region = location , //2024.12.26.v1.2 Tao Feng 
+xdm.source.ipv4 = client_ipv4,
+xdm.source.ipv6 = client_ipv6,
+xdm.network.http.response_code = if(status= ""200"", XDM_CONST.HTTP_RSP_CODE_OK, status= ""201"", XDM_CONST.HTTP_RSP_CODE_CREATED, status= ""302"", XDM_CONST.HTTP_RSP_CODE_FOUND, status= ""401"", XDM_CONST.HTTP_RSP_CODE_UNAUTHORIZED, status= ""403"", XDM_CONST.HTTP_RSP_CODE_FORBIDDEN, status= ""404"", XDM_CONST.HTTP_RSP_CODE_NOT_FOUND, status= ""500"", XDM_CONST.HTTP_RSP_CODE_INTERNAL_SERVER_ERROR, status= ""501"", XDM_CONST.HTTP_RSP_CODE_NOT_IMPLEMENTED, status= ""502"", XDM_CONST.HTTP_RSP_CODE_BAD_GATEWAY, status= ""503"", XDM_CONST.HTTP_RSP_CODE_SERVICE_UNAVAILABLE, status= ""504"", XDM_CONST.HTTP_RSP_CODE_GATEWAY_TIMEOUT, status= ""505"", XDM_CONST.HTTP_RSP_CODE_HTTP_VERSION_NOT_SUPPORTED, status= ""506"", XDM_CONST.HTTP_RSP_CODE_VARIANT_ALSO_NEGOTIATES, status= ""507"", XDM_CONST.HTTP_RSP_CODE_INSUFFICIENT_STORAGE, status= ""508"", XDM_CONST.HTTP_RSP_CODE_LOOP_DETECTED, status= ""511"", XDM_CONST.HTTP_RSP_CODE_NETWORK_AUTHENTICATION_REQUIRED, status= ""100"", XDM_CONST.HTTP_RSP_CODE_CONTINUE, status= ""101"", XDM_CONST.HTTP_RSP_CODE_SWITCHING_PROTOCOLS, status= ""102"", XDM_CONST.HTTP_RSP_CODE_PROCESSING, status= ""103"", XDM_CONST.HTTP_RSP_CODE_EARLY_HINTS, status= ""202"", XDM_CONST.HTTP_RSP_CODE_ACCEPTED, status= ""203"", XDM_CONST.HTTP_RSP_CODE_NON__AUTHORITATIVE_INFORMATION, status= ""204"", XDM_CONST.HTTP_RSP_CODE_NO_CONTENT, status= ""205"", XDM_CONST.HTTP_RSP_CODE_RESET_CONTENT, status= ""206"", XDM_CONST.HTTP_RSP_CODE_PARTIAL_CONTENT, status= ""207"", XDM_CONST.HTTP_RSP_CODE_MULTI__STATUS, status= ""208"", XDM_CONST.HTTP_RSP_CODE_ALREADY_REPORTED, status= ""226"", XDM_CONST.HTTP_RSP_CODE_IM_USED, status= ""300"", XDM_CONST.HTTP_RSP_CODE_MULTIPLE_CHOICES, status= ""301"", XDM_CONST.HTTP_RSP_CODE_MOVED_PERMANENTLY, status= ""303"", XDM_CONST.HTTP_RSP_CODE_SEE_OTHER, status= ""304"", XDM_CONST.HTTP_RSP_CODE_NOT_MODIFIED, status= ""305"", XDM_CONST.HTTP_RSP_CODE_USE_PROXY, status= ""307"", XDM_CONST.HTTP_RSP_CODE_TEMPORARY_REDIRECT, status= ""308"", XDM_CONST.HTTP_RSP_CODE_PERMANENT_REDIRECT, status= ""400"", XDM_CONST.HTTP_RSP_CODE_BAD_REQUEST, status= ""402"", XDM_CONST.HTTP_RSP_CODE_PAYMENT_REQUIRED, status= ""405"", XDM_CONST.HTTP_RSP_CODE_METHOD_NOT_ALLOWED, status= ""406"", XDM_CONST.HTTP_RSP_CODE_NOT_ACCEPTABLE, status= ""407"", XDM_CONST.HTTP_RSP_CODE_PROXY_AUTHENTICATION_REQUIRED, status= ""408"", XDM_CONST.HTTP_RSP_CODE_REQUEST_TIMEOUT, status= ""409"", XDM_CONST.HTTP_RSP_CODE_CONFLICT, status= ""410"", XDM_CONST.HTTP_RSP_CODE_GONE, status= ""411"", XDM_CONST.HTTP_RSP_CODE_LENGTH_REQUIRED, status= ""412"", XDM_CONST.HTTP_RSP_CODE_PRECONDITION_FAILED, status= ""413"", XDM_CONST.HTTP_RSP_CODE_CONTENT_TOO_LARGE, status= ""414"", XDM_CONST.HTTP_RSP_CODE_URI_TOO_LONG, status= ""415"", XDM_CONST.HTTP_RSP_CODE_UNSUPPORTED_MEDIA_TYPE, status= ""416"", XDM_CONST.HTTP_RSP_CODE_RANGE_NOT_SATISFIABLE, status= ""417"", XDM_CONST.HTTP_RSP_CODE_EXPECTATION_FAILED, status= ""421"", XDM_CONST.HTTP_RSP_CODE_MISDIRECTED_REQUEST, status= ""422"", XDM_CONST.HTTP_RSP_CODE_UNPROCESSABLE_CONTENT, status= ""423"", XDM_CONST.HTTP_RSP_CODE_LOCKED, status= ""424"", XDM_CONST.HTTP_RSP_CODE_FAILED_DEPENDENCY, status= ""425"", XDM_CONST.HTTP_RSP_CODE_TOO_EARLY, status= ""426"", XDM_CONST.HTTP_RSP_CODE_UPGRADE_REQUIRED, status= ""428"", XDM_CONST.HTTP_RSP_CODE_PRECONDITION_REQUIRED, status= ""429"", XDM_CONST.HTTP_RSP_CODE_TOO_MANY_REQUESTS, status= ""431"", XDM_CONST.HTTP_RSP_CODE_REQUEST_HEADER_FIELDS_TOO_LARGE, status= ""451"", XDM_CONST.HTTP_RSP_CODE_UNAVAILABLE_FOR_LEGAL_REASONS, status),
+//xdm.source.user.domain = user,
+xdm.source.user.username = user ,
+xdm.source.host.ipv4_public_addresses = arraycreate(client_public_ipv4),
+xdm.source.host.ipv6_public_addresses = arraycreate(client_public_ipv6),
+xdm.source.host.ipv4_addresses = arraydistinct(arraycreate(client_ipv4, client_public_ipv4)),
+xdm.source.host.ipv6_addresses = arraydistinct(arraycreate(client_ipv6, client_public_ipv6)),
+xdm.alert.subcategory = if(threat_category != ""None"", threat_category),
+xdm.alert.original_threat_name = if(threat_name != ""None"", threat_name),
+xdm.target.application.name = appname ,
+xdm.target.url = url, 
+//xdm.target.host.hostname = hostname , 2024.12.13.v1.1 Tao Feng
+xdm.network.http.domain = hostname, //2024.12.13.v1.1 Tao Feng
+xdm.source.user.ou = department ,
+//xdm.alert.category = urlclass , //
+xdm.event.type = urlclass,
+xdm.network.http.content_type = contenttype ,
+xdm.target.file.file_type = arraystring(arraydistinct(arrayfilter(arraycreate(filetype , unscannabletype ), ""@element"" != ""None"")), "",""),
+xdm.source.host.hostname = devicehostname,
+xdm.source.user.employee_id = deviceowner
+| alter xdm.event.outcome = if(xdm.observer.action=""Allowed"", ""Success"", xdm.observer.action = ""Blocked"", ""Failure"")
+;"
+"Sep  2 15:25:25 10.189.207.195  cckdnsprdsecls002.sg.singtelgroup.net 10.189.207.195 named[3043711]: transfer of '10.in-addr.arpa/IN/1' from 10.189.216.185#53: Transfer status: success
+Sep  2 15:25:25 10.189.207.195  cckdnsprdsecls002.sg.singtelgroup.net 10.189.207.195 named[3043711]: zone 10.in-addr.arpa/IN/1: transferred serial 22474140
+Sep  2 15:25:25 10.189.207.195  cckdnsprdsecls002.sg.singtelgroup.net 10.189.207.195 named[3043711]: transfer of '10.in-addr.arpa/IN/1' from 10.189.216.185#53: connected using 10.189.207.195#38693
+Sep  2 15:25:25 10.189.207.195  cckdnsprdsecls002.sg.singtelgroup.net 10.189.207.195 named[3043711]: zone 10.in-addr.arpa/IN/1: Transfer started.
+Sep  2 15:25:25 10.189.207.195  cckdnsprdsecls002.sg.singtelgroup.net 10.189.207.195 named[3043711]: zone 10.in-addr.arpa/IN/1: notify from 10.189.216.185#63484: serial 22474140
+Sep  2 15:25:25 10.189.207.195  cckdnsprdsecls002.sg.singtelgroup.net 10.189.207.195 named[3043711]: client @0x7f02bc01d968 10.189.216.185#63484: view 1: received notify for zone '10.in-addr.arpa'
+Sep  2 15:25:25 10.189.207.194  cckdnsprdsecls001.sg.singtelgroup.net 10.189.207.194 named[3044694]: client @0x7f6f500252e8 10.189.216.185#63484: view 1: received notify for zone '10.in-addr.arpa'
+Sep  2 15:25:24 10.148.82.242  cckdnsprdrecls002.sg.singtelgroup.net 10.148.82.242 named[2745911]: 02-Sep-2024 15:25:24.882 client 10.148.82.246#57825: view 2: UDP: query: edge.microsoft.com IN A response: NOERROR + edge.microsoft.com. 146 IN CNAME edge-microsoft-com.dual-a-0036.a-msedge.net.; edge-microsoft-com.dual-a-0036.a-msedge.net. 18 IN CNAME dual-a-0036.a-msedge.net.; dual-a-0036.a-msedge.net. 18 IN A 204.79.197.239; dual-a-0036.a-msedge.net. 18 IN A 13.107.21.239;
+Sep  2 15:25:24 10.148.82.242  cckdnsprdrecls002.sg.singtelgroup.net 10.148.82.242 named[2745911]: client @0x7f1bc7660948 10.148.82.246#57825 (edge.microsoft.com): view 2: query: edge.microsoft.com IN A + (10.148.82.242)
+Sep  2 15:25:24 10.148.82.242  cckdnsprdrecls002.sg.singtelgroup.net 10.148.82.242 named[2745911]: 02-Sep-2024 15:25:24.882 client 10.148.82.246#57537: view 2: TCP: query: login.dotomi.com IN A response: NOERROR + login.dotomi.com. 212 IN CNAME bfp.global.ipv4.dotomi.weighted.com.akadns.net.; bfp.global.ipv4.dotomi.weighted.com.akadns.net. 114 IN A 89.207.22.140;
+Sep  2 15:25:24 10.148.82.242  cckdnsprdrecls002.sg.singtelgroup.net 10.148.82.242 named[2745911]: 02-Sep-2024 15:25:24.878 client 10.148.82.246#57535: view 2: TCP: query: analytics.tiktok.com IN A response: NOERROR + analytics.tiktok.com. 216 IN CNAME analytics.tiktok.com.ttdns2.com.; analytics.tiktok.com.ttdns2.com. 7 IN CNAME analytics.tiktok.com.edgekey.net.; analytics.tiktok.com.edgekey.net. 10998 IN CNAME e35058.a.akamaiedge.net.; e35058.a.akamaiedge.net. 3 IN A 125.56.199.59; e35058.a.akamaiedge.net. 3 IN A 125.56.199.58;
+Sep  2 15:20:43 10.189.207.31  ifbprddhcpls001.sg.singtelgroup.net 10.189.207.31 dhcpd[2388706]: DHCPACK on 10.141.129.45 to 70:cf:49:30:5f:ed (ST-L1012067) via eth1 relay 10.141.135.254 lease-duration 1814375 (RENEW) uid 01:70:cf:49:30:5f:ed
+Sep  2 15:20:00 10.189.207.31  ifbprddhcpls001.sg.singtelgroup.net 10.189.207.31 dhcpd[2388706]: DHCPDISCOVER from a4:5d:36:11:01:14 via 10.128.31.251 TransID 3b110114
+Sep  2 15:20:00 10.189.199.31  ifbprddhcpls002.sg.singtelgroup.net 10.189.199.31 dhcpd[2378294]: DHCPDISCOVER from dc:1b:a1:de:19:99 (ST-L1010506) via 10.141.35.251 TransID ce4df8f0 uid 01:dc:1b:a1:de:19:99
+Sep  2 15:19:35 10.189.199.31  ifbprddhcpls002.sg.singtelgroup.net 10.189.199.31 dhcpd[2378294]: DHCPOFFER on 10.129.179.3 to 00:68:eb:68:78:c7 (ST-L1006947) via eth1 relay 10.129.191.254 lease-duration 119 offered-duration 3600 uid 01:00:68:eb:68:78:c7
+Sep  2 15:19:35 10.189.199.31  ifbprddhcpls002.sg.singtelgroup.net 10.189.199.31 dhcpd[2378294]: DHCPOFFER on 10.129.179.3 to 00:68:eb:68:78:c7 (ST-L1006947) via eth1 relay 10.129.191.254 lease-duration 119 offered-duration 3600 uid 01:00:68:eb:68:78:c7
+Sep  2 15:19:08 10.189.199.31  ifbprddhcpls002.sg.singtelgroup.net 10.189.199.31 dhcpd[2378294]: DHCPINFORM from 10.65.59.82 via 10.65.59.253 TransID 38e297ee
+Sep  2 15:19:08 10.189.199.31  ifbprddhcpls002.sg.singtelgroup.net 10.189.199.31 dhcpd[2378294]: DHCPINFORM from 10.65.59.82 via 10.65.59.252 TransID 38e297ee
+Sep  2 15:19:08 10.189.199.31  ifbprddhcpls002.sg.singtelgroup.net 10.189.199.31 dhcpd[2378294]: DHCPINFORM from 10.65.59.82 via 10.65.59.252 TransID 38e297ee
+Sep  2 15:18:23 10.189.207.31  ifbprddhcpls001.sg.singtelgroup.net 10.189.207.31 dhcpd[2388706]: DHCPRELEASE of 10.64.20.170 from a8:0c:0d:bc:58:66 via eth1 (not found) TransID 00000b09
+Sep  2 15:17:34 10.189.207.31  ifbprddhcpls001.sg.singtelgroup.net 10.189.207.31 dhcpd[2388706]: DHCPEXPIRE on 10.65.142.235 to 70:38:ee:c9:69:90","[MODEL: dataset=""infoblox_infoblox_raw""]
+
+// https://docs.infoblox.com/space/nios85/35816694/Capturing+DNS+Queries+and+Responses
+filter _raw_log ~= ""client\s@\S+\s(\d{1,3}(?:\.\d{1,3}){3})#(\d+)\s\((.*?)\):"" or _raw_log ~= ""client\s+(?:\@0x[\da-fA-F]+\s+)?[\da-fA-F\.\:]+\#\d{1,5}(?:\s+\([^\)]+\))?:\s+query""
+
+| alter // Extract syslog headers & syslog message 
+    observer_name = arrayindex(regextract(_raw_log, ""\w+\s+\d+\s+\d+\:\d+\:\d+\s\d+.\d+.\d+.\d+\s+([A-Za-z0-9\.]+)\s\d+.""), 0),
+    syslog_process_id = arrayindex(regextract(_raw_log, ""\:?\w+\[(\d+)\]""), 0),
+    syslog_process_name = arrayindex(regextract(_raw_log, ""\s?([A-Za-z\s\-\_]+)\[\d*\]""), 0),
+    syslog_priority = to_integer(arrayindex(regextract(_raw_log, ""^\<(\d{1,3})\>\s*\w+""), 0)),
+    syslog_msg = coalesce( 
+        arrayindex(regextract(_raw_log, ""\w+\[\d+\]:\s*(.+)""), 0), // messages that are sent directly from infoblox 
+        arrayindex(regextract(_raw_log, ""^\<\d+\>\w?\s+(?:\S+\s+){6}(.+)""), 0)) // messages that are downloaded to file and sent via an intermediate syslog client 
+| alter syslog_facility_code = floor(divide(syslog_priority, 8))
+| alter syslog_severity = to_string(subtract(syslog_priority, multiply(syslog_facility_code, 8)))
+| alter // Extract the DNS query data out of the syslog messages 
+    client_ip = arrayindex(regextract(_raw_log, ""client\s+(?:\@0x[\da-fA-F]+\s+)?([\da-fA-F\.\:]+)\#\d{1,5}""), 0),
+    client_port = arrayindex(regextract(_raw_log, ""client\s+(?:\@0x[\da-fA-F]+\s+)?[\da-fA-F\.\:]+\#(\d{1,5})""), 0),
+    dns_server_ip = coalesce(
+        arrayindex(regextract(_raw_log, ""query\:\s+\S+\s+(?:\@0x[\da-fA-F]+\s+)?\w+\s+\w+\s+[\+\-](?:[SETDC\(\)\d]+)?\s+\(?([\da-fA-F\.\:]+)""), 0),
+        arrayindex(regextract(_raw_log, ""query\:\s+\S+\s+IN\s.*\s+\+E\(0\)DCV\s+\(?([\d\.]+)\)?""), 0)),
+    query_domain_name = coalesce(arrayindex(regextract(_raw_log, ""query\:\s+(\S+)""), 0), arrayindex(regextract(_raw_log, ""\(([^\)]+)\):\s+query""), 0)),
+    query_class = arrayindex(regextract(_raw_log, ""query\:\s+\S+\s+(?:\@0x[\da-fA-F]+\s+)?(\w+)""), 0), // see https://datatracker.ietf.org/doc/html/rfc1035#section-3.2.4
+    query_record_type = arrayindex(regextract(_raw_log, ""query\:\s+\S+\s+(?:\@0x[\da-fA-F]+\s+)?\w+\s+(\w+)""), 0), // see https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-4
+    query_flags = arrayindex(regextract(_raw_log, ""query\:\s+\S+\s+(?:\@0x[\da-fA-F]+\s+)?\w+\s+\w+\s+([\+\-](?:[SETDC\(\)\d]+)?)""), 0),
+    rcode = arrayindex(regextract(_raw_log, ""query failed\s*\((.*)\)\sfor""), 0)
+| alter // Post extraction processing 
+    application_protocol = ""DNS"",
+	client_ipv4 = if(client_ip ~= ""(?:\d{1,3}\.){3}\d{1,3}"", client_ip),
+
+	client_ipv6 = if(client_ip ~= "":"", client_ip),
+    dns_server_ipv4 = if(dns_server_ip ~= ""(?:\d{1,3}\.){3}\d{1,3}"", dns_server_ip),
+	dns_server_ipv6 = if(dns_server_ip ~= "":"", dns_server_ip),
+    ip_protocol = if(query_flags contains ""T"", XDM_CONST.IP_PROTOCOL_TCP),
+    observer_ip = arrayindex(regextract(_raw_log, ""(\d+\.\d+\.\d+\.\d+)\snamed""), 0)
+| alter // XDM Mapping 
+    xdm.observer.name = concat(""Infoblox-DNS-Query_"" + observer_name + ""_"" + observer_ip),
+    xdm.alert.severity = syslog_severity,
+    xdm.event.type = ""DNS Query"",
+    xdm.event.description = syslog_msg,
+    xdm.event.log_level = if(syslog_severity = ""0"", XDM_CONST.LOG_LEVEL_EMERGENCY, syslog_severity = ""1"", XDM_CONST.LOG_LEVEL_ALERT, syslog_severity = ""2"", XDM_CONST.LOG_LEVEL_CRITICAL, syslog_severity = ""3"", XDM_CONST.LOG_LEVEL_ERROR, syslog_severity = ""4"", XDM_CONST.LOG_LEVEL_WARNING, syslog_severity = ""5"", XDM_CONST.LOG_LEVEL_NOTICE, syslog_severity = ""6"", XDM_CONST.LOG_LEVEL_INFORMATIONAL, syslog_severity = ""7"", XDM_CONST.LOG_LEVEL_DEBUG, syslog_severity),
+    // xdm.event.outcome = if(rcode != null, XDM_CONST.OUTCOME_FAILED),
+    xdm.event.outcome = if(rcode != null, XDM_CONST.OUTCOME_FAILED, rcode = null, XDM_CONST.OUTCOME_UNKNOWN),
+    xdm.event.outcome_reason = rcode,
+    xdm.intermediate.ipv4 = dns_server_ipv4,
+    xdm.intermediate.ipv6 = dns_server_ipv6,
+    xdm.network.application_protocol = application_protocol,
+    xdm.network.dns.dns_question.class = if(query_class = ""IN"", 1, query_class = ""CS"", 2, query_class = ""CH"", 3, query_class = ""HS"", 4), // see https://datatracker.ietf.org/doc/html/rfc1035#section-3.2.4
+    xdm.network.dns.dns_question.name = query_domain_name,
+    xdm.network.dns.dns_question.type = if(query_record_type = ""A"", XDM_CONST.DNS_RECORD_TYPE_A, query_record_type = ""AAAA"", XDM_CONST.DNS_RECORD_TYPE_AAAA, query_record_type = ""AFSDB"", XDM_CONST.DNS_RECORD_TYPE_AFSDB, query_record_type = ""APL"", XDM_CONST.DNS_RECORD_TYPE_APL, query_record_type = ""CAA"", XDM_CONST.DNS_RECORD_TYPE_CAA, query_record_type = ""CDNSKEY"", XDM_CONST.DNS_RECORD_TYPE_CDNSKEY, query_record_type = ""CDS"", XDM_CONST.DNS_RECORD_TYPE_CDS, query_record_type = ""CERT"", XDM_CONST.DNS_RECORD_TYPE_CERT, query_record_type = ""CNAME"", XDM_CONST.DNS_RECORD_TYPE_CNAME, query_record_type = ""CSYNC"", XDM_CONST.DNS_RECORD_TYPE_CSYNC, query_record_type = ""DHCID"", XDM_CONST.DNS_RECORD_TYPE_DHCID, query_record_type = ""DLV"", XDM_CONST.DNS_RECORD_TYPE_DLV, query_record_type = ""DNAME"", XDM_CONST.DNS_RECORD_TYPE_DNAME, query_record_type = ""DNSKEY"", XDM_CONST.DNS_RECORD_TYPE_DNSKEY, query_record_type = ""DS"", XDM_CONST.DNS_RECORD_TYPE_DS, query_record_type = ""EUI48"", XDM_CONST.DNS_RECORD_TYPE_EUI48, query_record_type = ""EUI64"", XDM_CONST.DNS_RECORD_TYPE_EUI64, query_record_type = ""HINFO"", XDM_CONST.DNS_RECORD_TYPE_HINFO, query_record_type = ""HIP"", XDM_CONST.DNS_RECORD_TYPE_HIP, query_record_type = ""HTTPS"", XDM_CONST.DNS_RECORD_TYPE_HTTPS, query_record_type = ""IPSECKEY"", XDM_CONST.DNS_RECORD_TYPE_IPSECKEY, query_record_type = ""KEY"", XDM_CONST.DNS_RECORD_TYPE_KEY, query_record_type = ""KX"", XDM_CONST.DNS_RECORD_TYPE_KX, query_record_type = ""LOC"", XDM_CONST.DNS_RECORD_TYPE_LOC, query_record_type = ""MX"", XDM_CONST.DNS_RECORD_TYPE_MX, query_record_type = ""NAPTR"", XDM_CONST.DNS_RECORD_TYPE_NAPTR, query_record_type = ""NS"", XDM_CONST.DNS_RECORD_TYPE_NS, query_record_type = ""NSEC"", XDM_CONST.DNS_RECORD_TYPE_NSEC, query_record_type = ""NSEC3"", XDM_CONST.DNS_RECORD_TYPE_NSEC3, query_record_type = ""NSEC3PARAM"", XDM_CONST.DNS_RECORD_TYPE_NSEC3PARAM, query_record_type = ""OPENPGPKEY"", XDM_CONST.DNS_RECORD_TYPE_OPENPGPKEY, query_record_type = ""PTR"", XDM_CONST.DNS_RECORD_TYPE_PTR, query_record_type = ""RRSIG"", XDM_CONST.DNS_RECORD_TYPE_RRSIG, query_record_type = ""RP"", XDM_CONST.DNS_RECORD_TYPE_RP, query_record_type = ""SIG"", XDM_CONST.DNS_RECORD_TYPE_SIG, query_record_type = ""SMIMEA"", XDM_CONST.DNS_RECORD_TYPE_SMIMEA, query_record_type = ""SOA"", XDM_CONST.DNS_RECORD_TYPE_SOA, query_record_type = ""SRV"", XDM_CONST.DNS_RECORD_TYPE_SRV, query_record_type = ""SSHFP"", XDM_CONST.DNS_RECORD_TYPE_SSHFP, query_record_type = ""SVCB"", XDM_CONST.DNS_RECORD_TYPE_SVCB, query_record_type = ""TA"", XDM_CONST.DNS_RECORD_TYPE_TA, query_record_type = ""TKEY"", XDM_CONST.DNS_RECORD_TYPE_TKEY, query_record_type = ""TLSA"", XDM_CONST.DNS_RECORD_TYPE_TLSA, query_record_type = ""TSIG"", XDM_CONST.DNS_RECORD_TYPE_TSIG, query_record_type = ""TXT"", XDM_CONST.DNS_RECORD_TYPE_TXT, query_record_type = ""URI"", XDM_CONST.DNS_RECORD_TYPE_URI, query_record_type = ""ZONEMD"", XDM_CONST.DNS_RECORD_TYPE_ZONEMD, query_record_type),
+    xdm.network.dns.is_response = if(rcode = null, to_boolean(""FALSE"")),
+    xdm.network.dns.response_code = if(rcode = ""NOERROR"", XDM_CONST.DNS_RESPONSE_CODE_NO_ERROR, rcode = ""FORMERR"", XDM_CONST.DNS_RESPONSE_CODE_FORMAT_ERROR, rcode = ""SERVFAIL"", XDM_CONST.DNS_RESPONSE_CODE_SERVER_FAILURE, rcode = ""NXDOMAIN"", XDM_CONST.DNS_RESPONSE_CODE_NON_EXISTENT_DOMAIN, rcode = ""NOTIMP"", XDM_CONST.DNS_RESPONSE_CODE_NOT_IMPLEMENTED, rcode ~= ""REFUSED"", XDM_CONST.DNS_RESPONSE_CODE_QUERY_REFUSED, rcode ~= ""YXDOMAIN"", XDM_CONST.DNS_RESPONSE_CODE_NAME_EXISTS_WHEN_IT_SHOULD_NOT, rcode = ""YXRRSET"", XDM_CONST.DNS_RESPONSE_CODE_RR_SET_EXISTS_WHEN_IT_SHOULD_NOT, rcode = ""NXRRSET"", XDM_CONST.DNS_RESPONSE_CODE_RR_SET_THAT_SHOULD_EXIST_DOES_NOT, rcode = ""NOTAUTH"", XDM_CONST.DNS_RESPONSE_CODE_SERVER_NOT_AUTHORITATIVE_FOR_ZONE, rcode = ""NOTZONE"", XDM_CONST.DNS_RESPONSE_CODE_NAME_NOT_CONTAINED_IN_ZONE, rcode = ""BADVERS"", XDM_CONST.DNS_RESPONSE_CODE_BAD_OPT_VERSION, rcode = ""BADSIG"", XDM_CONST.DNS_RESPONSE_CODE_TSIG_SIGNATURE_FAILURE, rcode = ""BADKEY"", XDM_CONST.DNS_RESPONSE_CODE_KEY_NOT_RECOGNIZED, rcode = ""BADTIME"", XDM_CONST.DNS_RESPONSE_CODE_SIGNATURE_OUT_OF_TIME_WINDOW, rcode = ""BADMODE"", XDM_CONST.DNS_RESPONSE_CODE_BAD_TKEY_MODE, rcode = ""BADNAME"", XDM_CONST.DNS_RESPONSE_CODE_DUPLICATE_KEY_NAME, rcode = ""BADALG"", XDM_CONST.DNS_RESPONSE_CODE_ALGORITHM_NOT_SUPPORTED, rcode = ""BADTRUNC"", XDM_CONST.DNS_RESPONSE_CODE_BAD_TRUNCATION, rcode),
+    xdm.network.ip_protocol = ip_protocol, 
+    xdm.network.protocol_layers = arraycreate(application_protocol, ip_protocol),
+    xdm.source.ipv4 = client_ipv4,
+    xdm.source.ipv6 = client_ipv6,
+    xdm.source.port = to_number(client_port),
+    xdm.source.process.name = syslog_process_name,
+    xdm.source.process.pid = to_number(syslog_process_id);
+
+
+// https://docs.infoblox.com/space/nios85/35816694/Capturing+DNS+Queries+and+Responses
+filter _raw_log ~= ""(?:UDP|TCP):\s*query:\s*(?:\S+\s+){3}response:""   
+| alter // Extract syslog headers & syslog message 
+    observer_name = arrayindex(regextract(_raw_log, ""\w+\s+\d+\s+\d+\:\d+\:\d+\s\d+.\d+.\d+.\d+\s+([A-Za-z0-9\.]+)\s\d+.""), 0),
+    syslog_process_id = arrayindex(regextract(_raw_log, ""\:?\w+\[(\d+)\]""), 0),
+    syslog_process_name = arrayindex(regextract(_raw_log, ""\s?([A-Za-z\s\-\_]+)\[\d*\]""), 0),
+    syslog_priority = to_integer(arrayindex(regextract(_raw_log, ""^\<(\d{1,3})\>\s*\w+""), 0)),
+    syslog_msg = coalesce( 
+        arrayindex(regextract(_raw_log, ""\w+\[\d+\]:\s*(.+)""), 0), // messages that are sent directly from infoblox 
+        arrayindex(regextract(_raw_log, ""^\<\d+\>\w?\s+(?:\S+\s+){6}(.+)""), 0)) // messages that are downloaded to file and sent via an intermediate syslog client 
+| alter syslog_facility_code = floor(divide(syslog_priority, 8))
+| alter syslog_severity = to_string(subtract(syslog_priority, multiply(syslog_facility_code, 8)))
+| alter // Extract DNS query & response data 
+    client_ip = arrayindex(regextract(syslog_msg, ""client\s+([\da-fA-F\.\:]+)\#\d{1,5}""), 0),
+    client_port = arrayindex(regextract(syslog_msg, ""client\s+[\da-fA-F\.\:]+\#(\d{1,5})""), 0),
+    //ip_protocol = arrayindex(regextract(syslog_msg, ""client\s+[\da-fA-F\.\:]+\#\d{1,5}:\s+(TCP|UDP)""), 0),
+    ip_protocol = arrayindex(regextract(syslog_msg, ""client\s+[\d.]+#\d+:\s+.+\s+\d+:\s+(TCP|UDP)""), 0),
+    query_domain_name = arrayindex(regextract(syslog_msg, ""query\:\s+(\S+)""), 0),
+    query_class = arrayindex(regextract(syslog_msg, ""query\:\s+\S+\s+(?:\@0x[\da-fA-F]+\s+)?(\w+)""), 0), // see https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-2
+    query_record_type = arrayindex(regextract(syslog_msg, ""query\:\s+\S+\s+(?:\@0x[\da-fA-F]+\s+)?\w+\s+(\w+)""), 0), // https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-4
+    response_rcode = arrayindex(regextract(syslog_msg, ""response\:\s+(\S+)""), 0), // see https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-6
+    response_flags = arrayindex(regextract(syslog_msg, ""response\:\s+\S+\s+((?:\+|\-)*[ATEDVL]{0,6})""), 0),
+    response_rr = arrayfilter(split(arrayindex(regextract(syslog_msg, ""response\:\s+(?:\S+\s+){2}(.+)""), 0), "";""), len(""@element"") > 0) // response resource records (RR)
+| alter // Extract ipv4 & ipv6 resolved addresses (A & AAAA record types, respectively)
+    response_resolved_ipv4_addresses = arraymap(response_rr, arrayindex(regextract(""@element"", ""(?:\S+\s+){3}A\s+(\S+)""), 0)), // A records 
+    response_resolved_ipv6_addresses = arraymap(response_rr, arrayindex(regextract(""@element"", ""(?:\S+\s+){3}A{4}\s+(\S+)""), 0)) // AAAA records
+| alter // Isolate only the requested records types from the entire response 
+    response_requested_records = if(query_record_type = ""ANY"", response_rr, arrayfilter(response_rr,  arrayindex(regextract(""@element"", ""(?:\S+\s+){3}(\S+)""), 0) = query_record_type))
+| alter // Extract the domain names and their associated record values from the response  
+    response_domain_names = arraymap(response_requested_records, rtrim(arrayindex(regextract(""@element"", ""(\S+)""), 0), ""."")),
+    response_values = arraymap(response_requested_records, arrayindex(regextract(""@element"", ""(?:\S+\s+){4}(.+)""), 0))
+| alter // reformat the domain names & values from array to semicolon separated strings
+    response_distinct_domain_names = arraydistinct(response_domain_names),
+    response_distinct_values = arraydistinct(response_values)
+| alter 
+    response_domain_names = if(array_length(response_distinct_domain_names) = 1, arraystring(response_distinct_domain_names, "";""), arraystring(response_domain_names, "";"")),
+    response_values = if(array_length(response_distinct_values) = 1, arraystring(response_distinct_values, "";""), arraystring(response_values, "";""))
+| alter // additional processing 
+    application_protocol = ""DNS"",
+	client_ipv4 = if(client_ip ~= ""(?:\d{1,3}\.){3}\d{1,3}"", client_ip),
+
+	client_ipv6 = if(client_ip ~= "":"", client_ip),
+    query_class_enum = if(query_class = ""IN"", 1, query_class = ""CS"", 2, query_class = ""CH"", 3, query_class = ""HS"", 4), // see https://datatracker.ietf.org/doc/html/rfc1035#section-3.2.4
+    query_record_type_enum = if(query_record_type = ""A"", XDM_CONST.DNS_RECORD_TYPE_A, query_record_type = ""AAAA"", XDM_CONST.DNS_RECORD_TYPE_AAAA, query_record_type = ""AFSDB"", XDM_CONST.DNS_RECORD_TYPE_AFSDB, query_record_type = ""APL"", XDM_CONST.DNS_RECORD_TYPE_APL, query_record_type = ""CAA"", XDM_CONST.DNS_RECORD_TYPE_CAA, query_record_type = ""CDNSKEY"", XDM_CONST.DNS_RECORD_TYPE_CDNSKEY, query_record_type = ""CDS"", XDM_CONST.DNS_RECORD_TYPE_CDS, query_record_type = ""CERT"", XDM_CONST.DNS_RECORD_TYPE_CERT, query_record_type = ""CNAME"", XDM_CONST.DNS_RECORD_TYPE_CNAME, query_record_type = ""CSYNC"", XDM_CONST.DNS_RECORD_TYPE_CSYNC, query_record_type = ""DHCID"", XDM_CONST.DNS_RECORD_TYPE_DHCID, query_record_type = ""DLV"", XDM_CONST.DNS_RECORD_TYPE_DLV, query_record_type = ""DNAME"", XDM_CONST.DNS_RECORD_TYPE_DNAME, query_record_type = ""DNSKEY"", XDM_CONST.DNS_RECORD_TYPE_DNSKEY, query_record_type = ""DS"", XDM_CONST.DNS_RECORD_TYPE_DS, query_record_type = ""EUI48"", XDM_CONST.DNS_RECORD_TYPE_EUI48, query_record_type = ""EUI64"", XDM_CONST.DNS_RECORD_TYPE_EUI64, query_record_type = ""HINFO"", XDM_CONST.DNS_RECORD_TYPE_HINFO, query_record_type = ""HIP"", XDM_CONST.DNS_RECORD_TYPE_HIP, query_record_type = ""HTTPS"", XDM_CONST.DNS_RECORD_TYPE_HTTPS, query_record_type = ""IPSECKEY"", XDM_CONST.DNS_RECORD_TYPE_IPSECKEY, query_record_type = ""KEY"", XDM_CONST.DNS_RECORD_TYPE_KEY, query_record_type = ""KX"", XDM_CONST.DNS_RECORD_TYPE_KX, query_record_type = ""LOC"", XDM_CONST.DNS_RECORD_TYPE_LOC, query_record_type = ""MX"", XDM_CONST.DNS_RECORD_TYPE_MX, query_record_type = ""NAPTR"", XDM_CONST.DNS_RECORD_TYPE_NAPTR, query_record_type = ""NS"", XDM_CONST.DNS_RECORD_TYPE_NS, query_record_type = ""NSEC"", XDM_CONST.DNS_RECORD_TYPE_NSEC, query_record_type = ""NSEC3"", XDM_CONST.DNS_RECORD_TYPE_NSEC3, query_record_type = ""NSEC3PARAM"", XDM_CONST.DNS_RECORD_TYPE_NSEC3PARAM, query_record_type = ""OPENPGPKEY"", XDM_CONST.DNS_RECORD_TYPE_OPENPGPKEY, query_record_type = ""PTR"", XDM_CONST.DNS_RECORD_TYPE_PTR, query_record_type = ""RRSIG"", XDM_CONST.DNS_RECORD_TYPE_RRSIG, query_record_type = ""RP"", XDM_CONST.DNS_RECORD_TYPE_RP, query_record_type = ""SIG"", XDM_CONST.DNS_RECORD_TYPE_SIG, query_record_type = ""SMIMEA"", XDM_CONST.DNS_RECORD_TYPE_SMIMEA, query_record_type = ""SOA"", XDM_CONST.DNS_RECORD_TYPE_SOA, query_record_type = ""SRV"", XDM_CONST.DNS_RECORD_TYPE_SRV, query_record_type = ""SSHFP"", XDM_CONST.DNS_RECORD_TYPE_SSHFP, query_record_type = ""SVCB"", XDM_CONST.DNS_RECORD_TYPE_SVCB, query_record_type = ""TA"", XDM_CONST.DNS_RECORD_TYPE_TA, query_record_type = ""TKEY"", XDM_CONST.DNS_RECORD_TYPE_TKEY, query_record_type = ""TLSA"", XDM_CONST.DNS_RECORD_TYPE_TLSA, query_record_type = ""TSIG"", XDM_CONST.DNS_RECORD_TYPE_TSIG, query_record_type = ""TXT"", XDM_CONST.DNS_RECORD_TYPE_TXT, query_record_type = ""URI"", XDM_CONST.DNS_RECORD_TYPE_URI, query_record_type = ""ZONEMD"", XDM_CONST.DNS_RECORD_TYPE_ZONEMD, query_record_type),
+    observer_ip = arrayindex(regextract(_raw_log, ""(\d+\.\d+\.\d+\.\d+)\snamed""), 0)
+| alter // XDM Mapping 
+    xdm.observer.name =  concat(""Infoblox-DNS-Response_"" + observer_name + ""_"" + observer_ip),
+    //xdm.observer.name = observer_name,
+    xdm.alert.severity = syslog_severity,
+    xdm.event.type = ""DNS Response"",
+    xdm.event.description = syslog_msg,
+    xdm.event.log_level = if(syslog_severity = ""0"", XDM_CONST.LOG_LEVEL_EMERGENCY, syslog_severity = ""1"", XDM_CONST.LOG_LEVEL_ALERT, syslog_severity = ""2"", XDM_CONST.LOG_LEVEL_CRITICAL, syslog_severity = ""3"", XDM_CONST.LOG_LEVEL_ERROR, syslog_severity = ""4"", XDM_CONST.LOG_LEVEL_WARNING, syslog_severity = ""5"", XDM_CONST.LOG_LEVEL_NOTICE, syslog_severity = ""6"", XDM_CONST.LOG_LEVEL_INFORMATIONAL, syslog_severity = ""7"", XDM_CONST.LOG_LEVEL_DEBUG, syslog_severity),
+    xdm.event.outcome = if(response_rcode = ""NOERROR"", XDM_CONST.OUTCOME_SUCCESS, response_rcode != null, XDM_CONST.OUTCOME_FAILED),
+    xdm.event.outcome_reason = response_rcode,
+    xdm.network.application_protocol = application_protocol,
+    xdm.network.dns.authoritative = if(response_flags contains ""A"", to_boolean(""TRUE""), to_boolean(""FALSE"")),
+    xdm.network.dns.dns_question.class = query_class_enum,
+    xdm.network.dns.dns_question.name = query_domain_name,
+    xdm.network.dns.dns_question.type = query_record_type_enum,
+    xdm.network.dns.dns_resource_record.class = query_class_enum,
+    xdm.network.dns.dns_resource_record.name = response_domain_names,
+    xdm.network.dns.dns_resource_record.type = query_record_type_enum,
+    xdm.network.dns.dns_resource_record.value = response_values,
+    xdm.network.dns.is_response = to_boolean(""TRUE""),
+    xdm.network.dns.is_truncated = if(response_flags contains ""t"", to_boolean(""TRUE""), to_boolean(""FALSE"")),
+    xdm.network.dns.response_code = if(response_rcode = ""NOERROR"", XDM_CONST.DNS_RESPONSE_CODE_NO_ERROR, response_rcode = ""FORMERR"", XDM_CONST.DNS_RESPONSE_CODE_FORMAT_ERROR, response_rcode = ""SERVFAIL"", XDM_CONST.DNS_RESPONSE_CODE_SERVER_FAILURE, response_rcode = ""NXDOMAIN"", XDM_CONST.DNS_RESPONSE_CODE_NON_EXISTENT_DOMAIN, response_rcode = ""NOTIMP"", XDM_CONST.DNS_RESPONSE_CODE_NOT_IMPLEMENTED, response_rcode ~= ""REFUSED"", XDM_CONST.DNS_RESPONSE_CODE_QUERY_REFUSED, response_rcode ~= ""YXDOMAIN"", XDM_CONST.DNS_RESPONSE_CODE_NAME_EXISTS_WHEN_IT_SHOULD_NOT, response_rcode = ""YXRRSET"", XDM_CONST.DNS_RESPONSE_CODE_RR_SET_EXISTS_WHEN_IT_SHOULD_NOT, response_rcode = ""NXRRSET"", XDM_CONST.DNS_RESPONSE_CODE_RR_SET_THAT_SHOULD_EXIST_DOES_NOT, response_rcode = ""NOTAUTH"", XDM_CONST.DNS_RESPONSE_CODE_SERVER_NOT_AUTHORITATIVE_FOR_ZONE, response_rcode = ""NOTZONE"", XDM_CONST.DNS_RESPONSE_CODE_NAME_NOT_CONTAINED_IN_ZONE, response_rcode = ""BADVERS"", XDM_CONST.DNS_RESPONSE_CODE_BAD_OPT_VERSION, response_rcode = ""BADSIG"", XDM_CONST.DNS_RESPONSE_CODE_TSIG_SIGNATURE_FAILURE, response_rcode = ""BADKEY"", XDM_CONST.DNS_RESPONSE_CODE_KEY_NOT_RECOGNIZED, response_rcode = ""BADTIME"", XDM_CONST.DNS_RESPONSE_CODE_SIGNATURE_OUT_OF_TIME_WINDOW, response_rcode = ""BADMODE"", XDM_CONST.DNS_RESPONSE_CODE_BAD_TKEY_MODE, response_rcode = ""BADNAME"", XDM_CONST.DNS_RESPONSE_CODE_DUPLICATE_KEY_NAME, response_rcode = ""BADALG"", XDM_CONST.DNS_RESPONSE_CODE_ALGORITHM_NOT_SUPPORTED, response_rcode = ""BADTRUNC"", XDM_CONST.DNS_RESPONSE_CODE_BAD_TRUNCATION, response_rcode),
+    xdm.network.ip_protocol = if(ip_protocol = ""TCP"", XDM_CONST.IP_PROTOCOL_TCP, ip_protocol = ""UDP"", XDM_CONST.IP_PROTOCOL_UDP),
+    xdm.network.protocol_layers = arraycreate(application_protocol, ip_protocol),
+    xdm.source.ipv4 = client_ipv4,
+    xdm.source.ipv6 = client_ipv6,
+    xdm.source.port = to_integer(client_port),
+    xdm.source.process.name = syslog_process_name,
+    xdm.source.process.pid = to_integer(syslog_process_id),
+    xdm.target.host.ipv4_addresses = response_resolved_ipv4_addresses,
+    xdm.target.host.ipv6_addresses = response_resolved_ipv6_addresses,
+    xdm.target.ipv4 = arrayindex(response_resolved_ipv4_addresses, 0),
+    xdm.target.ipv6 = arrayindex(response_resolved_ipv6_addresses, 0);
+
+
+//filter _raw_log ~= ""(?:dhcpd|omshell|dhcrelay|dhclient)\[\d+\]"" or _raw_log ~= ""DHCP\w+""
+filter _raw_log ~= ""(?:dhcpd|omshell|dhcrelay|dhclient)\[\d+\]"" or _raw_log ~= ""dhcpd\[""
+| alter // Extract syslog headers & syslog message 
+    observer_name = arrayindex(regextract(_raw_log, ""\w+\s+\d+\s+\d+\:\d+\:\d+\s\d+.\d+.\d+.\d+\s+([A-Za-z0-9\.]+)\s\d+.""), 0),
+    //dhcp_server_ip = arrayindex(regextract(_raw_log, ""\s+([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})\s+dhcpd\[\d+\])""), 0), 
+    dhcp_server_ip = arrayindex(regextract(_raw_log, ""((?:\d{1,3}\.){3}\d{1,3})\sdhcpd""), 0),
+    syslog_process_id = arrayindex(regextract(_raw_log, ""\:?\w+\[(\d+)\]""), 0),
+    syslog_process_name = arrayindex(regextract(_raw_log, ""\s?([A-Za-z\s\-\_]+)\[\d*\]""), 0),
+    syslog_priority = to_integer(arrayindex(regextract(_raw_log, ""^\<(\d{1,3})\>\s*\w+""), 0)),
+    syslog_msg = coalesce( 
+        arrayindex(regextract(_raw_log, ""\w+\[\d+\]:\s*(.+)""), 0), // messages that are sent directly from infoblox 
+        arrayindex(regextract(_raw_log, ""^\<\d+\>\w?\s+(?:\S+\s+){6}(.+)""), 0)) // messages that are downloaded to a file and sent via an intermediate syslog client 
+| alter syslog_facility_code = floor(divide(syslog_priority, 8))
+| alter syslog_severity = to_string(subtract(syslog_priority, multiply(syslog_facility_code, 8)))
+| alter // Extract the DHCP message type (https://www.iana.org/assignments/bootp-dhcp-parameters/bootp-dhcp-parameters.xhtml#message-type-53)
+    //dhcp_msg_type = 
+    //    arrayindex(regextract(syslog_msg, ""(DHCP\w+)"") , 0)
+    dhcp_msg_type = arrayindex(regextract(syslog_msg, ""(DHCPDISCOVER|DHCPOFFER|DHCPREQUEST|DHCPDECLINE|DHCPACK|DHCPNAK|DHCPRELEASE|DHCPINFORM|DHCPFORCERENEW|DHCPLEASEQUERY|DHCPLEASEUNASSIGNED|DHCPLEASEUNKNOWN|DHCPLEASEACTIVE|DHCPBULKLEASEQUERY|DHCPLEASEQUERYDONE|DHCPACTIVELEASEQUERY|DHCPLEASEQUERYSTATUS|DHCPTLS)"") , 0)
+/*| alter dhcp_other_msg = coalesce(
+        arrayindex(regextract(syslog_msg, ""Renewed""), 0),
+        arrayindex(regextract(syslog_msg, ""Issued""), 0),
+        arrayindex(regextract(syslog_msg, ""Freed""), 0),
+        arrayindex(regextract(syslog_msg, ""RELEASE""), 0),
+        arrayindex(regextract(syslog_msg, ""balancing\spool""), 0),
+        arrayindex(regextract(syslog_msg, ""balanced\spool""), 0),
+        arrayindex(regextract(syslog_msg, ""Option\s82""), 0))*/
+| alter // Extract DHCP data  
+    application_protocol = ""DHCP"", 
+    dhcp_acknowledged_ip = arrayindex(regextract(_raw_log, ""DHCPACK\s+(?:on|to)\s+((?:\d{1,3}\.){3}\d{1,3})""), 0),
+    dhcp_not_acknowledged_ip = arrayindex(regextract(_raw_log, ""DHCPNAK\s+on\s+((?:\d{1,3}\.){3}\d{1,3})""), 0),
+    dhcp_bootstrap_server_ip = arrayindex(regextract(_raw_log, ""DHCPREQUEST\s+for\s+\S+\s+\(((?:\d{1,3}\.){3}\d{1,3})""), 0),
+    dhcp_client_ip = coalesce(
+        arrayindex(regextract(_raw_log, ""(?:DHCPDECLINE|DHCPRELEASE)\s+of\s+((?:\d{1,3}\.){3}\d{1,3})""), 0),
+        arrayindex(regextract(_raw_log, ""(?:DHCPINFORM|DHCPLEASEQUERY)\s+from\s+((?:\d{1,3}\.){3}\d{1,3})""), 0)), 
+    dhcp_client_mac_address = coalesce(
+        arrayindex(regextract(syslog_msg, ""from\s+((?:[a-fA-F\d]{2}:){5}[\da-fA-F]{2})""), 0),
+        arrayindex(regextract(syslog_msg, ""\s+on\s+\S+\s+to\s+((?:[a-fA-F\d]{2}:){5}[\da-fA-F]{2})""), 0),
+        arrayindex(regextract(syslog_msg, ""\s+to\s+\S+\s+\(((?:[a-fA-F\d]{2}:){5}[\da-fA-F]{2})""), 0)),
+    dhcp_client_hostname = coalesce(
+        arrayindex(regextract(_raw_log, ""from\s+\S+\s+\(([^\)]+)""), 0), 
+        arrayindex(regextract(_raw_log, ""\s+on\s+\S+\s+to\s+\S+\s+\(([\w\-\.]+)""), 0)),
+    dhcp_client_interface = arrayindex(regextract(_raw_log, ""via\s+(\w+)(?:\s|$)""), 0), // interface port 
+    dhcp_client_uid = rtrim(arrayindex(regextract(_raw_log, ""uid\s+(\S+)""), 0), "":""), // client unique identifier 
+    dhcp_expired_lease_ip = arrayindex(regextract(_raw_log, ""DHCPEXPIRE\s+on\s+((?:\d{1,3}\.){3}\d{1,3})""), 0),
+    dhcp_lease_duration = arrayindex(regextract(_raw_log, ""lease\-duration\s+(\d+)""), 0), 
+    dhcp_offered_ip = arrayindex(regextract(_raw_log, ""DHCPOFFER\s+on\s+((?:\d{1,3}\.){3}\d{1,3})""), 0),
+    dhcp_relay_agent_ip = coalesce(
+        arrayindex(regextract(_raw_log, ""via\s+((?:\d{1,3}\.){3}\d{1,3})""), 0),
+        arrayindex(regextract(_raw_log, ""relay(?:\-agent)?\s+((?:\d{1,3}\.){3}\d{1,3})""), 0)),
+    dhcp_requested_ip = arrayindex(regextract(_raw_log, ""DHCPREQUEST\s+for\s+((?:\d{1,3}\.){3}\d{1,3})""), 0),
+    is_renewal = if(_raw_log ~= ""\bRENEW\b"", to_boolean(""TRUE"")),
+    msg_suffix = coalesce(
+        arrayindex(regextract(_raw_log, ""via \S+(?:\s+TransID\s+\w+)?:\s+(.+)""), 0),
+        arrayindex(regextract(_raw_log, ""(?:uid|TransID)\s+\S+:\s+(.+)$""), 0),
+        arrayindex(regextract(_raw_log, ""rejected""), 0),
+        if(dhcp_msg_type = ""DHCPREQUEST"", arrayindex(regextract(_raw_log, ""\(([^\)]+)\)$""), 0))),
+    //target_network = arrayindex(regextract(_raw_log, ""network\s+((?:\d{1,3}\.){3}\d{1,3}\/\d+)""), 0), 
+    transaction_id = arrayindex(regextract(_raw_log, ""TransID\s+(\w+)""), 0),
+    observer_ip = arrayindex(regextract(_raw_log, ""(\d+\.\d+\.\d+\.\d+)\s(?:dhcpd|omshell|dhcrelay|dhclient|validate_dhcpd)""), 0)
+| alter // XDM Mapping 
+    xdm.observer.name = concat(""Infoblox-DHCP_"" + observer_name + ""_"" + observer_ip),
+    //xdm.observer.name = observer_name, 
+    xdm.alert.severity = syslog_severity,
+    xdm.event.description = syslog_msg,
+    xdm.event.log_level = if(syslog_severity = ""0"", XDM_CONST.LOG_LEVEL_EMERGENCY, syslog_severity = ""1"", XDM_CONST.LOG_LEVEL_ALERT, syslog_severity = ""2"", XDM_CONST.LOG_LEVEL_CRITICAL, syslog_severity = ""3"", XDM_CONST.LOG_LEVEL_ERROR, syslog_severity = ""4"", XDM_CONST.LOG_LEVEL_WARNING, syslog_severity = ""5"", XDM_CONST.LOG_LEVEL_NOTICE, syslog_severity = ""6"", XDM_CONST.LOG_LEVEL_INFORMATIONAL, syslog_severity = ""7"", XDM_CONST.LOG_LEVEL_DEBUG, syslog_severity),
+    xdm.event.operation_sub_type = if(msg_suffix = ""RENEW"", msg_suffix),
+    xdm.event.outcome = if(dhcp_msg_type in (""DHCPACK"", ""DHCPLEASEQUERYDONE""), XDM_CONST.OUTCOME_SUCCESS, dhcp_msg_type in (""DHCPDECLINE"", ""DHCPNAK"", ""DHCPLEASEUNKNOWN"") or msg_suffix ~= ""failed|abandoned|rejected"", XDM_CONST.OUTCOME_FAILED),
+    xdm.event.outcome_reason = if(msg_suffix != ""RENEW"", msg_suffix),
+    xdm.event.type = ""DHCP"",
+    xdm.intermediate.ipv4 = dhcp_relay_agent_ip,
+    xdm.network.application_protocol = application_protocol,
+    xdm.network.dhcp.chaddr = dhcp_client_mac_address,
+    xdm.network.dhcp.ciaddr = coalesce(dhcp_client_ip, dhcp_expired_lease_ip, if(is_renewal, dhcp_requested_ip)),
+    xdm.network.dhcp.client_hostname = dhcp_client_hostname,
+    xdm.network.dhcp.giaddr = dhcp_relay_agent_ip,
+    xdm.network.dhcp.lease = to_integer(dhcp_lease_duration),
+    xdm.network.dhcp.message_type = if(dhcp_msg_type = ""DHCPDISCOVER"", XDM_CONST.DHCP_MESSAGE_TYPE_DHCPDISCOVER, dhcp_msg_type = ""DHCPOFFER"", XDM_CONST.DHCP_MESSAGE_TYPE_DHCPOFFER, dhcp_msg_type = ""DHCPREQUEST"", XDM_CONST.DHCP_MESSAGE_TYPE_DHCPREQUEST, dhcp_msg_type = ""DHCPDECLINE"", XDM_CONST.DHCP_MESSAGE_TYPE_DHCPDECLINE, dhcp_msg_type = ""DHCPACK"", XDM_CONST.DHCP_MESSAGE_TYPE_DHCPACK, dhcp_msg_type = ""DHCPNAK"", XDM_CONST.DHCP_MESSAGE_TYPE_DHCPNAK, dhcp_msg_type = ""DHCPRELEASE"", XDM_CONST.DHCP_MESSAGE_TYPE_DHCPRELEASE, dhcp_msg_type = ""DHCPINFORM"", XDM_CONST.DHCP_MESSAGE_TYPE_DHCPINFORM, dhcp_msg_type = ""DHCPFORCERENEW"", XDM_CONST.DHCP_MESSAGE_TYPE_DHCPFORCERENEW, dhcp_msg_type = ""DHCPLEASEQUERY"", XDM_CONST.DHCP_MESSAGE_TYPE_DHCPLEASEQUERY, dhcp_msg_type = ""DHCPLEASEUNASSIGNED"", XDM_CONST.DHCP_MESSAGE_TYPE_DHCPLEASEUNASSIGNED, dhcp_msg_type = ""DHCPLEASEUNKNOWN"", XDM_CONST.DHCP_MESSAGE_TYPE_DHCPLEASEUNKNOWN, dhcp_msg_type = ""DHCPLEASEACTIVE"", XDM_CONST.DHCP_MESSAGE_TYPE_DHCPLEASEACTIVE, dhcp_msg_type = ""DHCPBULKLEASEQUERY"", XDM_CONST.DHCP_MESSAGE_TYPE_DHCPBULKLEASEQUERY, dhcp_msg_type = ""DHCPLEASEQUERYDONE"", XDM_CONST.DHCP_MESSAGE_TYPE_DHCPLEASEQUERYDONE, dhcp_msg_type = ""DHCPACTIVELEASEQUERY"", XDM_CONST.DHCP_MESSAGE_TYPE_DHCPACTIVELEASEQUERY, dhcp_msg_type = ""DHCPLEASEQUERYSTATUS"", XDM_CONST.DHCP_MESSAGE_TYPE_DHCPLEASEQUERYSTATUS, dhcp_msg_type = ""DHCPTLS"", XDM_CONST.DHCP_MESSAGE_TYPE_DHCPTLS, dhcp_msg_type),
+    xdm.network.dhcp.requested_address = dhcp_requested_ip,
+    // xdm.network.dhcp.siaddr = dhcp_bootstrap_server_ip,
+    xdm.network.dhcp.siaddr = dhcp_server_ip,
+    xdm.network.dhcp.yiaddr = coalesce(dhcp_offered_ip, dhcp_acknowledged_ip, dhcp_not_acknowledged_ip),
+    xdm.network.protocol_layers = arraycreate(application_protocol),
+    xdm.session_context_id = transaction_id,
+    xdm.source.host.device_id = dhcp_client_uid,
+    xdm.source.host.mac_addresses = arraycreate(dhcp_client_mac_address),
+    xdm.source.interface = dhcp_client_interface,
+    xdm.source.ipv4 = coalesce(dhcp_client_ip, dhcp_expired_lease_ip), 
+    xdm.source.process.name = syslog_process_name,
+    xdm.source.process.pid = to_integer(syslog_process_id),
+    xdm.target.ipv4 = dhcp_bootstrap_server_ip ;
+    //xdm.target.subnet = target_network;
+
+
+filter _raw_log ~= ""httpd(?:\[\d+\])?:""
+| alter // Extract syslog headers & syslog message 
+    observer_name = arrayindex(regextract(_raw_log, ""\w+\s+\d+\s+\d+\:\d+\:\d+\s\d+.\d+.\d+.\d+\s+([A-Za-z0-9\.]+)\s\d+.""), 0),
+    syslog_process_id = arrayindex(regextract(_raw_log, ""\:?\w+\[(\d+)\]""), 0),
+    syslog_process_name = arrayindex(regextract(_raw_log, ""\s?([A-Za-z\s\-\_]+)\[\d*\]""), 0),
+    syslog_priority = to_integer(arrayindex(regextract(_raw_log, ""^\<(\d{1,3})\>\s*\w+""), 0)),
+    syslog_msg = coalesce( 
+        arrayindex(regextract(_raw_log, ""\w+\[\d+\]:\s*(.+)""), 0), // messages that are sent directly from infoblox 
+        arrayindex(regextract(_raw_log, ""^\<\d+\>\w?\s+(?:\S+\s+){6}(.+)""), 0)) // messages that are downloaded to a file and sent via an intermediate syslog client 
+| alter syslog_facility_code = floor(divide(syslog_priority, 8))
+| alter syslog_severity = to_string(subtract(syslog_priority, multiply(syslog_facility_code, 8)))
+| alter // Extract audit data from the syslog message 
+    auth_methods = arrayindex(regextract(_raw_log, ""auth=(.*?)\s""), 0),
+    client_ipv4 = arrayindex(regextract(_raw_log, ""ip=(.*?)\s""), 0),
+    client_user_groups = arrayindex(regextract(_raw_log, ""group=(.*?)\s""), 0),
+    client_user_username = arrayindex(regextract(_raw_log, ""\s\[(.*?)\]\:""), 0),
+    original_event_type = arrayindex(regextract(_raw_log, "":\s.*?:\s(.*?)\s-\s-""), 0),
+    server_process_name = arrayindex(regextract(_raw_log, ""to=(.*?)\s""), 0),
+    observer_ip = arrayindex(regextract(_raw_log, ""(\d+\.\d+\.\d+\.\d+)\shttpd""), 0)
+| alter // XDM mapping
+    xdm.observer.name = concat(""Infoblox-Audit_"" + observer_name + ""_"" + observer_ip),
+    xdm.alert.severity = syslog_severity,
+    xdm.auth.auth_method = auth_methods,
+    xdm.event.description = syslog_msg,
+    xdm.event.log_level = if(syslog_severity = ""0"", XDM_CONST.LOG_LEVEL_EMERGENCY, syslog_severity = ""1"", XDM_CONST.LOG_LEVEL_ALERT, syslog_severity = ""2"", XDM_CONST.LOG_LEVEL_CRITICAL, syslog_severity = ""3"", XDM_CONST.LOG_LEVEL_ERROR, syslog_severity = ""4"", XDM_CONST.LOG_LEVEL_WARNING, syslog_severity = ""5"", XDM_CONST.LOG_LEVEL_NOTICE, syslog_severity = ""6"", XDM_CONST.LOG_LEVEL_INFORMATIONAL, syslog_severity = ""7"", XDM_CONST.LOG_LEVEL_DEBUG, syslog_severity),
+    xdm.event.original_event_type = original_event_type,
+    xdm.event.type = ""AUDIT"",
+    xdm.intermediate.process.name = server_process_name,
+    xdm.source.ipv4 = client_ipv4,
+    xdm.source.process.name = syslog_process_name,
+    xdm.source.process.pid = to_integer(syslog_process_id),
+    xdm.source.user.groups = arraycreate(client_user_groups),
+    xdm.source.user.username = client_user_username;
+
+
+
+ filter _raw_log ~= "".*(?:timed\sout\sresolving|DNS\sformat\serror\sfrom|FORMERR\sresolving).*""
+| alter // Extract syslog headers & syslog message 
+    observer_name = arrayindex(regextract(_raw_log, ""\w+\s+\d+\s+\d+\:\d+\:\d+\s\d+.\d+.\d+.\d+\s+([A-Za-z0-9\.]+)\s\d+.""), 0),
+    syslog_process_id = arrayindex(regextract(_raw_log, ""\:?\w+\[(\d+)\]""), 0),
+    syslog_process_name = arrayindex(regextract(_raw_log, ""\s?([A-Za-z\s\-\_]+)\[\d*\]""), 0),
+//    syslog_priority = to_integer(arrayindex(regextract(_raw_log, ""^\<(\d{1,3})\>\s*\w+""), 0))
+    syslog_msg = coalesce( 
+        arrayindex(regextract(_raw_log, ""\w+\[\d+\]:\s*(.+)""), 0), // messages that are sent directly from infoblox 
+        arrayindex(regextract(_raw_log, ""^\<\d+\>\w?\s+(?:\S+\s+){6}(.+)""), 0)) // messages that are downloaded to file and sent via an intermediate syslog client 
+| alter dns_server_ipv4 = arrayindex(regextract(_raw_log, ""(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\snamed""), 0)
+| alter dns_server = arrayindex(regextract(_raw_log, ""(?:\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\s+([a-zA-Z0-9\-]+\.(?:[a-zA-Z0-9\-]+\.)+[a-zA-Z]{2,63})\s+(?:\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})""), 0),
+    observer_ip = arrayindex(regextract(_raw_log, ""(\d+\.\d+\.\d+\.\d+)\snamed""), 0)
+| alter // XDM Mapping 
+    xdm.observer.name = concat(""Infoblox-Error_"" + observer_name + ""_"" + observer_ip),
+    //xdm.observer.name = observer_name,
+    xdm.event.type = ""ERROR"",
+    xdm.source.process.name = syslog_process_name,
+    xdm.source.process.pid = to_integer(syslog_process_id),
+    xdm.event.description = syslog_msg,
+    xdm.intermediate.ipv4 = dns_server_ipv4,
+    xdm.intermediate.host.hostname = dns_server 
+;
+
+
+// General implicit fallback mapping for all other Infoblox events
+filter // Exclude event types which are already mapped 
+    _raw_log !~= ""httpd\[\d+\]"" // NOT Audit 
+    and (_raw_log !~= ""client\s+(?:\@0x[\da-fA-F]+\s+)?[\da-fA-F\.\:]+\#\d{1,5}(?:\s+\([^\)]+\))?:\s+query"" // NOT DNS Query
+    and _raw_log !~= ""client\s@\S+\s(\d{1,3}(?:\.\d{1,3}){3})#(\d+)\s\((.*?)\):"") // NOT DNS Query
+    and _raw_log !~= ""(?:UDP|TCP):\s*query:\s*(?:\S+\s+){3}response:"" // NOT DNS Response
+    //and _raw_log !~= ""(?:dhcpd|omshell|dhcrelay|dhclient)\[\d+\]"" and _raw_log !~= ""DHCP\w+"" // NOT DHCP
+    and (_raw_log !~= ""(?:dhcpd|omshell|dhcrelay|dhclient)\[\d+\]"" and _raw_log !~= ""dhcp\["") // NOT DHCP
+    and _raw_log !~= "".*(?:timed\sout\sresolving|DNS\sformat\serror\sfrom|FORMERR\sresolving).*"" // ERROR
+    //and _raw_log !~= ""sudo\[\d*\]""
+    //and _raw_log !~= ""login*""
+    and _raw_log !~= ""\w+\s+\d\s\d+\:\d+\:\d+\s+\d+\.\d+\.\d+\.\d+\s+\/""
+| alter // Extract syslog headers & syslog message 
+    observer_name = arrayindex(regextract(_raw_log, ""\w+\s+\d+\s+\d+\:\d+\:\d+\s\d+.\d+.\d+.\d+\s+([A-Za-z0-9\.]+)\s\d+.""), 0),
+    syslog_process_id = arrayindex(regextract(_raw_log, ""\:?\w+\[(\d+)\]""), 0),
+    syslog_process_name = arrayindex(regextract(_raw_log, ""\s?([A-Za-z\s\-\_]+)\[\d*\]""), 0),
+    syslog_priority = to_integer(arrayindex(regextract(_raw_log, ""^\<(\d{1,3})\>\s*\w+""), 0)),
+    syslog_msg = coalesce( 
+        arrayindex(regextract(_raw_log, ""\w+\[\d+\]:\s*(.+)""), 0), // messages that are sent directly from infoblox 
+        arrayindex(regextract(_raw_log, ""^\<\d+\>\w?\s+(?:\S+\s+){6}(.+)""), 0)) // messages that are downloaded to a file and sent via an intermediate syslog client 
+| alter syslog_facility_code = floor(divide(syslog_priority, 8))
+| alter syslog_severity = to_string(subtract(syslog_priority, multiply(syslog_facility_code, 8)))
+| alter // Extract additional fields from the syslog message 
+    dns_event_type = if(_raw_log ~= ""named\[\d+\]"" or _raw_log ~= ""(?:client|config|database|dnssec|general|lame_servers|network|notify|query|queries|query[_\-]rewrite|resolver|responses|rpz|security|update|update_security|xfer[_\-]in|xfer[_\-]out):"", ""DNS""),
+    dns_event_subtype = arrayindex(regextract(_raw_log, ""((?:client|config|database|dnssec|general|lame_servers|network|notify|query|queries|query[_\-]rewrite|resolver|responses|rpz|security|update|update_security|xfer[_\-]in|xfer[_\-]out)):""), 0),
+    dnz_respone_policy_zone = coalesce(arrayindex(regextract(_raw_log, ""rpz:\s+([\w\-\.]+)\:""), 0), arrayindex(regextract(_raw_log, ""policy zone\s+\'([^']+)\'""), 0)), 
+    resolved_domain = arrayindex(regextract(_raw_log, ""resolving \'([\w\.\-]+)""), 0)
+| alter 
+    event_type = if(dns_event_type != null and dns_event_subtype != null, concat(dns_event_type, "" "", dns_event_subtype)),
+    observer_ip = coalesce(arrayindex(regextract(_raw_log, ""(\d+\.\d+\.\d+\.\d+)\snamed""), 0),
+                           arrayindex(regextract(_raw_log, ""(\d+\.\d+\.\d+\.\d+)\ssystemd""), 0),
+                           arrayindex(regextract(_raw_log, ""(\d+\.\d+\.\d+\.\d+)\ssyslog-ng""), 0),
+                           arrayindex(regextract(_raw_log, ""(\d+\.\d+\.\d+\.\d+)\slog:""), 0),
+                           arrayindex(regextract(_raw_log, ""(\d+\.\d+\.\d+\.\d+)\sgunicorn""), 0),
+                           arrayindex(regextract(_raw_log, ""(\d+\.\d+\.\d+\.\d+)\skernel""), 0),
+                           arrayindex(regextract(_raw_log, ""(\d+\.\d+\.\d+\.\d+)\spidof""), 0),
+                           arrayindex(regextract(_raw_log, ""(\d+\.\d+\.\d+\.\d+)\s--\sMARK""), 0),
+                           arrayindex(regextract(_raw_log, ""(\d+\.\d+\.\d+\.\d+)\sdiscovery_gm_fetcher""), 0),
+                           arrayindex(regextract(_raw_log, ""(\d+\.\d+\.\d+\.\d+)\spurge_ad_users""), 0),
+                           arrayindex(regextract(_raw_log, ""(\d+\.\d+\.\d+\.\d+)\snetworkusersynccontrol""), 0),
+                           arrayindex(regextract(_raw_log, ""(\d+\.\d+\.\d+\.\d+)\s\/infoblox\/one""), 0))
+| alter // XDM Mapping 
+   // xdm.observer.name = concat(""Infoblox-Fallback_"" + observer_name + ""_"" + observer_ip),
+    xdm.observer.name = if(observer_name != null and observer_ip != null,concat(""Infoblox-Fallback_"" + observer_name + ""_"" + observer_ip),observer_name != null, concat(""Infoblox-Fallback_"" + observer_name + ""_null""),observer_ip!= null, concat(""Infoblox-Fallback_null_"" + observer_ip)),
+    //xdm.observer.name = observer_name,
+    xdm.alert.severity = syslog_severity,
+    xdm.event.description = syslog_msg,
+    xdm.event.log_level = if(syslog_severity = ""0"", XDM_CONST.LOG_LEVEL_EMERGENCY, syslog_severity = ""1"", XDM_CONST.LOG_LEVEL_ALERT, syslog_severity = ""2"", XDM_CONST.LOG_LEVEL_CRITICAL, syslog_severity = ""3"", XDM_CONST.LOG_LEVEL_ERROR, syslog_severity = ""4"", XDM_CONST.LOG_LEVEL_WARNING, syslog_severity = ""5"", XDM_CONST.LOG_LEVEL_NOTICE, syslog_severity = ""6"", XDM_CONST.LOG_LEVEL_INFORMATIONAL, syslog_severity = ""7"", XDM_CONST.LOG_LEVEL_DEBUG, syslog_severity),
+    xdm.event.outcome = if(syslog_msg ~= ""success"", XDM_CONST.OUTCOME_SUCCESS),
+    xdm.event.type = if(coalesce(event_type, dns_event_type) != null, coalesce(event_type, dns_event_type), ""other""),
+    xdm.network.dns.dns_question.name = resolved_domain,
+    xdm.network.dns.dns_resource_record.name = resolved_domain,
+    xdm.source.process.name = syslog_process_name,
+    xdm.source.process.pid = to_integer(syslog_process_id),
+    xdm.target.zone = dnz_respone_policy_zone;"
+"Aug 23 18:29:31 10.189.207.212 datetime=Fri Aug 23 18:22:38 2024#011user=abhinendra.singh@singtel.com#011department=Cyber#011locationname=Road Warrior#011cdport=5228#011csport=51174#011sdport=0#011ssport=0#011csip=192.168.1.5#011cdip=64.233.170.188#011ssip=0.0.0.0#011sdip=0.0.0.0#011tsip=101.78.65.58#011tunsport=0#011tuntype=ZscalerClientConnector#011action=Drop#011dnat=No#011stateful=Yes#011aggregate=No#011nwsvc=TCP_ANY#011nwapp=tcp#011proto=TCP#011ipcat=Miscellaneous or Unknown#011destcountry=United States#011avgduration=0#011rulelabel=Default Firewall Filtering Rule#011inbytes=40#011outbytes=41#011duration=0#011durationms=0#011numsessions=1#011ipsrulelabel=None#011threatcat=None#011threatname=None#011deviceowner=P1350904#011devicehostname=ST-L1013576#011vendor=Zscaler#011product=fw
+Aug 23 18:29:31 10.189.207.212 datetime=Fri Aug 23 18:22:38 2024#011user=sinnee@singtel.com#011department=Mobile Network Operations#011locationname=Road Warrior#011cdport=5228#011csport=65291#011sdport=5228#011ssport=0#011csip=192.168.1.18#011cdip=142.251.175.188#011ssip=0.0.0.0#011sdip=142.251.175.188#011tsip=14.100.79.93#011tunsport=0#011tuntype=ZscalerClientConnector#011action=Drop#011dnat=No#011stateful=Yes#011aggregate=No#011nwsvc=TCP_ANY#011nwapp=google#011proto=TCP#011ipcat=Online Chat#011destcountry=United States#011avgduration=174#011rulelabel=Default Firewall Filtering Rule#011inbytes=172#011outbytes=3335#011duration=0#011durationms=174#011numsessions=1#011ipsrulelabel=None#011threatcat=None#011threatname=None#011deviceowner=sinnee#011devicehostname=ST-L1013956#011vendor=Zscaler#011product=fw
+Aug 23 18:29:31 10.189.199.212 datetime=Fri Aug 23 18:22:41 2024	user=myominwin@singtel.com	department=Broadcast Ops & Technology	locationname=Road Warrior	cdport=5222	csport=56974	sdport=0	ssport=0	csip=192.168.50.145	cdip=157.240.235.60	ssip=0.0.0.0	sdip=0.0.0.0	tsip=116.15.165.154	tunsport=0	tuntype=ZscalerClientConnector	action=Drop	dnat=No	stateful=Yes	aggregate=No	nwsvc=TCP_ANY	nwapp=tcp	proto=TCP	ipcat=Miscellaneous or Unknown	destcountry=Singapore	avgduration=0	rulelabel=Default Firewall Filtering Rule	inbytes=40	outbytes=40	duration=0	durationms=0	numsessions=1	ipsrulelabel=None	threatcat=None	threatname=None	deviceowner=myominwin	devicehostname=ST-L1011616	vendor=Zscaler	product=fw
+Aug 23 18:29:31 10.189.199.212 datetime=Fri Aug 23 18:22:40 2024	user=dhana.gopinaik@singtel.com	department=Quality Engineering C&B	locationname=Road Warrior	cdport=5223	csport=61364	sdport=5223	ssport=0	csip=192.168.28.5	cdip=17.57.145.54	ssip=0.0.0.0	sdip=17.57.145.54	tsip=182.19.132.209	tunsport=0	tuntype=ZscalerClientConnector	action=Drop	dnat=No	stateful=Yes	aggregate=No	nwsvc=IntuneConnectorApple	nwapp=apple	proto=TCP	ipcat=Other Information Technology	destcountry=United States	avgduration=12	rulelabel=Default Firewall Filtering Rule	inbytes=112	outbytes=685	duration=0	durationms=12	numsessions=1	ipsrulelabel=None	threatcat=None	threatname=None	deviceowner=p1330196	devicehostname=ST-MAC-NC3Q554J3K	vendor=Zscaler	product=fw","[MODEL:dataset=""zscaler_fw_raw""]
+alter 
+observer_ip = arrayindex(regextract(clean_log, ""(\d+\.\d+\.\d+\.\d+)\sdatetime=""), 0),
+user = arrayindex(regextract(clean_log, ""user=(.+?)\sdepartment""),0),// 
+department = arrayindex(regextract(clean_log, ""department=(.+?)\slocationname""),0),
+//locationname = arrayindex(regextract(clean_log, ""locationname=(.+?)\scdport""),0),
+cdport = arrayindex(regextract(clean_log ,""cdport\=([^\s]+)""), 0),//
+csport = arrayindex(regextract(clean_log ,""csport\=([^\s]+)""), 0),//
+sdport = arrayindex(regextract(clean_log ,""sdport\=([^\s]+)""), 0),//
+//ssport = arrayindex(regextract(clean_log ,""ssport\=([^\s]+)""), 0),//
+csip = arrayindex(regextract(clean_log ,""csip\=(\d+\.\d+\.\d+\.\d+)""), 0),//
+cdip = arrayindex(regextract(clean_log,""cdip\=(\d+\.\d+\.\d+\.\d+)""), 0),//
+ssip = arrayindex(regextract(clean_log,""ssip\=(\d+\.\d+\.\d+\.\d+)""), 0),//
+sdip = arrayindex(regextract(clean_log ,""sdip\=(\d+\.\d+\.\d+\.\d+)""), 0),//
+tsip = arrayindex(regextract(clean_log,""tsip\=(\d+\.\d+\.\d+\.\d+)""), 0),//
+tunsport = arrayindex(regextract(clean_log ,""tunsport\=([^\s]+)""), 0),//
+tuntype = arrayindex(regextract(clean_log,""tuntype\=([^\s]+)""), 0),//
+action = arrayindex(regextract(clean_log,""action\=([^\s]+)""), 0),//
+//aggregate = arrayindex(regextract(clean_log,""aggregate\=([^\s]+)""), 0),//
+// dnat = arrayindex(regextract(clean_log ,""dnat\=([^\s]+)""), 0),//
+//stateful = arrayindex(regextract(clean_log,""stateful\=([^\s]+)""), 0),//
+nwsvc = arrayindex(regextract(clean_log ,""nwsvc\=(.+)\snwapp""), 0),//
+nwapp = arrayindex(regextract(clean_log ,""nwapp\=([^\s]+)""), 0),//
+proto = arrayindex(regextract(clean_log ,""proto\=([^\s]+)""), 0),//
+ipcat = arrayindex(regextract(clean_log,""ipcat=(.+)\sdestcountry""),0),//
+destcountry = arrayindex(regextract(clean_log ,""destcountry=(.+)\savgduration""),0),//
+//avgduration = arrayindex(regextract(clean_log ,""avgduration\=([^\s]+)""), 0),//
+rulelabel = arrayindex(regextract(clean_log ,""rulelabel=(.+)\sinbytes""),0),//
+inbytes = arrayindex(regextract(clean_log ,""inbytes\=([^\s]+)""), 0),//
+outbytes = arrayindex(regextract(clean_log,""outbytes\=([^\s]+)""), 0),//
+duration = arrayindex(regextract(clean_log,""durationms\=([^\s]+)""), 0),//
+//durationms = arrayindex(regextract(clean_log ,""durationms\=([^\s]+)""), 0),//
+// numsessions = arrayindex(regextract(clean_log ,""numsessions\=([^\s]+)""), 0),//
+ipsrulelabel = arrayindex(regextract(clean_log ,""ipsrulelabel\=([^\s]+)""), 0),//
+threatcat = arrayindex(regextract(clean_log ,""threatcat\=([^\s]+)""), 0),//
+threatname = arrayindex(regextract(clean_log ,""threatname\=([^\s]+)""), 0),//
+deviceowner = arrayindex(regextract(clean_log ,""deviceowner\=([^\s]+)""), 0),//
+devicehostname = arrayindex(regextract(clean_log ,""devicehostname\=([^\s]+)""), 0)//
+| alter 
+xdm.event.type = ""Network"",
+xdm.event.operation = ""Web Traffic"",
+/* xdm.source.user.domain = user, */
+xdm.source.user.username = user ,
+xdm.source.user.ou = department ,
+//xdm.intermediate.host.hostname = locationname,
+//xdm.source.location.region = locationname,
+//xdm.target.port = to_integer(coalesce(cdport,sdport)), 
+xdm.target.port = to_integer(if(sdport =""0"", cdport, sdport)),
+xdm.source.port =to_integer(csport),
+xdm.source.host.hostname = devicehostname,
+xdm.source.ipv4 = csip,
+xdm.target.ipv4 = if(sdip = ""0.0.0.0"", cdip, sdip),
+// xdm.source.application.version  = ssport,
+// xdm.network.session_id = numsessions,
+//xdm.source.host.ipv4_addresses = arraycreate(cdip,ssip),
+xdm.intermediate.host.ipv4_addresses = arraycreate(cdip, ssip), 
+xdm.source.agent.type = tuntype,
+// xdm.network.application_protocol = dnat,
+xdm.network.application_protocol = nwsvc, 
+xdm.intermediate.ipv4 = tsip ,
+xdm.intermediate.port = to_integer(tunsport ),
+xdm.network.rule = concat(rulelabel , ipsrulelabel),
+xdm.source.user.employee_id = deviceowner ,
+xdm.source.sent_bytes = to_integer(outbytes) ,
+xdm.target.sent_bytes = to_integer(inbytes ),
+xdm.network.ip_protocol = proto ,
+xdm.target.application.name = nwapp,
+xdm.target.location.country = destcountry,
+xdm.alert.category = threatcat ,
+xdm.alert.name = threatname ,
+xdm.event.duration = to_integer(duration ),
+xdm.network.http.url_category = ipcat ,
+// xdm.target.application.publisher  = nwsvc,
+//xdm.event.outcome = action,
+xdm.observer.action = action,
+xdm.observer.name = concat(""Zscaler-FW_"" + ""null_"" + observer_ip)
+;"
+"Sep 16 16:46:51 dsmprdappls201.sg.singtelgroup.net CEF: 0|Trend Micro|Deep Security Manager|20.0.913|2204|Security Update: Pattern Update on Agents/Appliances Successful|3|src=10.148.66.28 suser=System target=10.54.34.196 (wheatland) msg=Anti-Malware Component Update succeeded TrendMicroDsTenant=Primary TrendMicroDsTenantId=0 
+Sep 16 16:46:50 dsmprdappls201.sg.singtelgroup.net CEF: 0|Trend Micro|Deep Security Manager|20.0.913|851|Reconnaissance Detected: Network or Port Scan|6|src=10.148.66.28 suser=System target=10.67.2.156 (ocpuatapils002) msg=The Agent/Appliance detected an attempt to scan a computer or a network. Check the Agent/Appliance Events to see the details of the scan. TrendMicroDsScannerIp=10.189.104.13 TrendMicroDsTargetPortList=8000;8001;8002;8443;8444;8445 TrendMicroDsTenant=Primary TrendMicroDsTenantId=0 
+Sep 16 16:46:49 dsmprdappls201.sg.singtelgroup.net CEF: 0|Trend Micro|Deep Security Manager|20.0.913|790|Agent-Initiated Activation Requested|3|src=10.148.66.28 suser=System msg=An incoming Agent request to activate has been received from computer (VDIPRDDSALS002.cloudsg1.sg.singtelgroup.net). TrendMicroDsTenant=Primary TrendMicroDsTenantId=0 
+Sep 16 16:46:48 dsmprdappls201.sg.singtelgroup.net CEF: 0|Trend Micro|Deep Security Manager|20.0.913|771|Contact by Unrecognized Client|6|src=10.148.66.28 suser=System msg=A connection to Deep Security Manager was initiated by a client not identifiable as a managed computer: 10.189.203.122:. Either the client is not a computer managed by Deep Security, or a secure communication channel could not be established.\n\nAgent GUID or virtual ID did not map to any Hosts. The following endpoint information was provided.\n\nHTTP Headers:\nx-dsa-time: 1726476243\ncontent-length: 113\nx-dsa-capabilities: 1428165456\nx-dsm-minimum-dsm-version: 20.0.210\ncontent-type: text/plain; charset\=""UTF-8""\nx-dsa-localaddr: 10.189.203.122\nplatform: RedHat_EL7;3;10;0;1127.13.1.el7.x86_64;x86_64;CentOS\nuser-agent: Trend Micro Deep Security Agent (20.0.0.7476)\n\nHost Info:\nhostname: localhost\nsecurebootenabled: false\ndsa.mode.vmsafeguest: true\nsecurebootkeyenrolled: false\nnumcores: 2\n TrendMicroDsTenant=Primary TrendMicroDsTenantId=0 ","[MODEL: dataset=""trend_micro_deep_security_manager_raw""]
+filter cefDeviceProduct = ""Deep Security Manager""
+| alter
+xdm.observer.type = TrendMicroDsTenant,
+xdm.observer.unique_identifier = TrendMicroDsTenantId,
+xdm.observer.version = cefDeviceVersion,
+xdm.event.id = cefDeviceEventClassId,
+xdm.event.description = cefName,
+xdm.alert.name = cefName,
+xdm.alert.severity = cefSeverity,
+xdm.source.agent.type = TrendMicroDsTenant,
+xdm.source.agent.identifier = TrendMicroDsTenantId
+| alter
+target_ip = arrayindex(regextract(`target`,""(\d+\.\d+\.\d+\.\d+)""),0)
+| alter
+target_host = if(target_ip != null,
+arrayindex(regextract(`target`,""\((\w+)\)""),0), `target`)
+| alter
+xdm.event.type = ""System"",
+xdm.alert.description = msg,
+xdm.source.user.username = suser,
+xdm.source.ipv4 = if(src !~= "":"", src, null),
+xdm.source.ipv6 = if(src ~= "":"", src, null),
+xdm.target.ipv4 = target_ip,
+xdm.target.host.hostname = target_host,
+xdm.intermediate.ipv4 = TrendMicroDsScannerIp,
+xdm.target.resource.value = TrendMicroDsTargetPortList
+| alter observer_name = arrayindex(regextract(_raw_log,""([^\s]+)\sCEF""),0)
+| alter xdm.observer.name = concat(""TrendMicro-DSM_"" + observer_name + ""_"" + src)
+;"
+"Jul 29 11:58:02 10.64.66.50 CEF: 0|Check Point|VPN-1 & FireWall-1|Check Point|Log|snmp|Unknown|act=Accept deviceDirection=0 rt=1722225480000 spt=42747 dpt=161 cs2Label=Rule Name cs2=1.8_._._ layer_name=Network layer_uuid=eaa688d8-3176-4315-a667-c3993f792b51 match_id=8 parent_rule=0 rule_action=Accept rule_uid=86bcbde5-5905-414b-b58e-366f2ed3b418 ifname=eth2.1643 logid=0 loguid={0x79960b5d,0xebafb96f,0x90fd6e65,0x5bc2786d} origin=10.141.192.59 originsicname=CN\=Jong02,O\=SG-Corporate1-GL.sg.singtelgroup.net.5bimz8 sequencenum=1 version=5 dst=10.243.132.134 inzone=External outzone=Local product=VPN-1 & FireWall-1 proto=17 service_id=snmp src=10.64.97.222
+Jul 29 11:58:02 10.64.66.50 CEF: 0|Check Point|VPN-1 & FireWall-1|Check Point|Log|Address spoofing|Unknown|act=Detect deviceDirection=0 msg=Address spoofing rt=1722225480000 spt=1985 dpt=1985 ifname=eth1-01.11 loguid={0x66a7134a,0xdb,0x2842400a,0xf3c9de7} origin=10.69.180.1 originsicname=CN\=CCKEPPCFW02_CCKEVPCFW01_02-PROD,O\=SG-Corporate1-GL.sg.singtelgroup.net.5bimz8 sequencenum=4 version=5 dst=224.0.0.2 product=VPN-1 & FireWall-1 proto=17 src=10.69.180.5
+Jul 29 11:58:02 10.64.66.50 CEF: 0|Check Point|VPN-1 & FireWall-1|Check Point|Log|Address spoofing|Unknown|act=Detect deviceDirection=0 msg=Address spoofing rt=1722225480000 spt=1985 dpt=1985 ifname=eth1-01.11 loguid={0x66a7134a,0xda,0x2842400a,0xf3c9de7} origin=10.69.180.1 originsicname=CN\=CCKEPPCFW02_CCKEVPCFW01_02-PROD,O\=SG-Corporate1-GL.sg.singtelgroup.net.5bimz8 sequencenum=3 version=5 dst=224.0.0.2 product=VPN-1 & FireWall-1 proto=17 src=10.69.180.4
+Jul 29 11:58:02 10.64.66.50 CEF: 0|Check Point|VPN-1 & FireWall-1|Check Point|Log|Address spoofing|Unknown|act=Detect deviceDirection=0 msg=Address spoofing rt=1722225480000 spt=1985 dpt=1985 ifname=eth1-01.11 loguid={0x66a7134a,0xd9,0x2842400a,0xf3c9de7} origin=10.69.180.1 originsicname=CN\=CCKEPPCFW02_CCKEVPCFW01_02-PROD,O\=SG-Corporate1-GL.sg.singtelgroup.net.5bimz8 sequencenum=2 version=5 dst=224.0.0.2 product=VPN-1 & FireWall-1 proto=17 src=10.69.180.5
+Jul 29 11:58:02 10.64.66.50 CEF: 0|Check Point|VPN-1 & FireWall-1|Check Point|Log|Address spoofing|Unknown|act=Detect deviceDirection=0 msg=Address spoofing rt=1722225480000 spt=1985 dpt=1985 ifname=eth1-01.11 loguid={0x66a7134a,0xd8,0x2842400a,0xf3c9de7} origin=10.69.180.1 originsicname=CN\=CCKEPPCFW02_CCKEVPCFW01_02-PROD,O\=SG-Corporate1-GL.sg.singtelgroup.net.5bimz8 sequencenum=1 version=5 dst=224.0.0.2 product=VPN-1 & FireWall-1 proto=17 src=10.69.180.4
+Jul 29 11:58:02 10.64.66.50 CEF: 0|Check Point|VPN-1 & FireWall-1|Check Point|Log|TCP-15000-65535|Unknown|act=Drop deviceDirection=0 rt=1722225480000 spt=45453 dpt=27017 cs2Label=Rule Name cs2=1.436_._._ layer_name=Network layer_uuid=eaa688d8-3176-4315-a667-c3993f792b51 match_id=436 parent_rule=0 rule_action=Drop rule_uid=208d58ea-c0ed-455c-80ba-6480162bfd57 ifname=eth1-01.11 logid=0 loguid={0x66a7134a,0xc2,0x2842400a,0xf3c9de7} origin=10.69.180.1 originsicname=CN\=CCKEPPCFW01_CCKEVPCFW01_02-PROD,O\=SG-Corporate1-GL.sg.singtelgroup.net.5bimz8 sequencenum=127 version=5 dst=180.255.19.56 product=VPN-1 & FireWall-1 proto=6 service_id=TCP-15000-65535 src=91.92.246.231
+Jul 29 11:58:02 10.64.66.50 CEF: 0|Check Point|VPN-1 & FireWall-1|Check Point|Log|http|Unknown|act=Accept deviceDirection=0 rt=1722225480000 spt=14011 dpt=80 cs2Label=Rule Name cs2=1.406_._._SCTASK0332028-Muthu layer_name=Network layer_uuid=eaa688d8-3176-4315-a667-c3993f792b51 match_id=406 parent_rule=0 rule_action=Accept rule_uid=57137aed-b30d-44b8-9c20-5d14851a2730 conn_direction=Outgoing ifname=bond1.110 logid=0 loguid={0xf1530156,0x39456c3e,0xead8523e,0xfd8d5214} origin=10.69.180.1 originsicname=CN\=CCKEPPCFW01_CCKEVPCFW01_02-PROD,O\=SG-Corporate1-GL.sg.singtelgroup.net.5bimz8 sequencenum=126 version=5 dst=167.103.32.13 log_delay=1722225480 product=VPN-1 & FireWall-1 proto=6 service_id=http src=180.255.19.83
+Jul 29 11:58:02 10.64.66.50 CEF: 0|Check Point|VPN-1 & FireWall-1|Check Point|Log|UDP-3340-65535|Unknown|act=Drop deviceDirection=0 rt=1722225480000 spt=27098 dpt=10001 cs2Label=Rule Name cs2=1.436_._._ layer_name=Network layer_uuid=eaa688d8-3176-4315-a667-c3993f792b51 match_id=436 parent_rule=0 rule_action=Drop rule_uid=208d58ea-c0ed-455c-80ba-6480162bfd57 ifname=eth1-01.11 logid=0 loguid={0x66a7134a,0xc1,0x2842400a,0xf3c9de7} origin=10.69.180.1 originsicname=CN\=CCKEPPCFW01_CCKEVPCFW01_02-PROD,O\=SG-Corporate1-GL.sg.singtelgroup.net.5bimz8 sequencenum=125 version=5 dst=180.255.19.53 product=VPN-1 & FireWall-1 proto=17 service_id=UDP-3340-65535 src=47.251.73.231
+Jul 29 11:58:02 10.64.66.50 CEF: 0|Check Point|VPN-1 & FireWall-1|Check Point|Log|Address spoofing|Unknown|act=Detect deviceDirection=0 msg=Address spoofing rt=1722225480000 spt=1985 dpt=1985 ifname=eth1-01.11 loguid={0x66a7134a,0xc0,0x2842400a,0xf3c9de7} origin=10.69.180.1 originsicname=CN\=CCKEPPCFW01_CCKEVPCFW01_02-PROD,O\=SG-Corporate1-GL.sg.singtelgroup.net.5bimz8 sequencenum=124 version=5 dst=224.0.0.2 product=VPN-1 & FireWall-1 proto=17 src=10.69.180.5","[MODEL: dataset =""check_point_vpn_1_firewall_1_raw""]
+
+filter _raw_log not contains ""operation=""
+// Fields Parsing
+| alter
+    //cefHostName = arrayindex(split(_raw_log,"" ""),3),
+    //cefVersion = arrayindex(regextract(_raw_log,""CEF: (\d)""),0),
+    //cefDeviceVendor = arrayindex(split(_raw_log,""|""),1),
+    cefDeviceProduct = arrayindex(split(_raw_log,""|""),2),
+    cefDeviceVersion = arrayindex(split(_raw_log,""|""),3),
+    // cefDeviceEventClassId = arrayindex(split(_raw_log,""|""),4),
+    //cefName = arrayindex(split(_raw_log,""|""),5),
+    cefSeverity = arrayindex(split(_raw_log,""|""),6),
+   //rule_uid = arrayindex(regextract(_raw_log,""rule_uid=([^\s=]+)""),0),
+   dst = arrayindex(regextract(_raw_log,""dst=([^\s=]+)""),0),
+   act = arrayindex(regextract(_raw_log,""\|act=([^\s=]+)""),0),
+   //act = arrayindex(regextract(_raw_log,""\|act=(.+)\sdeviceDirection=""),0),
+   //`product` = arrayindex(regextract(_raw_log,""product=(.+) service_id=""),0),
+   //log_delay = arrayindex(regextract(_raw_log,""log_delay=([^\s=]+)""),0),
+   // rt = arrayindex(regextract(_raw_log,""rt=([^\s=]+)""),0),
+   // logid = arrayindex(regextract(_raw_log,""logid=([^\s=]+)""),0),
+   shost = arrayindex(regextract(_raw_log,""originsicname=(.+) sequencenum=""),0),
+   //deviceDirection = if(
+   //  arrayindex(regextract(_raw_log,""deviceDirection=([^\s=]+)""),0) = ""0"", ""inbound"",
+   //  arrayindex(regextract(_raw_log,""deviceDirection=([^\s=]+)""),0) = ""1"", ""outbound""),
+   // conn_direction = arrayindex(regextract(_raw_log,""conn_direction=([^\s=]+)""),0),
+   // sequencenum = arrayindex(regextract(_raw_log,""sequencenum=([^\s=]+)""),0),
+   // layer_uuid = arrayindex(regextract(_raw_log,""layer_uuid=([^\s=]+)""),0),
+   cn1 = arrayindex(regextract(_raw_log,""cn1=([^\s=]+)""),0),
+   cn1Label = arrayindex(regextract(_raw_log,""cn1Label=(.+)\scn1""),0),
+   cn2 = arrayindex(regextract(_raw_log,""cn2=([^\s=]+)""),0),
+   cn2Label = arrayindex(regextract(_raw_log,""cn2Label=([^\s=]+)""),0),  
+   cn3 = arrayindex(regextract(_raw_log,""cn3=([^\s=]+)""),0),
+   cn3Label = arrayindex(regextract(_raw_log,""cn3Label=([^\s=]+)""),0),  
+   cs2 = arrayindex(regextract(_raw_log,""cs2=([^\s=]+)""),0),
+   loguid = arrayindex(regextract(_raw_log,""loguid=([^\s=]+)""),0),
+   //rule_action = arrayindex(regextract(_raw_log,""rule_action=([^\s=]+)""),0),
+   //parent_rule = arrayindex(regextract(_raw_log,""parent_rule=([^\s=]+)""),0),
+   cs2Label = arrayindex(regextract(_raw_log,""cs2Label=([^\s=]+\s\S+)""),0),
+   cs3 = arrayindex(regextract(_raw_log,""cs3=([^\s=]+)""),0),
+   cs3Label = arrayindex(regextract(_raw_log,""cs3Label=([^\s=]+)""),0),
+   //match_id = arrayindex(regextract(_raw_log,""match_id=([^\s=]+)""),0),
+   //version = arrayindex(regextract(_raw_log,""version=([^\s=]+)""),0),
+   service_id = arrayindex(regextract(_raw_log,""service_id=([^\s=]+)""),0),
+   //msg = arrayindex(regextract(_raw_log,""msg=(.+) rt=""),0),
+   msg = arrayindex(regextract(_raw_log,""msg=([^=]+?)(?:\s\w+=| rt=)""),0), 
+   ifname = arrayindex(regextract(_raw_log,""ifname=([^\s=]+)""),0),
+   origin = arrayindex(regextract(_raw_log,""origin=([^\s=]+)""),0),
+   proto = arrayindex(regextract(_raw_log,""proto=([^\s=]+)""),0),
+   inzone = arrayindex(regextract(_raw_log,""inzone=([^\s=]+)""),0),
+   spt = to_integer(arrayindex(regextract(_raw_log,""spt=([^\s=]+)""),0)),
+   src = arrayindex(regextract(_raw_log,""src=([^\s=]+)""),0),
+   outzone = arrayindex(regextract(_raw_log,""outzone=([^\s=]+)""),0),
+   dpt = to_integer(arrayindex(regextract(_raw_log,""dpt=([^\s=]+)""),0)),
+   client_outbound_bytes = arrayindex(regextract(_raw_log,""client_outbound_bytes=([^\s=]+)""),0),
+   server_outbound_bytes = arrayindex(regextract(_raw_log,""server_outbound_bytes=([^\s=]+)""),0),
+   client_outbound_packets = arrayindex(regextract(_raw_log,""client_outbound_packets=([^\s=]+)""),0),
+   server_outbound_packets = arrayindex(regextract(_raw_log,""server_outbound_packets=([^\s=]+)""),0),
+   outcome = arrayindex(regextract(_raw_log,""outcome=([^\s=]+)""),0),
+   session_uid = arrayindex(regextract(_raw_log,""session_uid=([^\s=]+)""),0),
+   reason = arrayindex(regextract(_raw_log,""reason=(.+)\supdate_service=""),0),
+   deviceduration = to_integer(arrayindex(regextract(_raw_log,""duration\s\(sec\)\:\s([^\s=]+)\,""),0))
+   //layer_name = arrayindex(regextract(_raw_log,""layer_name=([^\s=]+)""),0)
+
+|alter   // application = if(app = null or app=""Unknown Protocol"", service_id, app),
+    application = service_id,
+    ruleName = if(cs2Label = ""Rule Name"", cs2, null),
+    ipv4src = if(src ~= ""\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"", src, null),
+    ipv4dest = if(dst ~= ""\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"", dst, null),
+    elapsed_Time_Seconds = to_integer(if(cn1Label = ""Elapsed Time in Seconds"", cn1, null)),
+    //duration_format = if(to_integer(duration) != null, multiply(to_integer(duration), 1000), null),
+    ICMP_type = to_integer(if(cn2Label = ""ICMP Type"", cn2, null)),
+    ICMP_code = to_integer(if(cn3Label = ""ICMP Code"", cn3, null)),
+    protection_Type = if(cs3Label = ""Protection Type"", cs3, null)
+| alter
+    ipv6src = if(src != null and ipv4src = null, src, null),
+    ipv6dest = if(dst != null and ipv4dest = null, dst, null),
+    elapsed_Time_Seconds = if(elapsed_Time_Seconds != null, multiply(elapsed_Time_Seconds, 1000), null),
+    deviceduration = if(deviceduration != null, multiply( deviceduration, 1000), null),
+    syslog_severity = arrayindex(regextract(_raw_log,""syslog_severity=([^\s=]+)""),0)
+// Fields Modeling
+
+| alter
+    //xdm.event.id = loguid,
+    xdm.alert.severity = if(_raw_log contains ""syslog_severity"", syslog_severity, cefSeverity),
+    xdm.session_context_id = loguid,
+    // xdm.event.type = cefDeviceEventClassId,
+    xdm.event.type = cefDeviceProduct,
+    xdm.event.outcome = outcome, 
+    // xdm.event.outcome_reason = if(reason != """" and reason != null, reason, action_reason),
+    xdm.event.outcome_reason = reason,
+    xdm.network.session_id = session_uid,
+    xdm.network.ip_protocol = if(proto=""0"",XDM_CONST.IP_PROTOCOL_HOPOPT, proto=""1"",XDM_CONST.IP_PROTOCOL_ICMP, proto=""2"",XDM_CONST.IP_PROTOCOL_IGMP, proto=""3"",XDM_CONST.IP_PROTOCOL_GGP, proto=""4"",XDM_CONST.IP_PROTOCOL_IP, proto=""5"",XDM_CONST.IP_PROTOCOL_ST, proto=""6"",XDM_CONST.IP_PROTOCOL_TCP, proto=""7"",XDM_CONST.IP_PROTOCOL_CBT, proto=""8"",XDM_CONST.IP_PROTOCOL_EGP, proto=""9"",XDM_CONST.IP_PROTOCOL_IGP, proto=""10"",XDM_CONST.IP_PROTOCOL_BBN_RCC_MON, proto=""11"",XDM_CONST.IP_PROTOCOL_NVP_II, proto=""12"",XDM_CONST.IP_PROTOCOL_PUP, proto=""13"",XDM_CONST.IP_PROTOCOL_ARGUS, proto=""14"",XDM_CONST.IP_PROTOCOL_EMCON, proto=""15"",XDM_CONST.IP_PROTOCOL_XNET, proto=""16"",XDM_CONST.IP_PROTOCOL_CHAOS, proto=""17"",XDM_CONST.IP_PROTOCOL_UDP, proto=""18"",XDM_CONST.IP_PROTOCOL_MUX, proto=""19"",XDM_CONST.IP_PROTOCOL_DCN_MEAS, proto=""20"",XDM_CONST.IP_PROTOCOL_HMP, proto=""21"",XDM_CONST.IP_PROTOCOL_PRM, proto=""22"",XDM_CONST.IP_PROTOCOL_XNS_IDP, proto=""23"",XDM_CONST.IP_PROTOCOL_TRUNK_1, proto=""24"",XDM_CONST.IP_PROTOCOL_TRUNK_2, proto=""25"",XDM_CONST.IP_PROTOCOL_LEAF_1, proto=""26"",XDM_CONST.IP_PROTOCOL_LEAF_2, proto=""27"",XDM_CONST.IP_PROTOCOL_RDP, proto=""28"",XDM_CONST.IP_PROTOCOL_IRTP, proto=""29"",XDM_CONST.IP_PROTOCOL_ISO_TP4, proto=""30"",XDM_CONST.IP_PROTOCOL_NETBLT, proto=""31"",XDM_CONST.IP_PROTOCOL_MFE_NSP, proto=""32"",XDM_CONST.IP_PROTOCOL_MERIT_INP, proto=""33"",XDM_CONST.IP_PROTOCOL_DCCP, proto=""34"",XDM_CONST.IP_PROTOCOL_3PC, proto=""35"",XDM_CONST.IP_PROTOCOL_IDPR, proto=""36"",XDM_CONST.IP_PROTOCOL_XTP, proto=""37"",XDM_CONST.IP_PROTOCOL_DDP, proto=""38"",XDM_CONST.IP_PROTOCOL_IDPR_CMTP, proto=""39"",XDM_CONST.IP_PROTOCOL_TP, proto=""40"",XDM_CONST.IP_PROTOCOL_IL, proto=""41"",XDM_CONST.IP_PROTOCOL_IPV6, proto=""42"",XDM_CONST.IP_PROTOCOL_SDRP, proto=""43"",XDM_CONST.IP_PROTOCOL_IPV6_ROUTE, proto=""44"",XDM_CONST.IP_PROTOCOL_IPV6_FRAG, proto=""45"",XDM_CONST.IP_PROTOCOL_IDRP, proto=""46"",XDM_CONST.IP_PROTOCOL_RSVP, proto=""47"",XDM_CONST.IP_PROTOCOL_GRE, proto=""48"",XDM_CONST.IP_PROTOCOL_DSR, proto=""49"",XDM_CONST.IP_PROTOCOL_BNA, proto=""50"",XDM_CONST.IP_PROTOCOL_ESP, proto=""51"",XDM_CONST.IP_PROTOCOL_AH, proto=""52"",XDM_CONST.IP_PROTOCOL_I_NLSP, proto=""53"",XDM_CONST.IP_PROTOCOL_SWIPE, proto=""54"",XDM_CONST.IP_PROTOCOL_NARP, proto=""55"",XDM_CONST.IP_PROTOCOL_MOBILE, proto=""56"",XDM_CONST.IP_PROTOCOL_TLSP, proto=""57"",XDM_CONST.IP_PROTOCOL_SKIP, proto=""58"",XDM_CONST.IP_PROTOCOL_IPV6_ICMP, proto=""59"",XDM_CONST.IP_PROTOCOL_IPV6_NONXT, proto=""60"",XDM_CONST.IP_PROTOCOL_IPV6_OPTS, proto=""62"",XDM_CONST.IP_PROTOCOL_CFTP, proto=""64"",XDM_CONST.IP_PROTOCOL_SAT_EXPAK, proto=""65"",XDM_CONST.IP_PROTOCOL_KRYPTOLAN, proto=""66"",XDM_CONST.IP_PROTOCOL_RVD, proto=""67"",XDM_CONST.IP_PROTOCOL_IPPC, proto=""69"",XDM_CONST.IP_PROTOCOL_SAT_MON, proto=""70"",XDM_CONST.IP_PROTOCOL_VISA, proto=""71"",XDM_CONST.IP_PROTOCOL_IPCV, proto=""72"",XDM_CONST.IP_PROTOCOL_CPNX, proto=""73"",XDM_CONST.IP_PROTOCOL_CPHB, proto=""74"",XDM_CONST.IP_PROTOCOL_WSN, proto=""75"",XDM_CONST.IP_PROTOCOL_PVP, proto=""76"",XDM_CONST.IP_PROTOCOL_BR_SAT_MON, proto=""77"",XDM_CONST.IP_PROTOCOL_SUN_ND, proto=""78"",XDM_CONST.IP_PROTOCOL_WB_MON, proto=""79"",XDM_CONST.IP_PROTOCOL_WB_EXPAK, proto=""80"",XDM_CONST.IP_PROTOCOL_ISO_IP, proto=""81"",XDM_CONST.IP_PROTOCOL_VMTP, proto=""82"",XDM_CONST.IP_PROTOCOL_SECURE_VMTP, proto=""83"",XDM_CONST.IP_PROTOCOL_VINES, proto=""84"",XDM_CONST.IP_PROTOCOL_TTP, proto=""85"",XDM_CONST.IP_PROTOCOL_NSFNET_IGP, proto=""86"",XDM_CONST.IP_PROTOCOL_DGP, proto=""87"",XDM_CONST.IP_PROTOCOL_TCF, proto=""88"",XDM_CONST.IP_PROTOCOL_EIGRP, proto=""89"",XDM_CONST.IP_PROTOCOL_OSPFIGP, proto=""90"",XDM_CONST.IP_PROTOCOL_SPRITE_RPC, proto=""91"",XDM_CONST.IP_PROTOCOL_LARP, proto=""92"",XDM_CONST.IP_PROTOCOL_MTP, proto=""93"",XDM_CONST.IP_PROTOCOL_AX25, proto=""94"",XDM_CONST.IP_PROTOCOL_IPIP, proto=""95"",XDM_CONST.IP_PROTOCOL_MICP, proto=""96"",XDM_CONST.IP_PROTOCOL_SCC_SP, proto=""97"",XDM_CONST.IP_PROTOCOL_ETHERIP, proto=""98"",XDM_CONST.IP_PROTOCOL_ENCAP, proto=""100"",XDM_CONST.IP_PROTOCOL_GMTP, proto=""101"",XDM_CONST.IP_PROTOCOL_IFMP, proto=""102"",XDM_CONST.IP_PROTOCOL_PNNI, proto=""103"",XDM_CONST.IP_PROTOCOL_PIM, proto=""104"",XDM_CONST.IP_PROTOCOL_ARIS, proto=""105"",XDM_CONST.IP_PROTOCOL_SCPS, proto=""106"",XDM_CONST.IP_PROTOCOL_QNX, proto=""107"",XDM_CONST.IP_PROTOCOL_AN, proto=""108"",XDM_CONST.IP_PROTOCOL_IPCOMP, proto=""110"",XDM_CONST.IP_PROTOCOL_COMPAQ_PEER, proto=""111"",XDM_CONST.IP_PROTOCOL_IPX_IN_IP, proto=""112"",XDM_CONST.IP_PROTOCOL_VRRP, proto=""113"",XDM_CONST.IP_PROTOCOL_PGM, proto=""115"",XDM_CONST.IP_PROTOCOL_L2TP, proto=""116"",XDM_CONST.IP_PROTOCOL_DDX, proto=""117"",XDM_CONST.IP_PROTOCOL_IATP, proto=""118"",XDM_CONST.IP_PROTOCOL_STP, proto=""119"",XDM_CONST.IP_PROTOCOL_SRP, proto=""120"",XDM_CONST.IP_PROTOCOL_UTI, proto=""121"",XDM_CONST.IP_PROTOCOL_SMP, proto=""122"",XDM_CONST.IP_PROTOCOL_SM, proto=""123"",XDM_CONST.IP_PROTOCOL_PTP, proto=""124"",XDM_CONST.IP_PROTOCOL_ISIS, proto=""125"",XDM_CONST.IP_PROTOCOL_FIRE, proto=""126"",XDM_CONST.IP_PROTOCOL_CRTP, proto=""127"",XDM_CONST.IP_PROTOCOL_CRUDP, proto=""128"",XDM_CONST.IP_PROTOCOL_SSCOPMCE, proto=""129"",XDM_CONST.IP_PROTOCOL_IPLT, proto=""130"",XDM_CONST.IP_PROTOCOL_SPS, proto=""131"",XDM_CONST.IP_PROTOCOL_PIPE, proto=""132"",XDM_CONST.IP_PROTOCOL_SCTP, proto=""133"",XDM_CONST.IP_PROTOCOL_FC, proto=""134"",XDM_CONST.IP_PROTOCOL_RSVP_E2E_IGNORE, proto=""135"",XDM_CONST.IP_PROTOCOL_MOBILITY, proto=""136"",XDM_CONST.IP_PROTOCOL_UDPLITE, proto=""137"",XDM_CONST.IP_PROTOCOL_MPLS_IN_IP,to_string(proto)),
+    xdm.network.application_protocol = application,
+    xdm.network.rule = coalesce(ruleName, protection_Type),
+    //xdm.event.duration = to_integer(coalesce(duration_format, elapsed_Time_Seconds)),
+    xdm.event.duration = coalesce(to_integer(elapsed_Time_Seconds), to_integer(deviceduration)),
+    //xdm.network.dns.dns_question.type = dns_type,
+    //xdm.network.dns.dns_resource_record.type = dns_query,
+    xdm.observer.action = act,
+    xdm.observer.version = cefDeviceVersion,
+    //xdm.observer.name = concat(""CheckPoint-VPN-Firewall_"" + shost + ""_"" + origin),
+    xdm.observer.name = if(shost != null and origin != null, concat(""CheckPoint_Audit_"" + shost + ""_"" + origin), 
+                            shost = null, concat(""CheckPoint_Audit_null_"" + origin),
+                            origin = null, concat(""CheckPoint_Audit_"" + shost + ""_null"")),
+    //xdm.source.host.hostname = shost,
+    xdm.source.host.hostname = arrayindex(regextract(_raw_log,""originsicname=CN\\=([^\s]+)\,""),0),//2024.12.12.v1.1 Tao Feng 
+    //xdm.source.user.username = suser,
+    xdm.source.ipv4 = ipv4src,
+    xdm.source.ipv6 = ipv6src,
+    xdm.source.port = spt,
+    xdm.source.zone = inzone,
+    //xdm.target.host.hostname = dhost,
+    //xdm.target.user.username = duser,
+    xdm.target.ipv4 = ipv4dest,
+    xdm.target.ipv6 = ipv6dest,
+    xdm.target.port = dpt,
+    xdm.target.zone = outzone,
+    xdm.network.icmp.type = ICMP_type,
+    xdm.network.icmp.code = ICMP_code,
+    xdm.source.sent_bytes = to_integer(client_outbound_bytes),
+    xdm.target.sent_bytes = to_integer(server_outbound_bytes),
+    xdm.event.description = msg,
+    xdm.source.interface = ifname,
+    xdm.source.sent_packets = to_integer(client_outbound_packets),
+    xdm.target.sent_packets = to_integer(server_outbound_packets);
+
+filter _raw_log contains ""operation=""
+| alter
+    //act = arrayindex(regextract(_raw_log,""act=([^\s=]+)""),0),
+    //deviceDirection = if(
+    //  arrayindex(regextract(_raw_log,""deviceDirection=([^\s=]+)""),0) = ""0"", ""inbound"",
+    //  arrayindex(regextract(_raw_log,""deviceDirection=([^\s=]+)""),0) = ""1"", ""outbound""),
+    cefDeviceProduct = arrayindex(split(_raw_log,""|""),2),
+    cefSeverity = arrayindex(split(_raw_log,""|""),6),
+    act = arrayindex(regextract(_raw_log,""\|act=(.+)\sdeviceDirection=""),0),
+    src = arrayindex(regextract(_raw_log,""src=([^\s=]+)""),0),
+    loguid = arrayindex(regextract(_raw_log,""loguid=([^\s=]+)""),0),
+    origin = arrayindex(regextract(_raw_log,""origin=([^\s=]+)""),0),
+    shost = arrayindex(regextract(_raw_log,""originsicname=(.+) sequencenum=""),0),
+    administrator = arrayindex(regextract(_raw_log,""administrator=([^\s=]+)""),0),
+    //machine = arrayindex(regextract(_raw_log,""machine=(.+)\soperation=""),0),
+    //operation = arrayindex(regextract(_raw_log,""operation=([^\s=]+\s[^\s=]+)""),0),
+    operation = arrayindex(regextract(_raw_log,""operation=([^\s=]+(?:\s[^\s=]+){0,3})(?:=\s[^\s=]+=|\s|$)""),0),
+    //product = arrayindex(regextract(_raw_log,""product=(.+)\ssubject=""),0),
+    //product = ""SmartConsole"",
+    subject = arrayindex(regextract(_raw_log,""subject=([^\s]+ [^\s]+)""),0),
+    sntdom = coalesce(arrayindex(regextract(_raw_log, ""sntdom=\'([^\s=]+)\'\s+src""),0), arrayindex(regextract(_raw_log, ""sntdom=(.+)\ssrc""),0)),
+    additional_info = coalesce(arrayindex(regextract(_raw_log,""additional_info=(.+)\sadministrator=""),0), arrayindex(regextract(_raw_log,""additional_info=(.+)\saudit_status""),0)), 
+    advanced_changes = arrayindex(regextract(_raw_log,""advanced_changes=(.+)\sobjectname=""),0),
+    session_uid = arrayindex(regextract(_raw_log,""session_uid=([^\s=]+)""),0),
+    audit_status = arrayindex(regextract(_raw_log,""audit_status=(.+)\smachine=""),0),
+    next_hop = arrayindex(regextract(_raw_log, ""nextHop\:\s\'(\d+\.\d+\.\d+\.\d+)\'""),0),
+    objectname = arrayindex(regextract(_raw_log, ""objectname=([^\s=]+)\s""),0),
+    objecttype = arrayindex(regextract(_raw_log, ""objecttype=([^\s=]+)\s""),0),
+    session_description = arrayindex(regextract(_raw_log, ""session_description=(.+)\ssession_name""),0)
+| alter    
+    authentication_method = arrayindex(regextract(additional_info , ""Authentication\smethod\:\s(.+)""),0)
+| alter
+    ipv4src = if(src ~= ""\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"", src, null)
+
+| alter
+    xdm.alert.severity = cefSeverity,
+    xdm.event.type = ""audit"",
+    xdm.observer.action = act,
+    xdm.source.ipv4 = ipv4src,
+    xdm.session_context_id = loguid,
+    //xdm.observer.name = concat(""CheckPoint-Audit_"" + shost + ""_"" + origin),
+    xdm.observer.name = if(shost != null and origin != null, concat(""CheckPoint_Audit_"" + shost + ""_"" + origin), 
+                            shost = null, concat(""CheckPoint_Audit_null_"" + origin),
+                            origin = null, concat(""CheckPoint_Audit_"" + shost + ""_null"")),
+    xdm.target.ipv4 = origin,
+    //xdm.source.host.hostname = shost,
+    xdm.source.host.hostname = arrayindex(regextract(_raw_log,""originsicname=CN\\=([^\s]+)\,""),0),//2024.12.12.v1.1 Tao Feng 
+    xdm.source.user.username = administrator,
+    xdm.source.user.domain = sntdom,
+    xdm.event.operation = operation,
+    xdm.observer.product = cefDeviceProduct, 
+    xdm.source.application.name = cefDeviceProduct, 
+    xdm.event.description = coalesce(additional_info, advanced_changes, session_description ), 
+    xdm.network.session_id = session_uid,
+    xdm.event.original_event_type = subject,
+    xdm.event.outcome = audit_status,
+    xdm.auth.auth_method = authentication_method,
+    xdm.intermediate.ipv4 = next_hop ,
+    xdm.target.resource.name = objectname,
+    xdm.target.resource.type = objecttype
+    //xdm.event.description = session_description 
+;
+
+
+
+
+// Created by : Pang Ing Chuek , Version: Test : 20241119"

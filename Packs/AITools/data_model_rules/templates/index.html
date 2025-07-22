@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>XSIAM Data Ingestion design</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 2em;
+            background: #f4f8fb;
+            color: #222;
+        }
+        h1 {
+            color: #2a5d9f;
+            letter-spacing: 1px;
+            margin-bottom: 0.5em;
+        }
+        form {
+            background: #fff;
+            padding: 2.5em 2em;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(44, 62, 80, 0.07);
+            max-width: 50vw;
+            width: 50vw;
+            margin: 0 0 2em 0;
+            box-sizing: border-box;
+        }
+        textarea {
+            width: 90%;
+            max-width: 90%;
+            height: 20vh;
+            padding: 1em;
+            border: 1px solid #bfc9d1;
+            border-radius: 6px;
+            font-size: 1.1em;
+            resize: vertical;
+            background: #f7fafc;
+            margin: 0 0 1em 0;
+            box-sizing: border-box;
+            display: block;
+        }
+        button[type="submit"] {
+            background: #2a5d9f;
+            color: #fff;
+            border: none;
+            padding: 0.7em 2em;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button[type="submit"]:hover {
+            background: #1d406e;
+        }
+        .output {
+            margin-top: 1em;
+            padding: 1.5em;
+            background: #f9f9f9;
+            border: 1px solid #bfc9d1;
+            border-radius: 8px;
+            max-width: 600px;
+            box-shadow: 0 1px 4px rgba(44, 62, 80, 0.05);
+        }
+        .output h3 {
+            margin-top: 0;
+            color: #2a5d9f;
+        }
+    </style>
+</head>
+<body>
+    <h1>Raw log</h1>
+    <form method="POST">
+        <textarea name="prompt" placeholder="Give sample raw log here..."></textarea><br>
+        <button type="submit">Send</button>
+    </form>
+
+    {% if response %}
+    <div class="output">
+        <h3>Response:</h3>
+        {{ response | safe }}
+    </div>
+    {% endif %}
+</body>
+</html>
