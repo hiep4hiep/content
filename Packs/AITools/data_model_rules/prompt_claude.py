@@ -1,8 +1,5 @@
 import anthropic
 from sentence_transformers import SentenceTransformer
-import faiss
-import torch
-import json
 from search_faiss import search_sentence_in_faiss
 from dotenv import load_dotenv
 
@@ -59,4 +56,5 @@ def prompt_claude_with_rag(question):
     return message.content[0].text
 
 if __name__ == "__main__":
+    # For testing purposes, can run this script directly
     print(prompt_claude_with_rag('CEF:0|Palo Alto Networks|PAN-OS|10.2|TRAFFIC|traffic-log|5|src=10.10.10.5 dst=192.168.1.25 spt=60415 dpt=443 proto=tcp act=allow app=web-browsing cs1Label=src_zone cs1=Trust cs2Label=dst_zone cs2=Untrust cn1Label=session_id cn1=304478'))

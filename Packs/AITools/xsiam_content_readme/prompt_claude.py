@@ -55,4 +55,5 @@ def prompt_claude_with_rag(question):
     return message.content[0].text
 
 if __name__ == "__main__":
+    # For testing purposes, can run this script directly
     print(prompt_claude_with_rag("Okta cloud identity management platform"))

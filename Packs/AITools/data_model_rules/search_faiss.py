@@ -1,7 +1,6 @@
 from sentence_transformers import SentenceTransformer
 import faiss
 import torch
-import json
 import pickle
 
 

@@ -67,10 +67,37 @@
     </style>
 </head>
 <body>
-    <h1>Raw log</h1>
+    <h1>Data model generator</h1>
     <form method="POST">
-        <textarea name="prompt" placeholder="Give sample raw log here..."></textarea><br>
-        <button type="submit">Send</button>
+        <textarea name="prompt" placeholder="Paste one or a few sample log lines here"></textarea><br>
+        <button type="submit" id="submitBtn">Send</button>
+        <script>
+            document.querySelector('form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const textarea = document.querySelector('textarea[name="prompt"]');
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Analyzing, please wait...';
+            const responseDiv = document.querySelector('.output');
+            if (responseDiv) responseDiv.remove();
+
+            const res = await fetch('/api/claude', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: textarea.value })
+            });
+            const data = await res.json();
+            const html_response = data.response || 'No response received.';
+
+            const output = document.createElement('div');
+            output.className = 'output';
+            output.innerHTML = `<h3>Response:</h3>${html_response}`;
+            document.body.appendChild(output);
+
+            btn.disabled = false;
+            btn.textContent = 'Send';
+            });
+        </script>
     </form>
 
     {% if response %}
