@@ -16,22 +16,27 @@
         }
         form {
             background: #fff;
-            padding: 2em 1.5em;
+            padding: 2.5em 2em;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(44, 62, 80, 0.07);
-            max-width: 00px;
-            margin-bottom: 2em;
+            max-width: 50vw;
+            width: 50vw;
+            margin: 0 0 2em 0;
+            box-sizing: border-box;
         }
         textarea {
-            width: 100%;
-            height: 150px;
+            width: 90%;
+            max-width: 90%;
+            height: 20vh;
             padding: 1em;
             border: 1px solid #bfc9d1;
             border-radius: 6px;
-            font-size: 1em;
+            font-size: 1.1em;
             resize: vertical;
             background: #f7fafc;
-            margin-bottom: 1em;
+            margin: 0 0 1em 0;
+            box-sizing: border-box;
+            display: block;
         }
         button[type="submit"] {
             background: #2a5d9f;
@@ -64,8 +69,35 @@
 <body>
     <h1>Ingest data from what product</h1>
     <form method="POST">
-        <textarea name="prompt" placeholder="Enter here..."></textarea><br>
-        <button type="submit">Send</button>
+        <textarea name="prompt" placeholder="Enter the product and vendor name here. E.g. Okta identity cloud platform"></textarea><br>
+        <button type="submit" id="submitBtn">Send</button>
+        <script>
+            document.querySelector('form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const textarea = document.querySelector('textarea[name="prompt"]');
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Analyzing, please wait...';
+            const responseDiv = document.querySelector('.output');
+            if (responseDiv) responseDiv.remove();
+
+            const res = await fetch('/api/claude', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: textarea.value })
+            });
+            const data = await res.json();
+            const html_response = data.response || 'No response received.';
+
+            const output = document.createElement('div');
+            output.className = 'output';
+            output.innerHTML = `<h3>Response:</h3>${html_response}`;
+            document.body.appendChild(output);
+
+            btn.disabled = false;
+            btn.textContent = 'Send';
+            });
+        </script>
     </form>
 
     {% if response %}

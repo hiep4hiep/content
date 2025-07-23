@@ -1,35 +1,5 @@
 import anthropic
-from sentence_transformers import SentenceTransformer
-import faiss
-import torch
-import json
-
-
-def search_sentence_in_faiss(sentence, faiss_index_path="readme_faiss.index", metadata_path="readmes_corpus.json"):
-    """
-    Searches for the most similar sentence in a FAISS index given an input sentence.
-    Args:
-        sentence (str): The input sentence to search for in the FAISS index.
-        faiss_index_path (str, optional): Path to the FAISS index file. Defaults to "readme_faiss.index".
-    Returns:
-        str: The most similar sentence (or data) retrieved from the corpus.
-    Raises:
-        FileNotFoundError: If the FAISS index file or the corpus file does not exist.
-        Exception: For errors during model loading, encoding, or FAISS search.
-    """
-
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = SentenceTransformer('all-MiniLM-L6-v2', device=device)
-    index = faiss.read_index(faiss_index_path)
-    embedding = model.encode(sentence, convert_to_tensor=True, device=device)
-    embedding_np = embedding.cpu().unsqueeze(0).numpy()
-    D, I = index.search(embedding_np, k=1)
-    
-    ### Get item from corpus
-    with open(metadata_path, 'r', encoding='utf-8') as infile:
-        corpus = json.load(infile)
-        data = corpus[I[0][0]]['data']
-    return data
+from search_faiss import search_sentence_in_faiss
 
 
 def prompt_claude_with_rag(question):
@@ -44,28 +14,32 @@ def prompt_claude_with_rag(question):
     Returns:
         str: Claude's response.
     """
+    xsiam_guidance = search_sentence_in_faiss(question)
     # Build the context for RAG
-    context = (
-        """
+    context = f"""
         You are an experienced Solution Architect with deep knowledge in security information and event management (SIEM), log pipelines, cloud architecture, and threat detection.
 
         Your task is to design a robust and scalable SIEM data ingestion solution for a security product. You don't need to provide Broker VM configuration, just provide the ingestion method design and data source configuration.
+        Refer to the XSIAM guidance below for the design and configuration of the data ingestion method. If Broker VM is not mentioned, assume it is not required and the collection method might be API-based or S3, Event Hub or HTTP Event Collector and so on
 
-        The solution should address the following:
+        XSIAM Guidance:
+        {xsiam_guidance}
+
+        The solution should provide enough information for the data ingestion implementation, can have the following items:
 
         1. **Data Sources**:
-        - What telemetry or event types are available from Microsoft Defender?
-        - How should they be collected?
+        - What data sources are relevant for the security product?
+        - What telemetry or event types are available?
         - How to configure the data source for the log ingestion?
 
         2. **Ingestion Pipeline**:
-        - What are the recommended ingestion methods (e.g., API, connector, syslog (via Cortex Broker VM), Event Hub)?
+        - What are the recommended ingestion methods (e.g., API connector, syslog (via Cortex Broker VM), Event Hub)?
         - How would you ensure reliability, scalability, and security?
-
+        - Network requirements for the ingestion method?
+        - Credetials or authentication methods required for the data source?
+        
         """
-       
-    )
-    context += search_sentence_in_faiss(question, faiss_index_path="readme_faiss.index", metadata_path="readmes_corpus.json")
+    
 
     content = f"Context:\n{context}\n\n"
     content += f"User question: {question}\n"
@@ -73,12 +47,12 @@ def prompt_claude_with_rag(question):
     client = anthropic.Anthropic()
     message = client.messages.create(
         model="claude-sonnet-4-20250514",
-        max_tokens=512,
+        max_tokens=4096,
         messages=[
-            {"role": "user", "content": content.replace("\n", "<br>")},
+            {"role": "user", "content": content},
         ]
     )
     return message.content[0].text
 
 if __name__ == "__main__":
-    print(prompt_claude_with_rag("Ingest Imperva WAF logs into XSIAM"))
+    print(prompt_claude_with_rag("Okta cloud identity management platform"))

@@ -27,7 +27,8 @@ def search_sentence_in_faiss(sentence, faiss_index_path="readme_faiss.index", me
     with open(metadata_path, 'r', encoding='utf-8') as infile:
         target_idx = I[0][0]
         corpus_data = json.load(infile)
-        return corpus_data[target_idx]
+        return corpus_data[target_idx].get('data', 'No data found for this index')
 
 if __name__ == "__main__":
-    print(search_sentence_in_faiss("Aruba ClearPass Policy Manager"))
+    
+    print(search_sentence_in_faiss("Okta cloud identity management platform"))
