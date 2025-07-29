@@ -21,7 +21,7 @@ The XSIAM SPL to XQL generator can be used by the PS deployment engineer when it
 ![alt text](image-4.png)
 
 - Wait for the response to be provided
-![alt text](image-5.png)
+![alt text](image-1.png)
 
 
  ## Required Python dependencies

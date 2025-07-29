@@ -19,7 +19,7 @@ def api_claude():
     if not user_prompt:
         return jsonify({'error': 'Prompt is required.'}), 400
     response_text = prompt_claude_with_rag(user_prompt)
-    html_output = markdown.markdown(response_text)
+    html_output = markdown.markdown(response_text,extensions=["fenced_code", "codehilite"])
     return jsonify({'response': html_output})
 
 
