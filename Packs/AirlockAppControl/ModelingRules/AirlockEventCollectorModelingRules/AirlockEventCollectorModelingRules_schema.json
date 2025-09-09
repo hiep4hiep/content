@@ -1,0 +1,60 @@
+{
+    "airlock_appcontrol_raw": {
+        "md5": {
+            "type": "string",
+            "is_array": false
+        },
+        "sha256": {
+            "type": "string",
+            "is_array": false
+        },
+        "filename": {
+            "type": "string",
+            "is_array": false
+        },
+        "hostname": {
+            "type": "string",
+            "is_array": false
+        },
+        "pprocess": {
+            "type": "string",
+            "is_array": false
+        },
+        "commandline": {
+            "type": "string",
+            "is_array": false
+        },
+        "description": {
+            "type": "string",
+            "is_array": false
+        },
+        "netdomain": {
+            "type": "string",
+            "is_array": false
+        },
+        "username": {
+            "type": "string",
+            "is_array": false
+        },
+        "type": {
+            "type": "int",
+            "is_array": false
+        },
+        "publisher": {
+            "type": "string",
+            "is_array": false
+        },
+        "ppolicy": {
+            "type": "string",
+            "is_array": false
+        },
+        "policyname": {
+            "type": "string",
+            "is_array": false
+        },
+        "policyver": {
+            "type": "string",
+            "is_array": false
+        }
+    }
+}

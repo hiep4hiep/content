@@ -1,0 +1,15 @@
+[MODEL:dataset="airlock_digital_raw"]
+alter
+    xdm.target.file.md5 = `md5`,
+    xdm.target.file.sha256 = `sha256`,
+    xdm.target.file.filename = filename,
+    xdm.source.host.hostname = hostname,
+    xdm.source.process.executable.filename = pprocess,
+    xdm.source.process.command_line = commandline,
+    xdm.event.description = description,
+    xdm.source.user.domain = netdomain,
+    xdm.source.user.username = username,
+    xdm.observer.action = if(type=0,"Trusted Execution",type=1,"Blocked Execution",type=2, "Untrusted Execution [Audit]",type=3, "Untrusted Execution [OTP]",type=4,"Trusted Path Execution", type=5,"Trusted Publisher Execution", type=6,"Blocklist Execution", type=7,"Blocklist Execution [Audit]", type=8,"Trusted Process Execution"),
+    xdm.source.application.publisher = publisher,
+    xdm.event.type = ppolicy,
+    xdm.event.operation_sub_type = concat(policyname,"_",policyver);

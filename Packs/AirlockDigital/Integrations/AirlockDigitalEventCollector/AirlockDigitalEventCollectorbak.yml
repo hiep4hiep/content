@@ -1,0 +1,58 @@
+category: Analytics & SIEM
+sectionOrder:
+- Connect
+- Collect
+commonfields:
+  id: AirlockDigitalEventCollector
+  version: -1
+configuration:
+- display: Airlock API URL (e.g. 'https://al100.ci.managedwhitelisting.com:3129')
+  name: airlock_url
+  type: 0
+  required: true
+  section: Connect
+- display: Airlock API key
+  name: api_key
+  required: true
+  type: 4
+  section: Connect
+- display: Trust any certificate (not secure)
+  name: insecure
+  required: false
+  type: 8
+  section: Connect
+- display: Use system proxy settings
+  name: proxy
+  required: false
+  type: 8
+  section: Connect
+description: This is the Airlock event collector integration for Cortex XSIAM.
+display: AirlockDigitalEventCollector
+name: AirlockDigitalEventCollector
+script:
+  commands:
+  - arguments:
+    - default: false
+      description: Date from which to get events.
+      name: from_date
+      required: false
+    deprecated: false
+    description: Gets events from Airlock.
+    name: airlock-get-events
+  dockerimage: demisto/python3:3.12.8.3296088
+  isfetchevents: true
+  runonce: false
+  script: '-'
+  subtype: python3
+  type: python
+marketplaces:
+- marketplacev2
+supportedModules:
+- X1
+- X3
+- X5
+- ENT_PLUS
+- agentix
+fromversion: 6.5.0
+tests:
+- No tests (auto formatted)

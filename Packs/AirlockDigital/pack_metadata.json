@@ -1,0 +1,26 @@
+{
+    "name": "AirlockDigital",
+    "description": "Collect events from Airlock Digital",
+    "support": "developer",
+    "currentVersion": "1.0.0",
+    "author": "hnguyen",
+    "url": "",
+    "email": "hnguyen@paloaltonetworks.com",
+    "categories": [
+        "Endpoint"
+    ],
+    "tags": [
+        "xsiam"
+    ],
+    "useCases": [],
+    "keywords": [],
+    "marketplaces": [
+        "xsoar",
+        "marketplacev2",
+        "platform"
+    ],
+    "githubUser": [
+        "hiep4hiep"
+    ],
+    "defaultDataSource": "AirlockDigitalEventCollector"
+}
