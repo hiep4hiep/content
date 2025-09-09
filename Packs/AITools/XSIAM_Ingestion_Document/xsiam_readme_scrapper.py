@@ -75,12 +75,15 @@ def indexing_readme_files(readme_paths, output_file="readmes_corpus.json"):
     """
 
     metadata = []
+    raw_text = ""
     for idx, path in enumerate(readme_paths):
         print(f"Writing file {path} to metadata dictionary\n")
         with open(path, 'r', encoding='utf-8') as infile:
             content = infile.read()
             metadata.append({"index": idx, "data": content.split("## Commands")[0]})
-    return metadata,idx
+            raw_text += "# Data source name: " + path.split("/")[7] + "\n\n"
+            raw_text += content.split("## Commands")[0] + "\n\n"
+    return metadata,idx,raw_text
 
 
 def embed_and_store_in_faiss(readme_paths,ingestion_guide_paths):
@@ -109,8 +112,10 @@ def embed_and_store_in_faiss(readme_paths,ingestion_guide_paths):
             embedding = model.encode(content, convert_to_tensor=True, device=device)
             embeddings.append(embedding)
 
-    first_metadata, first_index = indexing_readme_files(readme_files)
+    first_metadata, first_index, raw_text = indexing_readme_files(readme_files)
      # Embed data from Ingestion method admin guide (exported version from website)
+    with open("xsiam_marketplace_ingestion_method.txt", 'w', encoding='utf-8') as file:
+        file.write(raw_text)
     ingestion_data = write_ingestion_guide_to_file(readme_paths=ingestion_guide_paths,output_file="readme_corpus.json", start_index=first_index, metadata=first_metadata) # Continue from previous index and metadata
     for item in ingestion_data:
         embedding = model.encode(item, convert_to_tensor=True, device=device)
